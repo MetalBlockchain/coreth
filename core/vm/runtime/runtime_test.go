@@ -34,21 +34,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/coreth/accounts/abi"
-	"github.com/ava-labs/coreth/consensus"
-	"github.com/ava-labs/coreth/core"
-	"github.com/ava-labs/coreth/core/rawdb"
-	"github.com/ava-labs/coreth/core/state"
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/core/vm"
-	"github.com/ava-labs/coreth/eth/tracers"
-	"github.com/ava-labs/coreth/eth/tracers/logger"
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/accounts/abi"
+	"github.com/MetalBlockchain/coreth/consensus"
+	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/rawdb"
+	"github.com/MetalBlockchain/coreth/core/state"
+	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/core/vm"
+	"github.com/MetalBlockchain/coreth/eth/tracers"
+	"github.com/MetalBlockchain/coreth/eth/tracers/logger"
+	"github.com/MetalBlockchain/coreth/params"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/asm"
 
 	// force-load native tracers to trigger registration
-	_ "github.com/ava-labs/coreth/eth/tracers/native"
+	_ "github.com/MetalBlockchain/coreth/eth/tracers/native"
 )
 
 func TestDefaults(t *testing.T) {

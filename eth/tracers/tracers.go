@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ava-labs/coreth/core/vm"
+	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/ethereum/go-ethereum/common"
 )
 

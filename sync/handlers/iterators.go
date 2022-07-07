@@ -4,8 +4,8 @@
 package handlers
 
 import (
-	"github.com/ava-labs/coreth/core/state/snapshot"
-	"github.com/ava-labs/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/core/state/snapshot"
+	"github.com/MetalBlockchain/coreth/ethdb"
 )
 
 var (

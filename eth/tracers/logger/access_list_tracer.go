@@ -20,8 +20,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/core/vm"
+	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/ethereum/go-ethereum/common"
 )
 

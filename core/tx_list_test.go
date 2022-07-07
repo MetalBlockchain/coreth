@@ -31,7 +31,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ava-labs/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 

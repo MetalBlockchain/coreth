@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/coreth/core/rawdb"
-	"github.com/ava-labs/coreth/ethdb"
-	"github.com/ava-labs/coreth/params"
-	statesyncclient "github.com/ava-labs/coreth/sync/client"
+	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/coreth/core/rawdb"
+	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/params"
+	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/ethereum/go-ethereum/common"
 )
 

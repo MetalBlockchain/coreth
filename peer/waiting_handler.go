@@ -4,8 +4,8 @@
 package peer
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 )
 
 var _ message.ResponseHandler = &waitingResponseHandler{}

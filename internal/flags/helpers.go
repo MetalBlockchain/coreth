@@ -30,7 +30,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/params"
 	"gopkg.in/urfave/cli.v1"
 )
 
