@@ -3,8 +3,8 @@ module github.com/MetalBlockchain/coreth
 go 1.17
 
 require (
+	github.com/MetalBlockchain/avalanchego v1.7.14-rc.9
 	github.com/VictoriaMetrics/fastcache v1.10.0
-	github.com/MetalBlockchain/avalanchego v1.7.14-rc.8
 	github.com/cespare/cp v0.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deckarep/golang-set v1.8.0
