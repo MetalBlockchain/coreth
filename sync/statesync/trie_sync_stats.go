@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	utils_math "github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/coreth/metrics"
+	utils_math "github.com/MetalBlockchain/avalanchego/utils/math"
+	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 )

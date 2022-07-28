@@ -2006,9 +2006,9 @@ var bindTests = []struct {
 		imports: `
 			"math/big"
 
-			"github.com/ava-labs/coreth/accounts/abi/bind"
-			"github.com/ava-labs/coreth/accounts/abi/bind/backends"
-			"github.com/ava-labs/coreth/core"
+			"github.com/MetalBlockchain/coreth/accounts/abi/bind"
+			"github.com/MetalBlockchain/coreth/accounts/abi/bind/backends"
+			"github.com/MetalBlockchain/coreth/core"
 			"github.com/ethereum/go-ethereum/crypto"
 		`,
 		tester: `
