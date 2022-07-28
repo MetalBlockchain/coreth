@@ -19,15 +19,17 @@ import (
 
 	avalanchegoMetrics "github.com/MetalBlockchain/avalanchego/api/metrics"
 
-	coreth "github.com/MetalBlockchain/coreth/chain"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
+	corethConstants "github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/eth"
 	"github.com/MetalBlockchain/coreth/eth/ethconfig"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	corethPrometheus "github.com/MetalBlockchain/coreth/metrics/prometheus"
+	"github.com/MetalBlockchain/coreth/miner"
 	"github.com/MetalBlockchain/coreth/node"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/peer"
@@ -183,6 +185,25 @@ var (
 
 var originalStderr *os.File
 
+// legacyApiNames maps pre geth v1.10.20 api names to their updated counterparts.
+// used in attachEthService for backward configuration compatibility.
+var legacyApiNames = map[string]string{
+	"internal-public-eth":              "internal-eth",
+	"internal-public-blockchain":       "internal-blockchain",
+	"internal-public-transaction-pool": "internal-transaction",
+	"internal-public-tx-pool":          "internal-tx-pool",
+	"internal-public-debug":            "internal-debug",
+	"internal-private-debug":           "internal-debug",
+	"internal-public-account":          "internal-account",
+	"internal-private-personal":        "internal-personal",
+
+	"public-eth":        "eth",
+	"public-eth-filter": "eth-filter",
+	"private-admin":     "admin",
+	"public-debug":      "debug",
+	"private-debug":     "debug",
+}
+
 func init() {
 	// Preserve [os.Stderr] prior to the call in plugin/main.go to plugin.Serve(...).
 	// Preserving the log level allows us to update the root handler while writing to the original
@@ -203,9 +224,14 @@ type VM struct {
 	chainID     *big.Int
 	networkID   uint64
 	genesisHash common.Hash
-	chain       *coreth.ETHChain
 	chainConfig *params.ChainConfig
 	ethConfig   ethconfig.Config
+
+	// pointers to eth constructs
+	eth        *eth.Ethereum
+	txPool     *core.TxPool
+	blockChain *core.BlockChain
+	miner      *miner.Miner
 
 	// [db] is the VM's current database managed by ChainState
 	db *versiondb.Database
@@ -532,18 +558,32 @@ func (vm *VM) initializeMetrics() error {
 }
 
 func (vm *VM) initializeChain(lastAcceptedHash common.Hash) error {
-	nodecfg := node.Config{
+	nodecfg := &node.Config{
 		CorethVersion:         Version,
 		KeyStoreDir:           vm.config.KeystoreDirectory,
 		ExternalSigner:        vm.config.KeystoreExternalSigner,
 		InsecureUnlockAllowed: vm.config.KeystoreInsecureUnlockAllowed,
 	}
-
-	ethChain, err := coreth.NewETHChain(&vm.ethConfig, &nodecfg, vm.chaindb, vm.config.EthBackendSettings(), vm.createConsensusCallbacks(), lastAcceptedHash, &vm.clock)
+	node, err := node.New(nodecfg)
 	if err != nil {
 		return err
 	}
-	vm.chain = ethChain
+	vm.eth, err = eth.New(
+		node,
+		&vm.ethConfig,
+		vm.createConsensusCallbacks(),
+		vm.chaindb,
+		vm.config.EthBackendSettings(),
+		lastAcceptedHash,
+		&vm.clock,
+	)
+	if err != nil {
+		return err
+	}
+	vm.eth.SetEtherbase(corethConstants.BlackholeAddr)
+	vm.txPool = vm.eth.TxPool()
+	vm.blockChain = vm.eth.BlockChain()
+	vm.miner = vm.eth.Miner()
 
 	// start goroutines to update the tx pool gas minimum gas price when upgrades go into effect
 	vm.handleGasPriceUpdates()
@@ -557,8 +597,8 @@ func (vm *VM) initializeChain(lastAcceptedHash common.Hash) error {
 	vm.builder = vm.NewBlockBuilder(vm.toEngine)
 	vm.builder.awaitSubmittedTxs()
 
-	vm.chain.Start()
-	return vm.initChainState(vm.chain.LastAcceptedBlock())
+	vm.eth.Start()
+	return vm.initChainState(vm.blockChain.LastAcceptedBlock())
 }
 
 // initializeStateSyncClient initializes the client for performing state sync.
@@ -580,7 +620,7 @@ func (vm *VM) initializeStateSyncClient(lastAcceptedHeight uint64) error {
 	}
 
 	vm.StateSyncClient = NewStateSyncClient(&stateSyncClientConfig{
-		chain: vm.chain,
+		chain: vm.eth,
 		state: vm.State,
 		client: statesyncclient.NewClient(
 			&statesyncclient.ClientConfig{
@@ -615,7 +655,7 @@ func (vm *VM) initializeStateSyncClient(lastAcceptedHeight uint64) error {
 // initializeStateSyncServer should be called after [vm.chain] is initialized.
 func (vm *VM) initializeStateSyncServer() {
 	vm.StateSyncServer = NewStateSyncServer(&stateSyncServerConfig{
-		Chain:            vm.chain.BlockChain(),
+		Chain:            vm.blockChain,
 		AtomicTrie:       vm.atomicTrie,
 		SyncableInterval: vm.config.StateSyncCommitInterval,
 	})
@@ -882,7 +922,7 @@ func (vm *VM) pruneChain() error {
 	}
 
 	lastAcceptedHeight := vm.LastAcceptedBlock().Height()
-	if err := vm.chain.RemoveRejectedBlocks(0, lastAcceptedHeight); err != nil {
+	if err := vm.blockChain.RemoveRejectedBlocks(0, lastAcceptedHeight); err != nil {
 		return err
 	}
 	heightBytes := make([]byte, 8)
@@ -927,7 +967,7 @@ func (vm *VM) setAppRequestHandlers() {
 		},
 	)
 	syncRequestHandler := handlers.NewSyncHandler(
-		vm.chain.BlockChain(),
+		vm.blockChain,
 		evmTrieDB,
 		vm.atomicTrie.TrieDB(),
 		vm.networkCodec,
@@ -946,14 +986,14 @@ func (vm *VM) Shutdown() error {
 		log.Error("error stopping state syncer", "err", err)
 	}
 	close(vm.shutdownChan)
-	vm.chain.Stop()
+	vm.eth.Stop()
 	vm.shutdownWg.Wait()
 	return nil
 }
 
 // buildBlock builds a block to be wrapped by ChainState
 func (vm *VM) buildBlock() (snowman.Block, error) {
-	block, err := vm.chain.GenerateBlock()
+	block, err := vm.miner.GenerateBlock()
 	vm.builder.handleGenerateBlock()
 	if err != nil {
 		vm.mempool.CancelCurrentTxs()
@@ -1037,7 +1077,7 @@ func (vm *VM) ParseEthBlock(b []byte) (*types.Block, error) {
 // getBlock attempts to retrieve block [id] from the VM to be wrapped
 // by ChainState.
 func (vm *VM) getBlock(id ids.ID) (snowman.Block, error) {
-	ethBlock := vm.chain.GetBlockByHash(common.Hash(id))
+	ethBlock := vm.blockChain.GetBlockByHash(common.Hash(id))
 	// If [ethBlock] is nil, return [database.ErrNotFound] here
 	// so that the miss is considered cacheable.
 	if ethBlock == nil {
@@ -1068,11 +1108,12 @@ func (vm *VM) SetPreference(blkID ids.ID) error {
 		return fmt.Errorf("failed to set preference to %s: %w", blkID, err)
 	}
 
-	return vm.chain.SetPreference(block.(*Block).ethBlock)
+	return vm.blockChain.SetPreference(block.(*Block).ethBlock)
 }
 
+// VerifyHeightIndex always returns a nil error since the index is maintained by
+// vm.blockChain.
 func (vm *VM) VerifyHeightIndex() error {
-	// our index is vm.chain.GetBlockByNumber
 	return nil
 }
 
@@ -1080,7 +1121,7 @@ func (vm *VM) VerifyHeightIndex() error {
 // if [blkHeight] is less than the height of the last accepted block, this will return
 // a canonical block. Otherwise, it may return a blkID that has not yet been accepted.
 func (vm *VM) GetBlockIDAtHeight(blkHeight uint64) (ids.ID, error) {
-	ethBlock := vm.chain.GetBlockByNumber(blkHeight)
+	ethBlock := vm.blockChain.GetBlockByNumber(blkHeight)
 	if ethBlock == nil {
 		return ids.ID{}, fmt.Errorf("could not find block at height: %d", blkHeight)
 	}
@@ -1116,9 +1157,9 @@ func newHandler(name string, service interface{}, lockOption ...commonEng.LockOp
 
 // CreateHandlers makes new http handlers that can handle API calls
 func (vm *VM) CreateHandlers() (map[string]*commonEng.HTTPHandler, error) {
-	handler := vm.chain.NewRPCHandler(vm.config.APIMaxDuration.Duration)
+	handler := rpc.NewServer(vm.config.APIMaxDuration.Duration)
 	enabledAPIs := vm.config.EthAPIs()
-	if err := vm.chain.AttachEthService(handler, enabledAPIs); err != nil {
+	if err := attachEthService(handler, vm.eth.APIs(), enabledAPIs); err != nil {
 		return nil, err
 	}
 
@@ -1310,8 +1351,10 @@ func (vm *VM) issueTx(tx *Tx, local bool) error {
 
 // verifyTxAtTip verifies that [tx] is valid to be issued on top of the currently preferred block
 func (vm *VM) verifyTxAtTip(tx *Tx) error {
-	preferredBlock := vm.chain.CurrentBlock()
-	preferredState, err := vm.chain.BlockState(preferredBlock)
+	// Note: we fetch the current block and then the state at that block instead of the current state directly
+	// since we need the header of the current block below.
+	preferredBlock := vm.blockChain.CurrentBlock()
+	preferredState, err := vm.blockChain.StateAt(preferredBlock.Root())
 	if err != nil {
 		return fmt.Errorf("failed to retrieve block state at tip while verifying atomic tx: %w", err)
 	}
@@ -1411,7 +1454,7 @@ func (vm *VM) GetSpendableFunds(
 	amount uint64,
 ) ([]EVMInput, [][]*crypto.PrivateKeySECP256K1R, error) {
 	// Note: current state uses the state of the preferred block.
-	state, err := vm.chain.CurrentState()
+	state, err := vm.blockChain.State()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1474,7 +1517,7 @@ func (vm *VM) GetSpendableAVAXWithFee(
 	baseFee *big.Int,
 ) ([]EVMInput, [][]*crypto.PrivateKeySECP256K1R, error) {
 	// Note: current state uses the state of the preferred block.
-	state, err := vm.chain.CurrentState()
+	state, err := vm.blockChain.State()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1563,7 +1606,7 @@ func (vm *VM) GetSpendableAVAXWithFee(
 // preferred block
 func (vm *VM) GetCurrentNonce(address common.Address) (uint64, error) {
 	// Note: current state uses the state of the preferred block.
-	state, err := vm.chain.CurrentState()
+	state, err := vm.blockChain.State()
 	if err != nil {
 		return 0, err
 	}
@@ -1572,7 +1615,7 @@ func (vm *VM) GetCurrentNonce(address common.Address) (uint64, error) {
 
 // currentRules returns the chain rules for the current block.
 func (vm *VM) currentRules() params.Rules {
-	header := vm.chain.APIBackend().CurrentHeader()
+	header := vm.eth.APIBackend.CurrentHeader()
 	return vm.chainConfig.AvalancheRules(header.Number, big.NewInt(int64(header.Time)))
 }
 
@@ -1622,7 +1665,7 @@ func (vm *VM) startContinuousProfiler() {
 
 func (vm *VM) estimateBaseFee(ctx context.Context) (*big.Int, error) {
 	// Get the base fee to use
-	baseFee, err := vm.chain.APIBackend().EstimateBaseFee(ctx)
+	baseFee, err := vm.eth.APIBackend.EstimateBaseFee(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1655,7 +1698,7 @@ func getAtomicRepositoryRepairHeights(chainID *big.Int) []uint64 {
 }
 
 func (vm *VM) getAtomicTxFromPreApricot5BlockByHeight(height uint64) (*Tx, error) {
-	blk := vm.chain.GetBlockByNumber(height)
+	blk := vm.blockChain.GetBlockByNumber(height)
 	if blk == nil {
 		return nil, nil
 	}
@@ -1743,4 +1786,41 @@ func (vm *VM) readLastAccepted() (common.Hash, uint64, error) {
 		}
 		return lastAcceptedHash, *height, nil
 	}
+}
+
+// attachEthService registers the backend RPC services provided by Ethereum
+// to the provided handler under their assigned namespaces.
+func attachEthService(handler *rpc.Server, apis []rpc.API, names []string) error {
+	enabledServicesSet := make(map[string]struct{})
+	for _, ns := range names {
+		// handle pre geth v1.10.20 api names as aliases for their updated values
+		// to allow configurations to be backwards compatible.
+		if newName, isLegacy := legacyApiNames[ns]; isLegacy {
+			log.Info("deprecated api name referenced in configuration.", "deprecated", ns, "new", newName)
+			enabledServicesSet[newName] = struct{}{}
+			continue
+		}
+
+		enabledServicesSet[ns] = struct{}{}
+	}
+
+	apiSet := make(map[string]rpc.API)
+	for _, api := range apis {
+		if existingAPI, exists := apiSet[api.Name]; exists {
+			return fmt.Errorf("duplicated API name: %s, namespaces %s and %s", api.Name, api.Namespace, existingAPI.Namespace)
+		}
+		apiSet[api.Name] = api
+	}
+
+	for name := range enabledServicesSet {
+		api, exists := apiSet[name]
+		if !exists {
+			return fmt.Errorf("API service %s not found", name)
+		}
+		if err := handler.RegisterName(api.Namespace, api.Service); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -164,7 +164,7 @@ func newAtomicTrie(
 			Preimages: false, // Keys are not hashed, so there is no need for preimages
 		},
 	)
-	t, err := trie.New(root, triedb)
+	t, err := trie.New(common.Hash{}, root, triedb)
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +354,7 @@ func (a *atomicTrie) initialize(lastAcceptedBlockNumber uint64) error {
 		"preCommitEntriesIndexed", preCommitBlockIndexed,
 		"postCommitEntriesIndexed", postCommitTxIndexed,
 		"lastCommittedHash", a.lastCommittedHash,
-		"lastCommitedHeight", a.lastCommittedHeight,
+		"lastCommittedHeight", a.lastCommittedHeight,
 		"time", time.Since(start),
 	)
 	return nil
@@ -469,7 +469,7 @@ func (a *atomicTrie) updateLastCommitted(root common.Hash, height uint64) error 
 // Iterator returns a types.AtomicTrieIterator that iterates the trie from the given
 // atomic trie root, starting at the specified [cursor].
 func (a *atomicTrie) Iterator(root common.Hash, cursor []byte) (AtomicTrieIterator, error) {
-	t, err := trie.New(root, a.trieDB)
+	t, err := trie.New(common.Hash{}, root, a.trieDB)
 	if err != nil {
 		return nil, err
 	}

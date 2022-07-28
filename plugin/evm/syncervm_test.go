@@ -14,27 +14,27 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/MetalBlockchain/avalanchego/chains/atomic"
-	"github.com/MetalBlockchain/avalanchego/database/manager"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/snow"
-	"github.com/MetalBlockchain/avalanchego/snow/choices"
-	commonEng "github.com/MetalBlockchain/avalanchego/snow/engine/common"
-	"github.com/MetalBlockchain/avalanchego/utils/crypto"
-	"github.com/MetalBlockchain/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database/manager"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	commonEng "github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/utils/crypto"
+	"github.com/ava-labs/avalanchego/utils/units"
 
-	"github.com/MetalBlockchain/coreth/accounts/keystore"
-	coreth "github.com/MetalBlockchain/coreth/chain"
-	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb"
-	"github.com/MetalBlockchain/coreth/metrics"
-	"github.com/MetalBlockchain/coreth/params"
-	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
-	"github.com/MetalBlockchain/coreth/sync/statesync"
-	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/ava-labs/coreth/accounts/keystore"
+	"github.com/ava-labs/coreth/consensus/dummy"
+	"github.com/ava-labs/coreth/constants"
+	"github.com/ava-labs/coreth/core"
+	"github.com/ava-labs/coreth/core/rawdb"
+	"github.com/ava-labs/coreth/core/types"
+	"github.com/ava-labs/coreth/ethdb"
+	"github.com/ava-labs/coreth/metrics"
+	"github.com/ava-labs/coreth/params"
+	statesyncclient "github.com/ava-labs/coreth/sync/client"
+	"github.com/ava-labs/coreth/sync/statesync"
+	"github.com/ava-labs/coreth/trie"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -154,7 +154,7 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 
 	// Process the first 10 blocks from the serverVM
 	for i := uint64(1); i < 10; i++ {
-		ethBlock := vmSetup.serverVM.chain.GetBlockByNumber(i)
+		ethBlock := vmSetup.serverVM.blockChain.GetBlockByNumber(i)
 		if ethBlock == nil {
 			t.Fatalf("VM Server did not have a block available at height %d", i)
 		}
@@ -174,10 +174,11 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 		}
 	}
 	// Verify the snapshot disk layer matches the last block root
-	lastRoot := syncDisabledVM.chain.BlockChain().CurrentBlock().Root()
-	if err := syncDisabledVM.chain.BlockChain().Snapshots().Verify(lastRoot); err != nil {
+	lastRoot := syncDisabledVM.blockChain.CurrentBlock().Root()
+	if err := syncDisabledVM.blockChain.Snapshots().Verify(lastRoot); err != nil {
 		t.Fatal(err)
 	}
+	syncDisabledVM.blockChain.DrainAcceptorQueue()
 
 	// Create a new VM from the same database with state sync enabled.
 	syncReEnabledVM := &VM{}
@@ -321,7 +322,7 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	// patch serverVM's lastAcceptedBlock to have the new root
 	// and update the vm's state so the trie with accounts will
 	// be returned by StateSyncGetLastSummary
-	lastAccepted := serverVM.chain.LastAcceptedBlock()
+	lastAccepted := serverVM.blockChain.LastAcceptedBlock()
 	patchedBlock := patchBlock(lastAccepted, root, serverVM.chaindb)
 	blockBytes, err := rlp.EncodeToBytes(patchedBlock)
 	if err != nil {
@@ -427,6 +428,7 @@ type syncTest struct {
 }
 
 func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
+	t.Helper()
 	var (
 		serverVM           = vmSetup.serverVM
 		includedAtomicTxs  = vmSetup.includedAtomicTxs
@@ -481,7 +483,7 @@ func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
 	}
 	assert.Equal(t, serverVM.LastAcceptedBlock().Height(), syncerVM.LastAcceptedBlock().Height(), "block height mismatch between syncer and server")
 	assert.Equal(t, serverVM.LastAcceptedBlock().ID(), syncerVM.LastAcceptedBlock().ID(), "blockID mismatch between syncer and server")
-	assert.True(t, syncerVM.chain.BlockChain().HasState(syncerVM.chain.LastAcceptedBlock().Root()), "unavailable state for last accepted block")
+	assert.True(t, syncerVM.blockChain.HasState(syncerVM.blockChain.LastAcceptedBlock().Root()), "unavailable state for last accepted block")
 
 	blocksToBuild := 10
 	txsPerBlock := 10
@@ -574,19 +576,19 @@ func generateAndAcceptBlocks(t *testing.T, vm *VM, numBlocks int, gen func(int, 
 	}
 	_, _, err := core.GenerateChain(
 		vm.chainConfig,
-		vm.chain.LastAcceptedBlock(),
+		vm.blockChain.LastAcceptedBlock(),
 		dummy.NewDummyEngine(vm.createConsensusCallbacks()),
 		vm.chaindb,
 		numBlocks,
 		10,
 		func(i int, g *core.BlockGen) {
 			g.SetOnBlockGenerated(acceptExternalBlock)
-			g.SetCoinbase(coreth.BlackholeAddr) // necessary for syntactic validation of the block
+			g.SetCoinbase(constants.BlackholeAddr) // necessary for syntactic validation of the block
 			gen(i, g)
 		},
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	vm.chain.BlockChain().DrainAcceptorQueue()
+	vm.blockChain.DrainAcceptorQueue()
 }

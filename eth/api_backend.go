@@ -176,10 +176,6 @@ func (b *EthAPIBackend) BadBlocks() []*types.Block {
 	return b.eth.blockchain.BadBlocks()
 }
 
-func (b *EthAPIBackend) PendingBlockAndReceipts() (*types.Block, types.Receipts) {
-	return nil, nil
-}
-
 func (b *EthAPIBackend) StateAndHeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*state.StateDB, *types.Header, error) {
 	// Request the block by its number and retrieve its state
 	header, err := b.HeaderByNumber(ctx, number)
@@ -332,19 +328,15 @@ func (b *EthAPIBackend) Stats() (pending int, queued int) {
 }
 
 func (b *EthAPIBackend) TxPoolContent() (map[common.Address]types.Transactions, map[common.Address]types.Transactions) {
-	return b.eth.TxPool().Content()
+	return b.eth.txPool.Content()
 }
 
 func (b *EthAPIBackend) TxPoolContentFrom(addr common.Address) (types.Transactions, types.Transactions) {
-	return b.eth.TxPool().ContentFrom(addr)
-}
-
-func (b *EthAPIBackend) TxPool() *core.TxPool {
-	return b.eth.TxPool()
+	return b.eth.txPool.ContentFrom(addr)
 }
 
 func (b *EthAPIBackend) SubscribeNewTxsEvent(ch chan<- core.NewTxsEvent) event.Subscription {
-	return b.eth.TxPool().SubscribeNewTxsEvent(ch)
+	return b.eth.txPool.SubscribeNewTxsEvent(ch)
 }
 
 func (b *EthAPIBackend) EstimateBaseFee(ctx context.Context) (*big.Int, error) {

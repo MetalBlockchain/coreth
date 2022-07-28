@@ -20,6 +20,7 @@ import (
 	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
+	"github.com/MetalBlockchain/coreth/sync/syncutils"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
@@ -94,7 +95,7 @@ func (lrh *LeafsRequestHandler) OnLeafsRequest(ctx context.Context, nodeID ids.N
 		return nil, nil
 	}
 
-	t, err := trie.New(leafsRequest.Root, lrh.trieDB)
+	t, err := trie.New(leafsRequest.Account, leafsRequest.Root, lrh.trieDB)
 	if err != nil {
 		log.Debug("error opening trie when processing request, dropping request", "nodeID", nodeID, "requestID", requestID, "root", leafsRequest.Root, "err", err)
 		lrh.stats.IncMissingRoot()
@@ -459,9 +460,9 @@ func (rb *responseBuilder) readLeafsFromSnapshot(ctx context.Context) ([][]byte,
 
 	// Get an iterator into the storage or the main account snapshot.
 	if rb.request.Account == (common.Hash{}) {
-		snapIt = &accountIt{AccountIterator: rb.snap.DiskAccountIterator(startHash)}
+		snapIt = &syncutils.AccountIterator{AccountIterator: rb.snap.DiskAccountIterator(startHash)}
 	} else {
-		snapIt = &storageIt{StorageIterator: rb.snap.DiskStorageIterator(rb.request.Account, startHash)}
+		snapIt = &syncutils.StorageIterator{StorageIterator: rb.snap.DiskStorageIterator(rb.request.Account, startHash)}
 	}
 	defer snapIt.Release()
 	for snapIt.Next() {
