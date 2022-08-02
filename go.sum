@@ -44,6 +44,8 @@ github.com/MetalBlockchain/avalanchego v1.7.14-rc.8 h1:uHvOZHFRmvQn1EC+twTA5PQYy
 github.com/MetalBlockchain/avalanchego v1.7.14-rc.8/go.mod h1:iahrRYYrbaVVRQD+2ngjBAmCqBRPYXR4VgyCh7hLtFI=
 github.com/MetalBlockchain/avalanchego v1.7.14-rc.9 h1:G8vJ218AZCLiQBAUKi4gyvwWTNMUEaUiKxm+LkAz158=
 github.com/MetalBlockchain/avalanchego v1.7.14-rc.9/go.mod h1:MzT2TbcKxVZJK5QUfHoO06qWKxCnZzCIpGUh448pvAM=
+github.com/MetalBlockchain/avalanchego v1.7.16-rc.1 h1:LIUOII4PJvVCNQYH0nFRqkhNUOx5z8Bc3wCZGcnC9cA=
+github.com/MetalBlockchain/avalanchego v1.7.16-rc.1/go.mod h1:aUa9kFATKzg/oqjGFbEaPxbaeRte6tftk2fYN0XOg/w=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 h1:fLjPD/aNc3UIOA6tDi6QXUemppXK3P9BI7mr2hd6gx8=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
