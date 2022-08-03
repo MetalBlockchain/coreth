@@ -12,13 +12,13 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/MetalBlockchain/avalanchego/codec"
+	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/avalanchego/snow/engine/common"
+	"github.com/MetalBlockchain/avalanchego/snow/validators"
+	"github.com/MetalBlockchain/avalanchego/version"
 
-	"github.com/ava-labs/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/ethereum/go-ethereum/log"
 )
 

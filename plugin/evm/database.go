@@ -4,8 +4,8 @@
 package evm
 
 import (
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/coreth/ethdb"
+	"github.com/MetalBlockchain/avalanchego/database"
+	"github.com/MetalBlockchain/coreth/ethdb"
 )
 
 // Database implements ethdb.Database

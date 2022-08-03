@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/coreth/eth/filters"
+	"github.com/MetalBlockchain/coreth/eth/filters"
 
-	"github.com/ava-labs/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 

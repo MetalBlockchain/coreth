@@ -30,8 +30,8 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/ethereum/go-ethereum/common"
 )
 

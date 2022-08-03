@@ -8,15 +8,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/core/types"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/MetalBlockchain/avalanchego/codec"
+	"github.com/MetalBlockchain/avalanchego/ids"
 
-	"github.com/ava-labs/coreth/ethdb/memorydb"
-	"github.com/ava-labs/coreth/plugin/evm/message"
-	"github.com/ava-labs/coreth/statesync/handlers/stats"
-	"github.com/ava-labs/coreth/trie"
+	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/statesync/handlers/stats"
+	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 )

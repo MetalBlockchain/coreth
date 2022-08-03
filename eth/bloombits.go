@@ -29,7 +29,7 @@ package eth
 import (
 	"time"
 
-	"github.com/ava-labs/coreth/core/rawdb"
+	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/ethereum/go-ethereum/common/bitutil"
 )
 
