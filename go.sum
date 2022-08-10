@@ -45,12 +45,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/MetalBlockchain/avalanchego v1.7.14-rc.8 h1:uHvOZHFRmvQn1EC+twTA5PQYy5FALag686Mk1TWZCWI=
-github.com/MetalBlockchain/avalanchego v1.7.14-rc.8/go.mod h1:iahrRYYrbaVVRQD+2ngjBAmCqBRPYXR4VgyCh7hLtFI=
-github.com/MetalBlockchain/avalanchego v1.7.14-rc.9 h1:G8vJ218AZCLiQBAUKi4gyvwWTNMUEaUiKxm+LkAz158=
-github.com/MetalBlockchain/avalanchego v1.7.14-rc.9/go.mod h1:MzT2TbcKxVZJK5QUfHoO06qWKxCnZzCIpGUh448pvAM=
-github.com/MetalBlockchain/avalanchego v1.7.16-rc.1 h1:LIUOII4PJvVCNQYH0nFRqkhNUOx5z8Bc3wCZGcnC9cA=
-github.com/MetalBlockchain/avalanchego v1.7.16-rc.1/go.mod h1:aUa9kFATKzg/oqjGFbEaPxbaeRte6tftk2fYN0XOg/w=
+github.com/MetalBlockchain/avalanchego v1.7.16 h1:S0ItUCs0ditVPgN80P5sHk/pYWrJ5ReG10gHbf+RGrA=
+github.com/MetalBlockchain/avalanchego v1.7.16/go.mod h1:aUa9kFATKzg/oqjGFbEaPxbaeRte6tftk2fYN0XOg/w=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 h1:fLjPD/aNc3UIOA6tDi6QXUemppXK3P9BI7mr2hd6gx8=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
@@ -69,8 +65,6 @@ github.com/allegro/bigcache v1.2.1-0.20190218064605-e24eb225f156/go.mod h1:Cb/ax
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/arrow/go/arrow v0.0.0-20191024131854-af6fa24be0db/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
-github.com/ava-labs/avalanchego v1.7.16 h1:8IoVA5nBu1Efus9qcYmxI5aObuYlvEBcBbOcX2R8W8o=
-github.com/ava-labs/avalanchego v1.7.16/go.mod h1:S0SlkuHBqr1EQL+N4XydI5c6q5A0YIpxAndAt3ellrM=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
