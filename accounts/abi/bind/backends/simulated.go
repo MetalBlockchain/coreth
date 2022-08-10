@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/MetalBlockchain/coreth/eth"
+	"github.com/MetalBlockchain/coreth/vmerrs"
 
 	"github.com/MetalBlockchain/coreth/accounts/abi"
 	"github.com/MetalBlockchain/coreth/accounts/abi/bind"
@@ -609,7 +610,7 @@ func (b *SimulatedBackend) EstimateGas(ctx context.Context, call interfaces.Call
 			return 0, err
 		}
 		if failed {
-			if result != nil && result.Err != vm.ErrOutOfGas {
+			if result != nil && result.Err != vmerrs.ErrOutOfGas {
 				if len(result.Revert()) > 0 {
 					return 0, newRevertError(result)
 				}

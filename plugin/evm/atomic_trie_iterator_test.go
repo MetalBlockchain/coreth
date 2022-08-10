@@ -11,14 +11,12 @@ import (
 	"github.com/MetalBlockchain/avalanchego/database/versiondb"
 	"github.com/MetalBlockchain/avalanchego/ids"
 	"github.com/MetalBlockchain/avalanchego/utils"
-	"github.com/MetalBlockchain/avalanchego/utils/logging"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 )
 
 func testSharedMemory() atomic.SharedMemory {
-	m := &atomic.Memory{}
-	m.Initialize(logging.NoLog{}, memdb.New())
+	m := atomic.NewMemory(memdb.New())
 	return m.NewSharedMemory(testCChainID)
 }
 

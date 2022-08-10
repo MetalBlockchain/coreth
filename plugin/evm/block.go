@@ -114,6 +114,22 @@ type Block struct {
 	atomicTxs []*Tx
 }
 
+// newBlock returns a new Block wrapping the ethBlock type and implementing the snowman.Block interface
+func (vm *VM) newBlock(ethBlock *types.Block) (*Block, error) {
+	isApricotPhase5 := vm.chainConfig.IsApricotPhase5(new(big.Int).SetUint64(ethBlock.Time()))
+	atomicTxs, err := ExtractAtomicTxs(ethBlock.ExtData(), isApricotPhase5, vm.codec)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Block{
+		id:        ids.ID(ethBlock.Hash()),
+		ethBlock:  ethBlock,
+		vm:        vm,
+		atomicTxs: atomicTxs,
+	}, nil
+}
+
 // ID implements the snowman.Block interface
 func (b *Block) ID() ids.ID { return b.id }
 
@@ -258,40 +274,40 @@ func (b *Block) verifyAtomicTxs(rules params.Rules) error {
 		return errRejectedParent
 	}
 
+	// If the ancestor is unknown, then the parent failed verification when
+	// it was called.
+	// If the ancestor is rejected, then this block shouldn't be inserted
+	// into the canonical chain because the parent will be missing.
+	ancestorInf, err := b.vm.GetBlockInternal(ancestorID)
+	if err != nil {
+		return errRejectedParent
+	}
+	if blkStatus := ancestorInf.Status(); blkStatus == choices.Unknown || blkStatus == choices.Rejected {
+		return errRejectedParent
+	}
+	ancestor, ok := ancestorInf.(*Block)
+	if !ok {
+		return fmt.Errorf("expected %s, parent of %s, to be *Block but is %T", ancestor.ID(), b.ID(), ancestorInf)
+	}
+	if bonusBlocks.Contains(b.id) {
+		log.Info("skipping atomic tx verification on bonus block", "block", b.id)
+		return nil
+	}
+
 	// If the tx is an atomic tx, ensure that it doesn't conflict with any of
 	// its processing ancestry.
 	inputs := &ids.Set{}
 	for _, atomicTx := range b.atomicTxs {
-		// If the ancestor is unknown, then the parent failed verification when
-		// it was called.
-		// If the ancestor is rejected, then this block shouldn't be inserted
-		// into the canonical chain because the parent will be missing.
-		ancestorInf, err := b.vm.GetBlockInternal(ancestorID)
-		if err != nil {
-			return errRejectedParent
+		utx := atomicTx.UnsignedAtomicTx
+		if err := utx.SemanticVerify(b.vm, atomicTx, ancestor, b.ethBlock.BaseFee(), rules); err != nil {
+			return fmt.Errorf("invalid block due to failed semanatic verify: %w at height %d", err, b.Height())
 		}
-		if blkStatus := ancestorInf.Status(); blkStatus == choices.Unknown || blkStatus == choices.Rejected {
-			return errRejectedParent
+		txInputs := utx.InputUTXOs()
+		if inputs.Overlaps(txInputs) {
+			return errConflictingAtomicInputs
 		}
-		ancestor, ok := ancestorInf.(*Block)
-		if !ok {
-			return fmt.Errorf("expected %s, parent of %s, to be *Block but is %T", ancestor.ID(), b.ID(), ancestorInf)
-		}
-		if bonusBlocks.Contains(b.id) {
-			log.Info("skipping atomic tx verification on bonus block", "block", b.id)
-		} else {
-			utx := atomicTx.UnsignedAtomicTx
-			if err := utx.SemanticVerify(b.vm, atomicTx, ancestor, b.ethBlock.BaseFee(), rules); err != nil {
-				return fmt.Errorf("invalid block due to failed semanatic verify: %w at height %d", err, b.Height())
-			}
-			txInputs := utx.InputUTXOs()
-			if inputs.Overlaps(txInputs) {
-				return errConflictingAtomicInputs
-			}
-			inputs.Union(txInputs)
-		}
+		inputs.Union(txInputs)
 	}
-
 	return nil
 }
 

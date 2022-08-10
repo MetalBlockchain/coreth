@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -209,7 +210,6 @@ func init() {
 	// Preserving the log level allows us to update the root handler while writing to the original
 	// [os.Stderr] that is being piped through to the logger via the rpcchainvm.
 	originalStderr = os.Stderr
-	log.Root().SetHandler(log.LvlFilterHandler(log.LvlDebug, log.StreamHandler(originalStderr, log.TerminalFormat(false))))
 }
 
 // VM implements the snowman.ChainVM interface
@@ -284,6 +284,7 @@ type VM struct {
 	bootstrapped bool
 	IsPlugin     bool
 
+	logger CorethLogger
 	// State sync server and client
 	StateSyncServer
 	StateSyncClient
@@ -300,47 +301,6 @@ func (vm *VM) Clock() *mockable.Clock { return &vm.clock }
 
 // Logger implements the secp256k1fx interface
 func (vm *VM) Logger() logging.Logger { return vm.ctx.Log }
-
-// setLogLevel initializes logger and sets the log level with the original [os.StdErr] interface
-// along with the context logger.
-func (vm *VM) setLogLevel(logLevel log.Lvl) {
-	prefix, err := vm.ctx.BCLookup.PrimaryAlias(vm.ctx.ChainID)
-	if err != nil {
-		prefix = vm.ctx.ChainID.String()
-	}
-	prefix = fmt.Sprintf("<%s Chain>", prefix)
-	format := CorethFormat(prefix, vm.IsPlugin)
-	if vm.IsPlugin {
-		log.Root().SetHandler(log.LvlFilterHandler(logLevel, log.StreamHandler(originalStderr, format)))
-	} else {
-		log.Root().SetHandler(log.LvlFilterHandler(logLevel, log.StreamHandler(vm.ctx.Log, format)))
-	}
-}
-
-func CorethFormat(prefix string, doCopy bool) log.Format {
-	return log.FormatFunc(func(r *log.Record) []byte {
-		location := fmt.Sprintf("%+v", r.Call)
-		newMsg := fmt.Sprintf("%s %s: %s", prefix, location, r.Msg)
-		var b []byte
-		if doCopy {
-			// need to deep copy since we're using a multihandler
-			// as a result it will alter R.msg twice.
-			newRecord := log.Record{
-				Time:     r.Time,
-				Lvl:      r.Lvl,
-				Msg:      newMsg,
-				Ctx:      r.Ctx,
-				Call:     r.Call,
-				KeyNames: r.KeyNames,
-			}
-			b = log.TerminalFormat(false).Format(&newRecord)
-			return b
-		}
-		r.Msg = newMsg
-		b = log.TerminalFormat(false).Format(r)
-		return b
-	})
-}
 
 /*
  ******************************************************************************
@@ -374,14 +334,25 @@ func (vm *VM) Initialize(
 		return err
 	}
 
-	// Set log level
-	logLevel, err := log.LvlFromString(vm.config.LogLevel)
+	vm.ctx = ctx
+
+	// Create logger
+	alias, err := vm.ctx.BCLookup.PrimaryAlias(vm.ctx.ChainID)
+	if err != nil {
+		alias = vm.ctx.ChainID.String()
+	}
+
+	var writer io.Writer = vm.ctx.Log
+	if vm.IsPlugin {
+		writer = originalStderr
+	}
+
+	corethLogger, err := InitLogger(alias, vm.config.LogLevel, vm.config.LogJSONFormat, writer)
 	if err != nil {
 		return fmt.Errorf("failed to initialize logger due to: %w ", err)
 	}
+	vm.logger = corethLogger
 
-	vm.ctx = ctx
-	vm.setLogLevel(logLevel)
 	if b, err := json.Marshal(vm.config); err == nil {
 		log.Info("Initializing Coreth VM", "Version", Version, "Config", string(b))
 	} else {
@@ -664,14 +635,12 @@ func (vm *VM) initializeStateSyncServer() {
 }
 
 func (vm *VM) initChainState(lastAcceptedBlock *types.Block) error {
-	isApricotPhase5 := vm.chainConfig.IsApricotPhase5(new(big.Int).SetUint64(lastAcceptedBlock.Time()))
-	atomicTxs, err := ExtractAtomicTxs(lastAcceptedBlock.ExtData(), isApricotPhase5, vm.codec)
+	block, err := vm.newBlock(lastAcceptedBlock)
 	if err != nil {
-		return fmt.Errorf(
-			"error extracting atomic txs when setting chain state, height=%d, hash=%s, err=%w",
-			lastAcceptedBlock.NumberU64(), lastAcceptedBlock.Hash(), err,
-		)
+		return fmt.Errorf("failed to create block wrapper for the last accepted block: %w", err)
 	}
+	block.status = choices.Accepted
+
 	config := &chain.Config{
 		DecidedCacheSize:    decidedCacheSize,
 		MissingCacheSize:    missingCacheSize,
@@ -680,13 +649,7 @@ func (vm *VM) initChainState(lastAcceptedBlock *types.Block) error {
 		GetBlock:            vm.getBlock,
 		UnmarshalBlock:      vm.parseBlock,
 		BuildBlock:          vm.buildBlock,
-		LastAcceptedBlock: &Block{
-			id:        ids.ID(lastAcceptedBlock.Hash()),
-			ethBlock:  lastAcceptedBlock,
-			vm:        vm,
-			status:    choices.Accepted,
-			atomicTxs: atomicTxs,
-		},
+		LastAcceptedBlock:   block,
 	}
 
 	// Register chain state metrics
@@ -1000,18 +963,14 @@ func (vm *VM) buildBlock() (snowman.Block, error) {
 		return nil, err
 	}
 
-	isApricotPhase5 := vm.chainConfig.IsApricotPhase5(new(big.Int).SetUint64(block.Time()))
-	atomicTxs, err := ExtractAtomicTxs(block.ExtData(), isApricotPhase5, vm.codec)
+	// Note: the status of block is set by ChainState
+	blk, err := vm.newBlock(block)
 	if err != nil {
 		vm.mempool.DiscardCurrentTxs()
 		return nil, err
 	}
-	// Note: the status of block is set by ChainState
-	blk := &Block{
-		id:        ids.ID(block.Hash()),
-		ethBlock:  block,
-		vm:        vm,
-		atomicTxs: atomicTxs,
+	if err != nil {
+		return nil, err
 	}
 
 	// Verify is called on a non-wrapped block here, such that this
@@ -1045,17 +1004,10 @@ func (vm *VM) parseBlock(b []byte) (snowman.Block, error) {
 		return nil, err
 	}
 
-	isApricotPhase5 := vm.chainConfig.IsApricotPhase5(new(big.Int).SetUint64(ethBlock.Time()))
-	atomicTxs, err := ExtractAtomicTxs(ethBlock.ExtData(), isApricotPhase5, vm.codec)
+	// Note: the status of block is set by ChainState
+	block, err := vm.newBlock(ethBlock)
 	if err != nil {
 		return nil, err
-	}
-	// Note: the status of block is set by ChainState
-	block := &Block{
-		id:        ids.ID(ethBlock.Hash()),
-		ethBlock:  ethBlock,
-		vm:        vm,
-		atomicTxs: atomicTxs,
 	}
 	// Performing syntactic verification in ParseBlock allows for
 	// short-circuiting bad blocks before they are processed by the VM.
@@ -1083,19 +1035,8 @@ func (vm *VM) getBlock(id ids.ID) (snowman.Block, error) {
 	if ethBlock == nil {
 		return nil, database.ErrNotFound
 	}
-	isApricotPhase5 := vm.chainConfig.IsApricotPhase5(new(big.Int).SetUint64(ethBlock.Time()))
-	atomicTxs, err := ExtractAtomicTxs(ethBlock.ExtData(), isApricotPhase5, vm.codec)
-	if err != nil {
-		return nil, err
-	}
 	// Note: the status of block is set by ChainState
-	blk := &Block{
-		id:        ids.ID(ethBlock.Hash()),
-		ethBlock:  ethBlock,
-		vm:        vm,
-		atomicTxs: atomicTxs,
-	}
-	return blk, nil
+	return vm.newBlock(ethBlock)
 }
 
 // SetPreference sets what the current tail of the chain is

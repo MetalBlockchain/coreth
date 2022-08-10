@@ -20,7 +20,7 @@ const (
 	defaultSnapshotAsync                          = true
 	defaultRpcGasCap                              = 50_000_000 // Default to 50M Gas Limit
 	defaultRpcTxFeeCap                            = 100        // 100 AVAX
-	defaultMetricsExpensiveEnabled                = false
+	defaultMetricsExpensiveEnabled                = true
 	defaultApiMaxDuration                         = 0 // Default to no maximum API call duration
 	defaultWsCpuRefillRate                        = 0 // Default to no maximum WS CPU usage
 	defaultWsCpuMaxStored                         = 0 // Default to no maximum WS CPU usage
@@ -31,6 +31,7 @@ const (
 	defaultTxRegossipMaxSize                      = 15
 	defaultOfflinePruningBloomFilterSize   uint64 = 512 // Default size (MB) for the offline pruner to use
 	defaultLogLevel                               = "info"
+	defaultLogJSONFormat                          = false
 	defaultPopulateMissingTriesParallelism        = 1024
 	defaultMaxOutboundActiveRequests              = 16
 	defaultStateSyncServerTrieCache               = 64 // MB
@@ -114,8 +115,9 @@ type Config struct {
 	TxRegossipFrequency       Duration `json:"tx-regossip-frequency"`
 	TxRegossipMaxSize         int      `json:"tx-regossip-max-size"`
 
-	// Log level
-	LogLevel string `json:"log-level"`
+	// Log
+	LogLevel      string `json:"log-level"`
+	LogJSONFormat bool   `json:"log-json-format"`
 
 	// Offline Pruning Settings
 	OfflinePruning                bool   `json:"offline-pruning-enabled"`
@@ -162,6 +164,7 @@ func (c *Config) SetDefaults() {
 	c.OfflinePruningBloomFilterSize = defaultOfflinePruningBloomFilterSize
 	c.LogLevel = defaultLogLevel
 	c.PopulateMissingTriesParallelism = defaultPopulateMissingTriesParallelism
+	c.LogJSONFormat = defaultLogJSONFormat
 	c.MaxOutboundActiveRequests = defaultMaxOutboundActiveRequests
 	c.StateSyncServerTrieCache = defaultStateSyncServerTrieCache
 	c.CommitInterval = defaultCommitInterval
