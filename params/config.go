@@ -32,8 +32,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ava-labs/coreth/precompile"
-	"github.com/ava-labs/coreth/utils"
+	"github.com/MetalBlockchain/coreth/precompile"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -190,11 +190,11 @@ func (c *ChainConfig) String() string {
 	if c.MuirGlacierBlock != nil {
 		banner += fmt.Sprintf(" - Muir Glacier:                %-8v (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/muir-glacier.md)\n", c.MuirGlacierBlock)
 	}
-	banner += fmt.Sprintf(" - Apricot Phase 1 Timestamp:   %-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.3.0)\n", c.ApricotPhase1BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 2 Timestamp:   %-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.4.0)\n", c.ApricotPhase2BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 3 Timestamp:   %-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.5.0)\n", c.ApricotPhase3BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 4 Timestamp:   %-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.6.0)\n", c.ApricotPhase4BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 5 Timestamp:   %-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.7.0)\n", c.ApricotPhase5BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 1 Timestamp:   %-8v (https://github.com/MetalBlockchain/avalanchego/releases/tag/v1.3.0)\n", c.ApricotPhase1BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 2 Timestamp:   %-8v (https://github.com/MetalBlockchain/avalanchego/releases/tag/v1.4.0)\n", c.ApricotPhase2BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 3 Timestamp:   %-8v (https://github.com/MetalBlockchain/avalanchego/releases/tag/v1.5.0)\n", c.ApricotPhase3BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 4 Timestamp:   %-8v (https://github.com/MetalBlockchain/avalanchego/releases/tag/v1.6.0)\n", c.ApricotPhase4BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 5 Timestamp:   %-8v (https://github.com/MetalBlockchain/avalanchego/releases/tag/v1.7.0)\n", c.ApricotPhase5BlockTimestamp)
 	banner += "\n"
 	return banner
 }
