@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers"

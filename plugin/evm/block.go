@@ -15,9 +15,9 @@ import (
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/MetalBlockchain/avalanchego/chains/atomic"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/snow/choices"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/snow/choices"
 )
 
 var (

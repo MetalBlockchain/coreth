@@ -11,14 +11,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 
 	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/sync/client/stats"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/version"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/version"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"

@@ -33,7 +33,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/accounts"
 	"github.com/MetalBlockchain/coreth/accounts/abi"
 	"github.com/MetalBlockchain/coreth/accounts/keystore"

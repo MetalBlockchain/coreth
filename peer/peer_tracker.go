@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
-	utils_math "github.com/MetalBlockchain/avalanchego/utils/math"
-	"github.com/MetalBlockchain/avalanchego/version"
+	"github.com/MetalBlockchain/metalgo/ids"
+	utils_math "github.com/MetalBlockchain/metalgo/utils/math"
+	"github.com/MetalBlockchain/metalgo/version"
 
 	"github.com/ethereum/go-ethereum/log"
 

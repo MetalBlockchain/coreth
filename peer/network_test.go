@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/snow/engine/common"
 
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/codec/linearcodec"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/version"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/version"
 	"github.com/stretchr/testify/assert"
 )
 

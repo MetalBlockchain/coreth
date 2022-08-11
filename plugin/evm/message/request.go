@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/ids"
 )
 
 // Request represents a Network request type

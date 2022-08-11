@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/MetalBlockchain/avalanchego/database/memdb"
-	"github.com/MetalBlockchain/avalanchego/database/versiondb"
+	"github.com/MetalBlockchain/metalgo/database/memdb"
+	"github.com/MetalBlockchain/metalgo/database/versiondb"
 
 	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"

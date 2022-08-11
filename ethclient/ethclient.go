@@ -34,7 +34,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/accounts/abi/bind"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/interfaces"

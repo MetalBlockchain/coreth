@@ -9,7 +9,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/MetalBlockchain/avalanchego/utils/wrappers"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	syncclient "github.com/MetalBlockchain/coreth/sync/client"

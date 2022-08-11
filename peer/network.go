@@ -14,11 +14,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/snow/engine/common"
-	"github.com/MetalBlockchain/avalanchego/snow/validators"
-	"github.com/MetalBlockchain/avalanchego/version"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/snow/validators"
+	"github.com/MetalBlockchain/metalgo/version"
 
 	"github.com/MetalBlockchain/coreth/peer/stats"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"

@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
+	"github.com/MetalBlockchain/metalgo/codec"
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/utils/units"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils/units"
 )
 
 const (

@@ -36,8 +36,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/utils/timer/mockable"
-	"github.com/MetalBlockchain/avalanchego/utils/units"
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
+	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/consensus/misc"

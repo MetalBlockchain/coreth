@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/types"

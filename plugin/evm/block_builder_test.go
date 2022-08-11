@@ -11,7 +11,7 @@ import (
 
 	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/MetalBlockchain/avalanchego/snow"
+	"github.com/MetalBlockchain/metalgo/snow"
 )
 
 func TestBlockBuilderShutsDown(t *testing.T) {

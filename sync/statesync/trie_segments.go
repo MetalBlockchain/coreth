@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/MetalBlockchain/avalanchego/utils/wrappers"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"

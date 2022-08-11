@@ -6,8 +6,8 @@ package evm
 import (
 	"fmt"
 
-	"github.com/MetalBlockchain/avalanchego/database"
-	"github.com/MetalBlockchain/avalanchego/snow/engine/snowman/block"
+	"github.com/MetalBlockchain/metalgo/database"
+	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
 
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"

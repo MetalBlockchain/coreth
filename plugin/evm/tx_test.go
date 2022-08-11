@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MetalBlockchain/avalanchego/chains/atomic"
-	"github.com/MetalBlockchain/avalanchego/snow"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/coreth/params"
 )
 

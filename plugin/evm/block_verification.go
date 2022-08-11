@@ -9,7 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	safemath "github.com/MetalBlockchain/avalanchego/utils/math"
+	safemath "github.com/MetalBlockchain/metalgo/utils/math"
 
 	"github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/core/types"

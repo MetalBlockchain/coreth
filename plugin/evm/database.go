@@ -4,7 +4,7 @@
 package evm
 
 import (
-	"github.com/MetalBlockchain/avalanchego/database"
+	"github.com/MetalBlockchain/metalgo/database"
 	"github.com/MetalBlockchain/coreth/ethdb"
 )
 

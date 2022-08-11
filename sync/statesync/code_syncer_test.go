@@ -8,7 +8,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/MetalBlockchain/avalanchego/utils"
+	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"

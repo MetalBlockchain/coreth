@@ -14,14 +14,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/MetalBlockchain/avalanchego/chains/atomic"
-	"github.com/MetalBlockchain/avalanchego/database/manager"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/snow"
-	"github.com/MetalBlockchain/avalanchego/snow/choices"
-	commonEng "github.com/MetalBlockchain/avalanchego/snow/engine/common"
-	"github.com/MetalBlockchain/avalanchego/utils/crypto"
-	"github.com/MetalBlockchain/avalanchego/utils/units"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/database/manager"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/snow/choices"
+	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/utils/crypto"
+	"github.com/MetalBlockchain/metalgo/utils/units"
 
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"

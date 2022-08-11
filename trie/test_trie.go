@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/MetalBlockchain/avalanchego/utils/wrappers"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/core/types"
 

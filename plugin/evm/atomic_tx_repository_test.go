@@ -9,19 +9,19 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/MetalBlockchain/avalanchego/chains/atomic"
-	"github.com/MetalBlockchain/avalanchego/database"
-	"github.com/MetalBlockchain/avalanchego/database/prefixdb"
-	"github.com/MetalBlockchain/avalanchego/database/versiondb"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/database"
+	"github.com/MetalBlockchain/metalgo/database/prefixdb"
+	"github.com/MetalBlockchain/metalgo/database/versiondb"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
-	"github.com/MetalBlockchain/avalanchego/utils/wrappers"
+	"github.com/MetalBlockchain/metalgo/codec"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/MetalBlockchain/avalanchego/database/memdb"
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/database/memdb"
+	"github.com/MetalBlockchain/metalgo/ids"
 )
 
 // addTxs writes [txsPerHeight] txs for heights ranging in [fromHeight, toHeight) directly to [acceptedAtomicTxDB],

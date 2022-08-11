@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"

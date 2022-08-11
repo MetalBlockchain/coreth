@@ -7,7 +7,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/MetalBlockchain/avalanchego/utils/formatting"
+	"github.com/MetalBlockchain/metalgo/utils/formatting"
 	"github.com/MetalBlockchain/coreth/core"
 )
 

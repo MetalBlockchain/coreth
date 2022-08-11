@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MetalBlockchain/avalanchego/api"
-	"github.com/MetalBlockchain/avalanchego/utils/profiler"
+	"github.com/MetalBlockchain/metalgo/api"
+	"github.com/MetalBlockchain/metalgo/utils/profiler"
 	"github.com/ethereum/go-ethereum/log"
 )
 

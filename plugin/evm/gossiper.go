@@ -9,14 +9,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MetalBlockchain/avalanchego/codec"
+	"github.com/MetalBlockchain/metalgo/codec"
 
 	"github.com/MetalBlockchain/coreth/peer"
 
-	"github.com/MetalBlockchain/avalanchego/cache"
-	"github.com/MetalBlockchain/avalanchego/ids"
-	"github.com/MetalBlockchain/avalanchego/snow"
-	"github.com/MetalBlockchain/avalanchego/utils/wrappers"
+	"github.com/MetalBlockchain/metalgo/cache"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
