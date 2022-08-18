@@ -85,6 +85,9 @@ github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/MetalBlockchain/avalanchego v1.7.10-rc.4 h1:lpy14Ra0JvHnqIsWFzkVFiFpsX5+iH5hcVne6mY1jIk=
 github.com/MetalBlockchain/avalanchego v1.7.10-rc.4/go.mod h1:9HrVokgAUcUbIyu+ZDXYnuPjYucUrHba/1vsoy8PtZA=
+github.com/MetalBlockchain/coreth v0.8.9-rc.3/go.mod h1:zBvUv48a+7mcJ7X9SPel9JTxdiRpVMOx1jxeJuIqszs=
+github.com/MetalBlockchain/metalgo v1.7.10-rc.8 h1:sRnISGS3B75UagHVc4alP4FiAMkLSsm8Qk+0FAKABeU=
+github.com/MetalBlockchain/metalgo v1.7.10-rc.8/go.mod h1:YT6rx8TTBC8AAOQSgmEYgooNR+/PIj6zz7v+Uw9uUIQ=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/Microsoft/go-winio v0.4.16/go.mod h1:XB6nPKklQyQ7GC9LdcBEcBl8PF76WugXOPRXwdLnMv0=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

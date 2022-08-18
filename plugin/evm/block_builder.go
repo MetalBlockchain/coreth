@@ -11,9 +11,9 @@ import (
 	coreth "github.com/MetalBlockchain/coreth/chain"
 	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/MetalBlockchain/avalanchego/snow"
-	commonEng "github.com/MetalBlockchain/avalanchego/snow/engine/common"
-	"github.com/MetalBlockchain/avalanchego/utils/timer"
+	"github.com/MetalBlockchain/metalgo/snow"
+	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/utils/timer"
 	"github.com/ethereum/go-ethereum/log"
 )
 

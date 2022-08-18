@@ -6,7 +6,7 @@ package handlers
 import (
 	"context"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 )
 

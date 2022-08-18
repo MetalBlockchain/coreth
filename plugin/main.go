@@ -9,9 +9,9 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 
-	"github.com/MetalBlockchain/avalanchego/utils/logging"
-	"github.com/MetalBlockchain/avalanchego/utils/ulimit"
-	"github.com/MetalBlockchain/avalanchego/vms/rpcchainvm"
+	"github.com/MetalBlockchain/metalgo/utils/logging"
+	"github.com/MetalBlockchain/metalgo/utils/ulimit"
+	"github.com/MetalBlockchain/metalgo/vms/rpcchainvm"
 
 	"github.com/MetalBlockchain/coreth/plugin/evm"
 )

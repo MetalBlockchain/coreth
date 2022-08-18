@@ -6,7 +6,7 @@ package evm
 import (
 	"container/heap"
 
-	"github.com/MetalBlockchain/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/ids"
 )
 
 // txEntry is used to track the [gasPrice] transactions pay to be included in
