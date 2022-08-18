@@ -46,6 +46,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/MetalBlockchain/metalgo v1.7.17-rc.1 h1:fu/NDpza361T8PO+R0NaG0xCQeMyf39lTRp0QRZxUKg=
 github.com/MetalBlockchain/metalgo v1.7.17-rc.1/go.mod h1:699zdnMmo+mJR0Nz9dKmi5NjuQvos9JniF2BReSFOLA=
+github.com/MetalBlockchain/metalgo v1.7.17-rc.2 h1:9pU3KphLyzPUCQGEhpV+a58DkD3514bNbHxNHEJj7CI=
+github.com/MetalBlockchain/metalgo v1.7.17-rc.2/go.mod h1:L42qYzOUmPvQqwJHclQHCn7VPrNFNeZ1t8MdQ/BQaXA=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/VictoriaMetrics/fastcache v1.10.0 h1:5hDJnLsKLpnUEToub7ETuRu8RCkb40woBZAUiKonXzY=
 github.com/VictoriaMetrics/fastcache v1.10.0/go.mod h1:tjiYeEfYXCqacuvYw/7UoDIeJaNxq6132xHICNP77w8=
