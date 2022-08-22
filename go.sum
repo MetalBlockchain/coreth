@@ -44,8 +44,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.1 h1:fu/NDpza361T8PO+R0NaG0xCQeMyf39lTRp0QRZxUKg=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.1/go.mod h1:699zdnMmo+mJR0Nz9dKmi5NjuQvos9JniF2BReSFOLA=
 github.com/MetalBlockchain/metalgo v1.7.17-rc.2 h1:9pU3KphLyzPUCQGEhpV+a58DkD3514bNbHxNHEJj7CI=
 github.com/MetalBlockchain/metalgo v1.7.17-rc.2/go.mod h1:L42qYzOUmPvQqwJHclQHCn7VPrNFNeZ1t8MdQ/BQaXA=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
@@ -155,8 +153,8 @@ github.com/envoyproxy/go-control-plane v0.9.7/go.mod h1:cwu0lG7PUMfa9snN8LXBig5y
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.mod h1:KJwIaB5Mv44NWtYuAOFCVOjcI94vtpEz2JU/D2v6IjE=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/ethereum/go-ethereum v1.10.20 h1:75IW830ClSS40yrQC1ZCMZCt5I+zU16oqId2SiQwdQ4=
-github.com/ethereum/go-ethereum v1.10.20/go.mod h1:LWUN82TCHGpxB3En5HVmLLzPD7YSrEUFmFfN1nKkVN0=
+github.com/ethereum/go-ethereum v1.10.22 h1:HbEgsDo1YTGIf4KB/NNpn+XH+PiNJXUZ9ksRxiqWyMc=
+github.com/ethereum/go-ethereum v1.10.22/go.mod h1:EYFyF19u3ezGLD4RqOkLq+ZCXzYbLoNDdZlMt7kyKFg=
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 h1:FtmdgXiUlNeRsoNMFlKLDt+S+6hbjVMEW6RGQ7aUf7c=
