@@ -616,7 +616,6 @@ func (pool *TxPool) PendingSize() int {
 		count += len(txs)
 	}
 	return count
-
 }
 
 // Locals retrieves the accounts currently considered local by the pool.
@@ -1073,6 +1072,13 @@ func (pool *TxPool) Has(hash common.Hash) bool {
 // the given hash.
 func (pool *TxPool) HasLocal(hash common.Hash) bool {
 	return pool.all.GetLocal(hash) != nil
+}
+
+func (pool *TxPool) RemoveTx(hash common.Hash) {
+	pool.mu.Lock()
+	defer pool.mu.Unlock()
+
+	pool.removeTx(hash, true)
 }
 
 // removeTx removes a single transaction from the queue, moving all subsequent

@@ -124,13 +124,12 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 		return nil
 	}
 	// Disable metrics to prevent duplicate registerer
-	configJSON := "{\"metrics-enabled\":false}"
 	if err := syncDisabledVM.Initialize(
 		vmSetup.syncerVM.ctx,
 		vmSetup.syncerDBManager,
-		[]byte(genesisJSONApricotPhase5),
+		[]byte(genesisJSONLatest),
 		nil,
-		[]byte(configJSON),
+		nil,
 		vmSetup.syncerVM.toEngine,
 		[]*commonEng.Fx{},
 		appSender,
@@ -182,15 +181,15 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 
 	// Create a new VM from the same database with state sync enabled.
 	syncReEnabledVM := &VM{}
-	// Disable metrics to prevent duplicate registerer
-	configJSON = fmt.Sprintf(
-		"{\"metrics-enabled\":false, \"state-sync-enabled\":true, \"state-sync-min-blocks\":%d}",
+	// Enable state sync in configJSON
+	configJSON := fmt.Sprintf(
+		"{\"state-sync-enabled\":true, \"state-sync-min-blocks\":%d}",
 		test.stateSyncMinBlocks,
 	)
 	if err := syncReEnabledVM.Initialize(
 		vmSetup.syncerVM.ctx,
 		vmSetup.syncerDBManager,
-		[]byte(genesisJSONApricotPhase5),
+		[]byte(genesisJSONLatest),
 		nil,
 		[]byte(configJSON),
 		vmSetup.syncerVM.toEngine,
@@ -254,7 +253,7 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	_, serverVM, _, serverAtomicMemory, serverAppSender := GenesisVMWithUTXOs(
 		t,
 		true,
-		genesisJSONApricotPhase5,
+		"",
 		"",
 		"",
 		map[ids.ShortID]uint64{
@@ -304,11 +303,12 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 		}
 	})
 
-	// override atomicTrie's commitHeightInterval so the call to [atomicTrie.Index]
+	// override serverAtomicTrie's commitInterval so the call to [serverAtomicTrie.Index]
 	// creates a commit at the height [syncableInterval]. This is necessary to support
 	// fetching a state summary.
-	serverVM.atomicTrie.(*atomicTrie).commitHeightInterval = test.syncableInterval
-	assert.NoError(t, serverVM.atomicTrie.Index(test.syncableInterval, nil))
+	serverAtomicTrie := serverVM.atomicTrie.(*atomicTrie)
+	serverAtomicTrie.commitInterval = test.syncableInterval
+	assert.NoError(t, serverAtomicTrie.commit(test.syncableInterval, serverAtomicTrie.LastAcceptedRoot()))
 	assert.NoError(t, serverVM.db.Commit())
 
 	serverSharedMemories := newSharedMemories(serverAtomicMemory, serverVM.ctx.ChainID, serverVM.ctx.XChainID)
@@ -343,7 +343,7 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	syncerEngineChan, syncerVM, syncerDBManager, syncerAtomicMemory, syncerAppSender := GenesisVMWithUTXOs(
 		t,
 		false,
-		genesisJSONApricotPhase5,
+		"",
 		stateSyncEnabledJSON,
 		"",
 		map[ids.ShortID]uint64{
@@ -356,6 +356,9 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	enabled, err := syncerVM.StateSyncEnabled()
 	assert.NoError(t, err)
 	assert.True(t, enabled)
+
+	// override [syncerVM]'s commit interval so the atomic trie works correctly.
+	syncerVM.atomicTrie.(*atomicTrie).commitInterval = test.syncableInterval
 
 	// override [serverVM]'s SendAppResponse function to trigger AppResponse on [syncerVM]
 	serverAppSender.SendAppResponseF = func(nodeID ids.NodeID, requestID uint32, response []byte) error {

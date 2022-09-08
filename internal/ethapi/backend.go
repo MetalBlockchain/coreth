@@ -35,10 +35,10 @@ import (
 	"github.com/MetalBlockchain/coreth/accounts"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/bloombits"
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/core/vm"
+	"github.com/MetalBlockchain/coreth/eth/filters"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
@@ -90,18 +90,13 @@ type Backend interface {
 	TxPoolContentFrom(addr common.Address) (types.Transactions, types.Transactions)
 	SubscribeNewTxsEvent(chan<- core.NewTxsEvent) event.Subscription
 
-	// Filter API
-	BloomStatus() (uint64, uint64)
-	GetLogs(ctx context.Context, blockHash common.Hash) ([][]*types.Log, error)
-	ServiceFilter(ctx context.Context, session *bloombits.MatcherSession)
-	SubscribeLogsEvent(ch chan<- []*types.Log) event.Subscription
-	SubscribeAcceptedLogsEvent(ch chan<- []*types.Log) event.Subscription
-	SubscribePendingLogsEvent(ch chan<- []*types.Log) event.Subscription
-	SubscribeRemovedLogsEvent(ch chan<- core.RemovedLogsEvent) event.Subscription
-
 	ChainConfig() *params.ChainConfig
 	Engine() consensus.Engine
 	LastAcceptedBlock() *types.Block
+
+	// eth/filters needs to be initialized from this backend type, so methods needed by
+	// it must also be included here.
+	filters.Backend
 }
 
 func GetAPIs(apiBackend Backend) []rpc.API {
@@ -109,37 +104,30 @@ func GetAPIs(apiBackend Backend) []rpc.API {
 	return []rpc.API{
 		{
 			Namespace: "eth",
-			Version:   "1.0",
 			Service:   NewEthereumAPI(apiBackend),
 			Name:      "internal-eth",
 		}, {
 			Namespace: "eth",
-			Version:   "1.0",
 			Service:   NewBlockChainAPI(apiBackend),
 			Name:      "internal-blockchain",
 		}, {
 			Namespace: "eth",
-			Version:   "1.0",
 			Service:   NewTransactionAPI(apiBackend, nonceLock),
 			Name:      "internal-transaction",
 		}, {
 			Namespace: "txpool",
-			Version:   "1.0",
 			Service:   NewTxPoolAPI(apiBackend),
 			Name:      "internal-tx-pool",
 		}, {
 			Namespace: "debug",
-			Version:   "1.0",
 			Service:   NewDebugAPI(apiBackend),
 			Name:      "internal-debug",
 		}, {
 			Namespace: "eth",
-			Version:   "1.0",
 			Service:   NewEthereumAccountAPI(apiBackend.AccountManager()),
 			Name:      "internal-account",
 		}, {
 			Namespace: "personal",
-			Version:   "1.0",
 			Service:   NewPersonalAccountAPI(apiBackend, nonceLock),
 			Name:      "internal-personal",
 		},

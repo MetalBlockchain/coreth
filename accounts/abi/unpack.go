@@ -125,7 +125,6 @@ func ReadFixedBytes(t Type, word []byte) (interface{}, error) {
 
 	reflect.Copy(array, reflect.ValueOf(word[0:t.Size]))
 	return array.Interface(), nil
-
 }
 
 // forEachUnpack iteratively unpack elements.
@@ -173,6 +172,9 @@ func forTupleUnpack(t Type, output []byte) (interface{}, error) {
 	virtualArgs := 0
 	for index, elem := range t.TupleElems {
 		marshalledValue, err := toGoType((index+virtualArgs)*32, *elem, output)
+		if err != nil {
+			return nil, err
+		}
 		if elem.T == ArrayTy && !isDynamicType(*elem) {
 			// If we have a static array, like [3]uint256, these are coded as
 			// just like uint256,uint256,uint256.
@@ -189,9 +191,6 @@ func forTupleUnpack(t Type, output []byte) (interface{}, error) {
 			// If we have a static tuple, like (uint256, bool, uint256), these are
 			// coded as just like uint256,bool,uint256
 			virtualArgs += getTypeSize(*elem)/32 - 1
-		}
-		if err != nil {
-			return nil, err
 		}
 		retval.Field(index).Set(reflect.ValueOf(marshalledValue))
 	}

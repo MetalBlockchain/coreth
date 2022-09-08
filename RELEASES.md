@@ -1,11 +1,25 @@
 # Release Notes
 
+## [v0.8.16](https://github.com/ava-labs/coreth/releases/tag/v0.8.16)
+
+- Fix bug in `codeToFetch` database accessors that caused an error when starting/stopping state sync
+- Bump go-ethereum version to v1.10.21
+- Update gas price estimation to limit lookback window based on block timestamps
+- Add metrics for processed/accepted gas
+- Simplify syntactic block verification
+- Ensure statedb errors during block processing are logged
+- Remove deprecated gossiper/block building logic from pre-Apricot Phase 4
+- Add marshal function for duration to improve config output
+
 ## [v0.8.15](https://github.com/ava-labs/coreth/releases/tag/v0.8.15)
 
 - Add optional JSON logging
 - Bump minimum go version to v1.18.1
 - Add interface for suppporting stateful precompiles
 - Remove legacy code format from the database
+- Enable expensive metrics by default
+- Fix atomic trie sync bug that could result in storing incorrect metadata
+- Update state sync metrics to use counter for number of items received
 
 ## [v0.8.14](https://github.com/ava-labs/coreth/releases/tag/v0.8.14)
 
