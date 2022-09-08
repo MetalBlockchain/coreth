@@ -383,6 +383,10 @@ func (vm *VM) Initialize(
 		extDataHashes = fujiExtDataHashes
 	case g.Config.ChainID.Cmp(params.AvalancheLocalChainID) == 0:
 		g.Config = params.AvalancheLocalChainConfig
+	case g.Config.ChainID.Cmp(params.MetalMainnetChainID) == 0:
+		g.Config = params.MetalMainnetChainConfig
+	case g.Config.ChainID.Cmp(params.MetalTahoeChainID) == 0:
+		g.Config = params.MetalTahoeChainConfig
 	}
 	vm.syntacticBlockValidator = NewBlockValidator(extDataHashes)
 

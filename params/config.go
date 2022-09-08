@@ -45,6 +45,10 @@ var (
 	AvalancheFujiChainID = big.NewInt(43113)
 	// AvalancheLocalChainID ...
 	AvalancheLocalChainID = big.NewInt(43112)
+	// MetalMainnetChainID ...
+	MetalMainnetChainID = big.NewInt(381931)
+	// MetalTahoeChainID ...
+	MetalTahoeChainID = big.NewInt(381932)
 
 	errNonGenesisForkByHeight = errors.New("coreth only supports forking by height at the genesis block")
 )
@@ -126,6 +130,56 @@ var (
 		ApricotPhase6BlockTimestamp:     big.NewInt(0),
 		ApricotPhasePost6BlockTimestamp: big.NewInt(0),
 		BlueberryBlockTimestamp:         big.NewInt(0),
+	}
+
+	MetalMainnetChainConfig = &ChainConfig{
+		ChainID:                         MetalMainnetChainID,
+		HomesteadBlock:                  big.NewInt(0),
+		DAOForkBlock:                    big.NewInt(0),
+		DAOForkSupport:                  true,
+		EIP150Block:                     big.NewInt(0),
+		EIP150Hash:                      common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
+		EIP155Block:                     big.NewInt(0),
+		EIP158Block:                     big.NewInt(0),
+		ByzantiumBlock:                  big.NewInt(0),
+		ConstantinopleBlock:             big.NewInt(0),
+		PetersburgBlock:                 big.NewInt(0),
+		IstanbulBlock:                   big.NewInt(0),
+		MuirGlacierBlock:                big.NewInt(0),
+		ApricotPhase1BlockTimestamp:     big.NewInt(0),
+		ApricotPhase2BlockTimestamp:     big.NewInt(0),
+		ApricotPhase3BlockTimestamp:     big.NewInt(0),
+		ApricotPhase4BlockTimestamp:     big.NewInt(0),
+		ApricotPhase5BlockTimestamp:     big.NewInt(0),
+		ApricotPhasePre6BlockTimestamp:  big.NewInt(time.Date(2022, time.September, 8, 20, 0, 0, 0, time.UTC).Unix()),
+		ApricotPhase6BlockTimestamp:     big.NewInt(time.Date(2022, time.September, 8, 22, 0, 0, 0, time.UTC).Unix()),
+		ApricotPhasePost6BlockTimestamp: big.NewInt(time.Date(2022, time.September, 9, 3, 0, 0, 0, time.UTC).Unix()),
+		// TODO Add Blueberry
+	}
+
+	MetalTahoeChainConfig = &ChainConfig{
+		ChainID:                         MetalTahoeChainID,
+		HomesteadBlock:                  big.NewInt(0),
+		DAOForkBlock:                    big.NewInt(0),
+		DAOForkSupport:                  true,
+		EIP150Block:                     big.NewInt(0),
+		EIP150Hash:                      common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
+		EIP155Block:                     big.NewInt(0),
+		EIP158Block:                     big.NewInt(0),
+		ByzantiumBlock:                  big.NewInt(0),
+		ConstantinopleBlock:             big.NewInt(0),
+		PetersburgBlock:                 big.NewInt(0),
+		IstanbulBlock:                   big.NewInt(0),
+		MuirGlacierBlock:                big.NewInt(0),
+		ApricotPhase1BlockTimestamp:     big.NewInt(0),
+		ApricotPhase2BlockTimestamp:     big.NewInt(0),
+		ApricotPhase3BlockTimestamp:     big.NewInt(0),
+		ApricotPhase4BlockTimestamp:     big.NewInt(0),
+		ApricotPhase5BlockTimestamp:     big.NewInt(0),
+		ApricotPhasePre6BlockTimestamp:  big.NewInt(time.Date(2022, time.September, 8, 20, 0, 0, 0, time.UTC).Unix()),
+		ApricotPhase6BlockTimestamp:     big.NewInt(time.Date(2022, time.September, 8, 22, 0, 0, 0, time.UTC).Unix()),
+		ApricotPhasePost6BlockTimestamp: big.NewInt(time.Date(2022, time.September, 9, 3, 0, 0, 0, time.UTC).Unix()),
+		// TODO Add Blueberry
 	}
 
 	TestChainConfig             = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)}
