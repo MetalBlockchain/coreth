@@ -44,10 +44,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.1 h1:fu/NDpza361T8PO+R0NaG0xCQeMyf39lTRp0QRZxUKg=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.1/go.mod h1:699zdnMmo+mJR0Nz9dKmi5NjuQvos9JniF2BReSFOLA=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.2 h1:9pU3KphLyzPUCQGEhpV+a58DkD3514bNbHxNHEJj7CI=
-github.com/MetalBlockchain/metalgo v1.7.17-rc.2/go.mod h1:L42qYzOUmPvQqwJHclQHCn7VPrNFNeZ1t8MdQ/BQaXA=
+github.com/MetalBlockchain/metalgo v1.8.4 h1:BFwvlQoHDo2hfoXgP7mI/L1NzywSvK4HvxMYXrV372c=
+github.com/MetalBlockchain/metalgo v1.8.4/go.mod h1:W09yCSrCYp1UfPk1kaTWIl7QpaPXGZFgk5S/IHTIEk8=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/VictoriaMetrics/fastcache v1.10.0 h1:5hDJnLsKLpnUEToub7ETuRu8RCkb40woBZAUiKonXzY=
 github.com/VictoriaMetrics/fastcache v1.10.0/go.mod h1:tjiYeEfYXCqacuvYw/7UoDIeJaNxq6132xHICNP77w8=
@@ -541,8 +539,8 @@ github.com/tklauser/numcpus v0.2.2 h1:oyhllyrScuYI6g+h/zUvNXNp1wy7x8qQy3t/piefld
 github.com/tklauser/numcpus v0.2.2/go.mod h1:x3qojaO3uyYt0i56EW/VUYs7uBvdl2fkfZFu0T9wgjM=
 github.com/tyler-smith/go-bip39 v1.0.2 h1:+t3w+KwLXO6154GNJY+qUtIxLTmFjfUmpguQT1OlOT8=
 github.com/tyler-smith/go-bip39 v1.0.2/go.mod h1:sJ5fKU0s6JVwZjjcUEX2zFOnvq0ASQ2K9Zr6cf67kNs=
-github.com/urfave/cli/v2 v2.10.2 h1:x3p8awjp/2arX+Nl/G2040AZpOCHS/eMJJ1/a+mye4Y=
-github.com/urfave/cli/v2 v2.10.2/go.mod h1:f8iq5LtQ/bLxafbdBSLPPNsgaW0l/2fYYEHhAyPlwvo=
+github.com/urfave/cli/v2 v2.15.0 h1:/U7qTMlBYcmo/Z34PaaVY0Gw04xoGJqEdRAiWNHNyy8=
+github.com/urfave/cli/v2 v2.15.0/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xMa7jMwI=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.0.1/go.mod h1:UQGH1tvbgY+Nz5t2n7tXsz52dQxojPUpymEIMZ47gx8=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
