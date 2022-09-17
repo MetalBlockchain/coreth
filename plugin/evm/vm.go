@@ -48,6 +48,7 @@ import (
 	// is added to a map of client-accessible tracers. In geth, this is done
 	// inside of cmd/geth.
 	_ "github.com/MetalBlockchain/coreth/eth/tracers/native"
+	_ "github.com/MetalBlockchain/coreth/eth/tracers/js"
 
 	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/ethereum/go-ethereum/common"
