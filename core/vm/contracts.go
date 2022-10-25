@@ -107,9 +107,9 @@ var PrecompiledContractsApricotPhase2 = map[common.Address]precompile.StatefulPr
 	NativeAssetCallAddr:              &nativeAssetCall{gasCost: params.AssetCallApricot},
 }
 
-// PrecompiledContractsApricotPhase6 contains the default set of pre-compiled Ethereum
-// contracts used in the Apricot Phase 6 release.
-var PrecompiledContractsApricotPhase6 = map[common.Address]precompile.StatefulPrecompiledContract{
+// PrecompiledContractsBlueberry contains the default set of pre-compiled Ethereum
+// contracts used in the Blueberry release.
+var PrecompiledContractsBlueberry = map[common.Address]precompile.StatefulPrecompiledContract{
 	common.BytesToAddress([]byte{1}): newWrappedPrecompiledContract(&ecrecover{}),
 	common.BytesToAddress([]byte{2}): newWrappedPrecompiledContract(&sha256hash{}),
 	common.BytesToAddress([]byte{3}): newWrappedPrecompiledContract(&ripemd160hash{}),
@@ -125,7 +125,7 @@ var PrecompiledContractsApricotPhase6 = map[common.Address]precompile.StatefulPr
 }
 
 var (
-	PrecompiledAddressesApricotPhase6 []common.Address
+	PrecompiledAddressesBlueberry     []common.Address
 	PrecompiledAddressesApricotPhase2 []common.Address
 	PrecompiledAddressesIstanbul      []common.Address
 	PrecompiledAddressesByzantium     []common.Address
@@ -146,8 +146,8 @@ func init() {
 	for k := range PrecompiledContractsApricotPhase2 {
 		PrecompiledAddressesApricotPhase2 = append(PrecompiledAddressesApricotPhase2, k)
 	}
-	for k := range PrecompiledContractsApricotPhase6 {
-		PrecompiledAddressesApricotPhase6 = append(PrecompiledAddressesApricotPhase6, k)
+	for k := range PrecompiledContractsBlueberry {
+		PrecompiledAddressesBlueberry = append(PrecompiledAddressesBlueberry, k)
 	}
 
 	// Set of all native precompile addresses that are in use
@@ -156,7 +156,7 @@ func init() {
 	addrsList := append(PrecompiledAddressesHomestead, PrecompiledAddressesByzantium...)
 	addrsList = append(addrsList, PrecompiledAddressesIstanbul...)
 	addrsList = append(addrsList, PrecompiledAddressesApricotPhase2...)
-	addrsList = append(addrsList, PrecompiledAddressesApricotPhase6...)
+	addrsList = append(addrsList, PrecompiledAddressesBlueberry...)
 	for _, k := range addrsList {
 		PrecompileAllNativeAddresses[k] = struct{}{}
 	}
@@ -188,8 +188,8 @@ func init() {
 // ActivePrecompiles returns the precompiles enabled with the current configuration.
 func ActivePrecompiles(rules params.Rules) []common.Address {
 	switch {
-	case rules.IsApricotPhase6:
-		return PrecompiledAddressesApricotPhase6
+	case rules.IsBlueberry:
+		return PrecompiledAddressesBlueberry
 	case rules.IsApricotPhase2:
 		return PrecompiledAddressesApricotPhase2
 	case rules.IsIstanbul:
@@ -325,9 +325,10 @@ var (
 // modexpMultComplexity implements bigModexp multComplexity formula, as defined in EIP-198
 //
 // def mult_complexity(x):
-//    if x <= 64: return x ** 2
-//    elif x <= 1024: return x ** 2 // 4 + 96 * x - 3072
-//    else: return x ** 2 // 16 + 480 * x - 199680
+//
+//	if x <= 64: return x ** 2
+//	elif x <= 1024: return x ** 2 // 4 + 96 * x - 3072
+//	else: return x ** 2 // 16 + 480 * x - 199680
 //
 // where is x is max(length_of_MODULUS, length_of_BASE)
 func modexpMultComplexity(x *big.Int) *big.Int {
