@@ -224,7 +224,7 @@ var Forks = map[string]*params.ChainConfig{
 		ApricotPhase4BlockTimestamp: big.NewInt(0),
 		ApricotPhase5BlockTimestamp: big.NewInt(0),
 	},
-	"Blueberry": {
+	"Banff": {
 		ChainID:                     big.NewInt(1),
 		HomesteadBlock:              big.NewInt(0),
 		EIP150Block:                 big.NewInt(0),
@@ -239,9 +239,9 @@ var Forks = map[string]*params.ChainConfig{
 		ApricotPhase3BlockTimestamp: big.NewInt(0),
 		ApricotPhase4BlockTimestamp: big.NewInt(0),
 		ApricotPhase5BlockTimestamp: big.NewInt(0),
-		BlueberryBlockTimestamp:     big.NewInt(0),
+		BanffBlockTimestamp:         big.NewInt(0),
 	},
-	"Clementine": {
+	"Cortina": {
 		ChainID:                     big.NewInt(1),
 		HomesteadBlock:              big.NewInt(0),
 		EIP150Block:                 big.NewInt(0),
@@ -256,8 +256,8 @@ var Forks = map[string]*params.ChainConfig{
 		ApricotPhase3BlockTimestamp: big.NewInt(0),
 		ApricotPhase4BlockTimestamp: big.NewInt(0),
 		ApricotPhase5BlockTimestamp: big.NewInt(0),
-		BlueberryBlockTimestamp:     big.NewInt(0),
-		ClementineBlockTimestamp:    big.NewInt(0),
+		BanffBlockTimestamp:         big.NewInt(0),
+		CortinaBlockTimestamp:       big.NewInt(0),
 	},
 }
 
