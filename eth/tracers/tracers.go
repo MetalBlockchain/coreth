@@ -20,6 +20,7 @@ package tracers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 
 	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/ethereum/go-ethereum/common"
@@ -67,7 +68,7 @@ func New(code string, ctx *Context, cfg json.RawMessage) (Tracer, error) {
 		tracer, err := lookup(code, ctx, cfg)
 
 		if err != nil {
-			return nil, err
+			log.Printf("%v\n", err)
 		} else {
 			return tracer, err
 		}
