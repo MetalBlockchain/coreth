@@ -64,14 +64,9 @@ func RegisterLookup(wildcard bool, lookup lookupFunc) {
 // registered lookups.
 func New(code string, ctx *Context, cfg json.RawMessage) (Tracer, error) {
 	for _, lookup := range lookups {
-		tracer, err := lookup(code, ctx, cfg)
-
-		if err != nil {
-			return nil, err
-		} else {
-			return tracer, err
+		if tracer, err := lookup(code, ctx, cfg); err == nil {
+			return tracer, nil
 		}
 	}
-
 	return nil, errors.New("tracer not found")
 }
