@@ -313,7 +313,8 @@ func (vm *VM) GetActivationTime() time.Time {
 
 // Initialize implements the snowman.ChainVM interface
 func (vm *VM) Initialize(
-	ctx *snow.Context,
+	_ context.Context,
+	chainCtx *snow.Context,
 	dbManager manager.Manager,
 	genesisBytes []byte,
 	upgradeBytes []byte,
@@ -332,7 +333,7 @@ func (vm *VM) Initialize(
 		return err
 	}
 
-	vm.ctx = ctx
+	vm.ctx = chainCtx
 
 	// Create logger
 	alias, err := vm.ctx.BCLookup.PrimaryAlias(vm.ctx.ChainID)
@@ -392,7 +393,7 @@ func (vm *VM) Initialize(
 	}
 	// Set the Avalanche Context on the ChainConfig
 	g.Config.AvalancheContext = params.AvalancheContext{
-		BlockchainID: common.Hash(ctx.ChainID),
+		BlockchainID: common.Hash(chainCtx.ChainID),
 	}
 	vm.syntacticBlockValidator = NewBlockValidator(extDataHashes)
 
@@ -463,7 +464,7 @@ func (vm *VM) Initialize(
 	vm.codec = Codec
 
 	// TODO: read size from settings
-	vm.mempool = NewMempool(ctx.AVAXAssetID, defaultMempoolSize)
+	vm.mempool = NewMempool(chainCtx.AVAXAssetID, defaultMempoolSize)
 
 	lastAcceptedHash, lastAcceptedHeight, err := vm.readLastAccepted()
 	if err != nil {
@@ -477,7 +478,7 @@ func (vm *VM) Initialize(
 
 	// initialize peer network
 	vm.networkCodec = message.Codec
-	vm.Network = peer.NewNetwork(appSender, vm.networkCodec, ctx.NodeID, vm.config.MaxOutboundActiveRequests)
+	vm.Network = peer.NewNetwork(appSender, vm.networkCodec, chainCtx.NodeID, vm.config.MaxOutboundActiveRequests)
 	vm.client = peer.NewNetworkClient(vm.Network)
 
 	if err := vm.initializeChain(lastAcceptedHash); err != nil {
@@ -931,7 +932,7 @@ func (vm *VM) pruneChain() error {
 	return vm.db.Commit()
 }
 
-func (vm *VM) SetState(state snow.State) error {
+func (vm *VM) SetState(_ context.Context, state snow.State) error {
 	switch state {
 	case snow.StateSyncing:
 		vm.bootstrapped = false
@@ -985,7 +986,7 @@ func (vm *VM) setAppRequestHandlers() {
 }
 
 // Shutdown implements the snowman.ChainVM interface
-func (vm *VM) Shutdown() error {
+func (vm *VM) Shutdown(context.Context) error {
 	if vm.ctx == nil {
 		return nil
 	}
@@ -1000,7 +1001,7 @@ func (vm *VM) Shutdown() error {
 }
 
 // buildBlock builds a block to be wrapped by ChainState
-func (vm *VM) buildBlock() (snowman.Block, error) {
+func (vm *VM) buildBlock(_ context.Context) (snowman.Block, error) {
 	block, err := vm.miner.GenerateBlock()
 	vm.builder.handleGenerateBlock()
 	if err != nil {
@@ -1043,7 +1044,7 @@ func (vm *VM) buildBlock() (snowman.Block, error) {
 }
 
 // parseBlock parses [b] into a block to be wrapped by ChainState.
-func (vm *VM) parseBlock(b []byte) (snowman.Block, error) {
+func (vm *VM) parseBlock(_ context.Context, b []byte) (snowman.Block, error) {
 	ethBlock := new(types.Block)
 	if err := rlp.DecodeBytes(b, ethBlock); err != nil {
 		return nil, err
@@ -1063,7 +1064,7 @@ func (vm *VM) parseBlock(b []byte) (snowman.Block, error) {
 }
 
 func (vm *VM) ParseEthBlock(b []byte) (*types.Block, error) {
-	block, err := vm.parseBlock(b)
+	block, err := vm.parseBlock(context.TODO(), b)
 	if err != nil {
 		return nil, err
 	}
@@ -1073,7 +1074,7 @@ func (vm *VM) ParseEthBlock(b []byte) (*types.Block, error) {
 
 // getBlock attempts to retrieve block [id] from the VM to be wrapped
 // by ChainState.
-func (vm *VM) getBlock(id ids.ID) (snowman.Block, error) {
+func (vm *VM) getBlock(_ context.Context, id ids.ID) (snowman.Block, error) {
 	ethBlock := vm.blockChain.GetBlockByHash(common.Hash(id))
 	// If [ethBlock] is nil, return [database.ErrNotFound] here
 	// so that the miss is considered cacheable.
@@ -1085,11 +1086,11 @@ func (vm *VM) getBlock(id ids.ID) (snowman.Block, error) {
 }
 
 // SetPreference sets what the current tail of the chain is
-func (vm *VM) SetPreference(blkID ids.ID) error {
+func (vm *VM) SetPreference(ctx context.Context, blkID ids.ID) error {
 	// Since each internal handler used by [vm.State] always returns a block
 	// with non-nil ethBlock value, GetBlockInternal should never return a
 	// (*Block) with a nil ethBlock value.
-	block, err := vm.GetBlockInternal(blkID)
+	block, err := vm.GetBlockInternal(ctx, blkID)
 	if err != nil {
 		return fmt.Errorf("failed to set preference to %s: %w", blkID, err)
 	}
@@ -1099,7 +1100,7 @@ func (vm *VM) SetPreference(blkID ids.ID) error {
 
 // VerifyHeightIndex always returns a nil error since the index is maintained by
 // vm.blockChain.
-func (vm *VM) VerifyHeightIndex() error {
+func (vm *VM) VerifyHeightIndex(context.Context) error {
 	return nil
 }
 
@@ -1111,7 +1112,7 @@ func (vm *VM) VerifyHeightIndex() error {
 // Note: the engine assumes that if a block is not found at [blkHeight], then
 // [database.ErrNotFound] will be returned. This indicates that the VM has state synced
 // and does not have all historical blocks available.
-func (vm *VM) GetBlockIDAtHeight(blkHeight uint64) (ids.ID, error) {
+func (vm *VM) GetBlockIDAtHeight(_ context.Context, blkHeight uint64) (ids.ID, error) {
 	ethBlock := vm.blockChain.GetBlockByNumber(blkHeight)
 	if ethBlock == nil {
 		return ids.ID{}, database.ErrNotFound
@@ -1120,7 +1121,7 @@ func (vm *VM) GetBlockIDAtHeight(blkHeight uint64) (ids.ID, error) {
 	return ids.ID(ethBlock.Hash()), nil
 }
 
-func (vm *VM) Version() (string, error) {
+func (vm *VM) Version(context.Context) (string, error) {
 	return Version, nil
 }
 
@@ -1147,7 +1148,7 @@ func newHandler(name string, service interface{}, lockOption ...commonEng.LockOp
 }
 
 // CreateHandlers makes new http handlers that can handle API calls
-func (vm *VM) CreateHandlers() (map[string]*commonEng.HTTPHandler, error) {
+func (vm *VM) CreateHandlers(context.Context) (map[string]*commonEng.HTTPHandler, error) {
 	handler := rpc.NewServer(vm.config.APIMaxDuration.Duration)
 	enabledAPIs := vm.config.EthAPIs()
 	if err := attachEthService(handler, vm.eth.APIs(), enabledAPIs); err != nil {
@@ -1201,7 +1202,7 @@ func (vm *VM) CreateHandlers() (map[string]*commonEng.HTTPHandler, error) {
 }
 
 // CreateStaticHandlers makes new http handlers that can handle API calls
-func (vm *VM) CreateStaticHandlers() (map[string]*commonEng.HTTPHandler, error) {
+func (vm *VM) CreateStaticHandlers(context.Context) (map[string]*commonEng.HTTPHandler, error) {
 	handler := rpc.NewServer(0)
 	if err := handler.RegisterName("static", &StaticService{}); err != nil {
 		return nil, err
@@ -1241,7 +1242,7 @@ func (vm *VM) conflicts(inputs ids.Set, ancestor *Block) error {
 		// will be missing.
 		// If the ancestor is processing, then the block may have
 		// been verified.
-		nextAncestorIntf, err := vm.GetBlockInternal(nextAncestorID)
+		nextAncestorIntf, err := vm.GetBlockInternal(context.TODO(), nextAncestorID)
 		if err != nil {
 			return errRejectedParent
 		}
@@ -1371,7 +1372,7 @@ func (vm *VM) verifyTxAtTip(tx *Tx) error {
 // for reverting to the correct snapshot after calling this function. If this function is called with a
 // throwaway state, then this is not necessary.
 func (vm *VM) verifyTx(tx *Tx, parentHash common.Hash, baseFee *big.Int, state *state.StateDB, rules params.Rules) error {
-	parentIntf, err := vm.GetBlockInternal(ids.ID(parentHash))
+	parentIntf, err := vm.GetBlockInternal(context.TODO(), ids.ID(parentHash))
 	if err != nil {
 		return fmt.Errorf("failed to get parent block: %w", err)
 	}
@@ -1398,7 +1399,7 @@ func (vm *VM) verifyTxs(txs []*Tx, parentHash common.Hash, baseFee *big.Int, hei
 	// it was called.
 	// If the ancestor is rejected, then this block shouldn't be inserted
 	// into the canonical chain because the parent will be missing.
-	ancestorInf, err := vm.GetBlockInternal(ancestorID)
+	ancestorInf, err := vm.GetBlockInternal(context.TODO(), ancestorID)
 	if err != nil {
 		return errRejectedParent
 	}

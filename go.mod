@@ -3,13 +3,12 @@ module github.com/MetalBlockchain/coreth
 go 1.18
 
 require (
-	github.com/MetalBlockchain/metalgo v1.9.1-rc.2
+	github.com/MetalBlockchain/metalgo v1.9.3-rc.5
 	github.com/VictoriaMetrics/fastcache v1.10.0
 	github.com/cespare/cp v0.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deckarep/golang-set v1.8.0
-	github.com/dop251/goja v0.0.0-20221118162653-d4bf6fde1b86
-	github.com/ethereum/go-ethereum v1.10.25
+	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08
@@ -31,7 +30,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.0
 	github.com/syndtr/goleveldb v1.0.1-0.20220614013038-64ee5596c38a
 	github.com/tyler-smith/go-bip39 v1.0.2
 	github.com/urfave/cli/v2 v2.10.2
@@ -45,7 +44,7 @@ require (
 
 require (
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
-	github.com/MetalBlockchain/metal-ledger-go v0.0.10 // indirect
+	github.com/MetalBlockchain/metal-ledger-go v0.0.12 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.23.1 // indirect

@@ -43,7 +43,6 @@ import (
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/MetalBlockchain/coreth/vmerrs"
 	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/ethereum/go-ethereum/common"
@@ -52,7 +51,9 @@ import (
 )
 
 const (
-	targetTxsSize = 192 * units.KiB
+	// Leaves 256 KBs for other sections of the block (limit is 2MB).
+	// This should suffice for atomic txs, proposervm header, and serialization overhead.
+	targetTxsSize = 1792 * units.KiB
 )
 
 // environment is the worker's current environment and holds all of the current state information.
@@ -288,10 +289,6 @@ func (w *worker) commitTransactions(env *environment, txs *types.TransactionsByP
 			log.Trace("Skipping unsupported transaction type", "sender", from, "type", tx.Type())
 			txs.Pop()
 
-		case errors.Is(err, vmerrs.ErrToAddrProhibitedSoft):
-			log.Warn("Tx dropped: failed verification", "tx", tx.Hash(), "sender", from, "data", tx.Data(), "err", err)
-			w.eth.TxPool().RemoveTx(tx.Hash())
-			txs.Pop()
 		default:
 			// Strange error, discard the transaction and get the next in line (note, the
 			// nonce-too-high clause will prevent us from executing in vain).
