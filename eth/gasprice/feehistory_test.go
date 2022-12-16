@@ -34,6 +34,7 @@ import (
 
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/stretchr/testify/require"
 
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
@@ -105,7 +106,8 @@ func TestFeeHistory(t *testing.T) {
 			}
 			b.AddTx(tx)
 		})
-		oracle := NewOracle(backend, config)
+		oracle, err := NewOracle(backend, config)
+		require.NoError(t, err)
 
 		first, reward, baseFee, ratio, err := oracle.FeeHistory(context.Background(), c.count, c.last, c.percent)
 

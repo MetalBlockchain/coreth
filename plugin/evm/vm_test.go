@@ -21,9 +21,11 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 
+	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/MetalBlockchain/coreth/trie"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/MetalBlockchain/metalgo/api/keystore"
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
@@ -111,8 +113,6 @@ func init() {
 		testEthAddrs = append(testEthAddrs, GetEthAddress(secpKey))
 		testShortIDAddrs = append(testShortIDAddrs, pk.PublicKey().Address())
 	}
-
-	minBlockTimeAP4 = time.Millisecond
 }
 
 // BuildGenesisTest returns the genesis bytes for Coreth VM to be used in testing
@@ -231,7 +231,7 @@ func GenesisVM(t *testing.T,
 	ctx, dbManager, genesisBytes, issuer, m := setupGenesis(t, genesisJSON)
 	appSender := &engCommon.SenderTest{T: t}
 	appSender.CantSendAppGossip = true
-	appSender.SendAppGossipF = func([]byte) error { return nil }
+	appSender.SendAppGossipF = func(context.Context, []byte) error { return nil }
 	if err := vm.Initialize(
 		ctx,
 		dbManager,
@@ -3170,7 +3170,7 @@ func TestConfigureLogLevel(t *testing.T) {
 			ctx, dbManager, genesisBytes, issuer, _ := setupGenesis(t, test.genesisJSON)
 			appSender := &engCommon.SenderTest{T: t}
 			appSender.CantSendAppGossip = true
-			appSender.SendAppGossipF = func([]byte) error { return nil }
+			appSender.SendAppGossipF = func(context.Context, []byte) error { return nil }
 			err := vm.Initialize(
 				ctx,
 				dbManager,
@@ -3831,4 +3831,48 @@ func TestGetAtomicRepositoryRepairHeights(t *testing.T) {
 	assert.Len(t, mainnetHeights, 76)
 	sorted := sort.SliceIsSorted(mainnetHeights, func(i, j int) bool { return mainnetHeights[i] < mainnetHeights[j] })
 	assert.True(t, sorted)
+}
+
+func TestSkipChainConfigCheckCompatible(t *testing.T) {
+	// Hack: registering metrics uses global variables, so we need to disable metrics here so that we can initialize the VM twice.
+	metrics.Enabled = false
+	defer func() { metrics.Enabled = true }()
+
+	importAmount := uint64(50000000)
+	issuer, vm, dbManager, _, appSender := GenesisVMWithUTXOs(t, true, genesisJSONApricotPhase1, "", "", map[ids.ShortID]uint64{
+		testShortIDAddrs[0]: importAmount,
+	})
+	defer func() { require.NoError(t, vm.Shutdown()) }()
+
+	// Since rewinding is permitted for last accepted height of 0, we must
+	// accept one block to test the SkipUpgradeCheck functionality.
+	importTx, err := vm.newImportTx(vm.ctx.XChainID, testEthAddrs[0], initialBaseFee, []*crypto.PrivateKeySECP256K1R{testKeys[0]})
+	require.NoError(t, err)
+	require.NoError(t, vm.issueTx(importTx, true /*=local*/))
+	<-issuer
+
+	blk, err := vm.BuildBlock()
+	require.NoError(t, err)
+	require.NoError(t, blk.Verify())
+	require.NoError(t, vm.SetPreference(blk.ID()))
+	require.NoError(t, blk.Accept())
+
+	reinitVM := &VM{}
+	// use the block's timestamp instead of 0 since rewind to genesis
+	// is hardcoded to be allowed in core/genesis.go.
+	genesisWithUpgrade := &core.Genesis{}
+	require.NoError(t, json.Unmarshal([]byte(genesisJSONApricotPhase1), genesisWithUpgrade))
+	genesisWithUpgrade.Config.ApricotPhase2BlockTimestamp = big.NewInt(blk.Timestamp().Unix())
+	genesisWithUpgradeBytes, err := json.Marshal(genesisWithUpgrade)
+	require.NoError(t, err)
+
+	// this will not be allowed
+	err = reinitVM.Initialize(vm.ctx, dbManager, genesisWithUpgradeBytes, []byte{}, []byte{}, issuer, []*engCommon.Fx{}, appSender)
+	require.ErrorContains(t, err, "mismatching ApricotPhase2 fork block timestamp in database")
+
+	// try again with skip-upgrade-check
+	config := []byte("{\"skip-upgrade-check\": true}")
+	err = reinitVM.Initialize(vm.ctx, dbManager, genesisWithUpgradeBytes, []byte{}, config, issuer, []*engCommon.Fx{}, appSender)
+	require.NoError(t, err)
+	require.NoError(t, reinitVM.Shutdown())
 }

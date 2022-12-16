@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/database/manager"
@@ -22,6 +23,10 @@ import (
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
 	"github.com/MetalBlockchain/metalgo/utils/units"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/rlp"
 
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
@@ -35,9 +40,6 @@ import (
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/statesync"
 	"github.com/MetalBlockchain/coreth/trie"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
 )
 
 func TestSkipStateSync(t *testing.T) {
@@ -87,7 +89,7 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 			reqCount++
 			// Fail all requests after number 50 to interrupt the sync
 			if reqCount > 50 {
-				if err := syncerVM.AppRequestFailed(nodeID, requestID); err != nil {
+				if err := syncerVM.AppRequestFailed(context.Background(), nodeID, requestID); err != nil {
 					panic(err)
 				}
 				cancel := syncerVM.StateSyncClient.(*stateSyncerClient).cancel
@@ -97,7 +99,7 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 					t.Fatal("state sync client not populated correctly")
 				}
 			} else {
-				syncerVM.AppResponse(nodeID, requestID, response)
+				syncerVM.AppResponse(context.Background(), nodeID, requestID, response)
 			}
 		},
 		expectedErr: context.Canceled,
@@ -114,13 +116,13 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 
 	syncDisabledVM := &VM{}
 	appSender := &commonEng.SenderTest{T: t}
-	appSender.SendAppGossipF = func([]byte) error { return nil }
-	appSender.SendAppRequestF = func(nodeSet ids.NodeIDSet, requestID uint32, request []byte) error {
+	appSender.SendAppGossipF = func(context.Context, []byte) error { return nil }
+	appSender.SendAppRequestF = func(ctx context.Context, nodeSet ids.NodeIDSet, requestID uint32, request []byte) error {
 		nodeID, hasItem := nodeSet.Pop()
 		if !hasItem {
 			t.Fatal("expected nodeSet to contain at least 1 nodeID")
 		}
-		go vmSetup.serverVM.AppRequest(nodeID, requestID, time.Now().Add(1*time.Second), request)
+		go vmSetup.serverVM.AppRequest(ctx, nodeID, requestID, time.Now().Add(1*time.Second), request)
 		return nil
 	}
 	// Disable metrics to prevent duplicate registerer
@@ -200,9 +202,9 @@ func TestStateSyncToggleEnabledToDisabled(t *testing.T) {
 	}
 
 	// override [serverVM]'s SendAppResponse function to trigger AppResponse on [syncerVM]
-	vmSetup.serverAppSender.SendAppResponseF = func(nodeID ids.NodeID, requestID uint32, response []byte) error {
+	vmSetup.serverAppSender.SendAppResponseF = func(ctx context.Context, nodeID ids.NodeID, requestID uint32, response []byte) error {
 		if test.responseIntercept == nil {
-			go syncReEnabledVM.AppResponse(nodeID, requestID, response)
+			go syncReEnabledVM.AppResponse(ctx, nodeID, requestID, response)
 		} else {
 			go test.responseIntercept(syncReEnabledVM, nodeID, requestID, response)
 		}
@@ -361,9 +363,9 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	syncerVM.atomicTrie.(*atomicTrie).commitInterval = test.syncableInterval
 
 	// override [serverVM]'s SendAppResponse function to trigger AppResponse on [syncerVM]
-	serverAppSender.SendAppResponseF = func(nodeID ids.NodeID, requestID uint32, response []byte) error {
+	serverAppSender.SendAppResponseF = func(ctx context.Context, nodeID ids.NodeID, requestID uint32, response []byte) error {
 		if test.responseIntercept == nil {
-			go syncerVM.AppResponse(nodeID, requestID, response)
+			go syncerVM.AppResponse(ctx, nodeID, requestID, response)
 		} else {
 			go test.responseIntercept(syncerVM, nodeID, requestID, response)
 		}
@@ -375,12 +377,12 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 	assert.NoError(t, syncerVM.Connected(serverVM.ctx.NodeID, statesyncclient.StateSyncVersion))
 
 	// override [syncerVM]'s SendAppRequest function to trigger AppRequest on [serverVM]
-	syncerAppSender.SendAppRequestF = func(nodeSet ids.NodeIDSet, requestID uint32, request []byte) error {
+	syncerAppSender.SendAppRequestF = func(ctx context.Context, nodeSet ids.NodeIDSet, requestID uint32, request []byte) error {
 		nodeID, hasItem := nodeSet.Pop()
 		if !hasItem {
 			t.Fatal("expected nodeSet to contain at least 1 nodeID")
 		}
-		go serverVM.AppRequest(nodeID, requestID, time.Now().Add(1*time.Second), request)
+		go serverVM.AppRequest(ctx, nodeID, requestID, time.Now().Add(1*time.Second), request)
 		return nil
 	}
 
@@ -473,6 +475,7 @@ func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
 	err = syncerVM.StateSyncClient.Error()
 	if test.expectedErr != nil {
 		assert.ErrorIs(t, err, test.expectedErr)
+		assertSyncPerformedHeights(t, syncerVM.chaindb, map[uint64]struct{}{})
 		return
 	}
 	if err != nil {
@@ -487,6 +490,7 @@ func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
 	assert.Equal(t, serverVM.LastAcceptedBlock().Height(), syncerVM.LastAcceptedBlock().Height(), "block height mismatch between syncer and server")
 	assert.Equal(t, serverVM.LastAcceptedBlock().ID(), syncerVM.LastAcceptedBlock().ID(), "blockID mismatch between syncer and server")
 	assert.True(t, syncerVM.blockChain.HasState(syncerVM.blockChain.LastAcceptedBlock().Root()), "unavailable state for last accepted block")
+	assertSyncPerformedHeights(t, syncerVM.chaindb, map[uint64]struct{}{retrievedSummary.Height(): {}})
 
 	blocksToBuild := 10
 	txsPerBlock := 10
@@ -594,4 +598,18 @@ func generateAndAcceptBlocks(t *testing.T, vm *VM, numBlocks int, gen func(int, 
 		t.Fatal(err)
 	}
 	vm.blockChain.DrainAcceptorQueue()
+}
+
+// assertSyncPerformedHeights iterates over all heights the VM has synced to and
+// verifies it matches [expected].
+func assertSyncPerformedHeights(t *testing.T, db ethdb.Iteratee, expected map[uint64]struct{}) {
+	it := rawdb.NewSyncPerformedIterator(db)
+	defer it.Release()
+
+	found := make(map[uint64]struct{}, len(expected))
+	for it.Next() {
+		found[rawdb.UnpackSyncPerformedKey(it.Key())] = struct{}{}
+	}
+	require.NoError(t, it.Error())
+	require.Equal(t, expected, found)
 }

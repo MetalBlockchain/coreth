@@ -167,7 +167,7 @@ func (utx *UnsignedExportTx) Burned(assetID ids.ID) (uint64, error) {
 		}
 	}
 
-	return math.Sub64(input, spent)
+	return math.Sub(input, spent)
 }
 
 // SemanticVerify this transaction is valid.
@@ -287,7 +287,7 @@ func (vm *VM) newExportTx(
 	baseFee *big.Int, // fee to use post-AP3
 	keys []*crypto.PrivateKeySECP256K1R, // Pay the fee and provide the tokens
 ) (*Tx, error) {
-	outs := []*avax.TransferableOutput{{ // Exported to X-Chain
+	outs := []*avax.TransferableOutput{{
 		Asset: avax.Asset{ID: assetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: amount,

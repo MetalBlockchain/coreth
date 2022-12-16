@@ -50,10 +50,11 @@ import (
 	_ "github.com/MetalBlockchain/coreth/eth/tracers/js"
 	_ "github.com/MetalBlockchain/coreth/eth/tracers/native"
 
-	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
+
+	"github.com/MetalBlockchain/coreth/metrics"
 
 	avalancheRPC "github.com/gorilla/rpc/v2"
 
@@ -389,6 +390,10 @@ func (vm *VM) Initialize(
 	case g.Config.ChainID.Cmp(params.MetalTahoeChainID) == 0:
 		g.Config = params.MetalTahoeChainConfig
 	}
+	// Set the Avalanche Context on the ChainConfig
+	g.Config.AvalancheContext = params.AvalancheContext{
+		BlockchainID: common.Hash(ctx.ChainID),
+	}
 	vm.syntacticBlockValidator = NewBlockValidator(extDataHashes)
 
 	// Ensure that non-standard commit interval is only allowed for the local network
@@ -421,6 +426,10 @@ func (vm *VM) Initialize(
 	vm.ethConfig.AllowUnfinalizedQueries = vm.config.AllowUnfinalizedQueries
 	vm.ethConfig.AllowUnprotectedTxs = vm.config.AllowUnprotectedTxs
 	vm.ethConfig.Preimages = vm.config.Preimages
+	vm.ethConfig.TrieCleanCache = vm.config.TrieCleanCache
+	vm.ethConfig.TrieDirtyCache = vm.config.TrieDirtyCache
+	vm.ethConfig.TrieDirtyCommitTarget = vm.config.TrieDirtyCommitTarget
+	vm.ethConfig.SnapshotCache = vm.config.SnapshotCache
 	vm.ethConfig.Pruning = vm.config.Pruning
 	vm.ethConfig.AcceptorQueueLimit = vm.config.AcceptorQueueLimit
 	vm.ethConfig.PopulateMissingTries = vm.config.PopulateMissingTries
@@ -433,6 +442,7 @@ func (vm *VM) Initialize(
 	vm.ethConfig.OfflinePruningBloomFilterSize = vm.config.OfflinePruningBloomFilterSize
 	vm.ethConfig.OfflinePruningDataDirectory = vm.config.OfflinePruningDataDirectory
 	vm.ethConfig.CommitInterval = vm.config.CommitInterval
+	vm.ethConfig.SkipUpgradeCheck = vm.config.SkipUpgradeCheck
 
 	// Create directory for offline pruning
 	if len(vm.ethConfig.OfflinePruningDataDirectory) != 0 {
