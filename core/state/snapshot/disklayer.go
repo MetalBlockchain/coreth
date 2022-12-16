@@ -31,10 +31,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/VictoriaMetrics/fastcache"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -43,7 +43,7 @@ import (
 type diskLayer struct {
 	diskdb ethdb.KeyValueStore // Key-value store containing the base snapshot
 	triedb *trie.Database      // Trie node cache for reconstruction purposes
-	cache  *fastcache.Cache    // Cache to avoid hitting the disk for direct access
+	cache  *utils.MeteredCache // Cache to avoid hitting the disk for direct access
 
 	blockHash common.Hash // Block hash of the base snapshot
 	root      common.Hash // Root hash of the base snapshot

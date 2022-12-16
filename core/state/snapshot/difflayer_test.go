@@ -31,8 +31,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/VictoriaMetrics/fastcache"
 	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -245,7 +245,7 @@ func TestInsertAndMerge(t *testing.T) {
 func emptyLayer() *diskLayer {
 	return &diskLayer{
 		diskdb: memorydb.New(),
-		cache:  fastcache.New(500 * 1024),
+		cache:  utils.NewMeteredCache(500*1024, "", "", 0),
 	}
 }
 

@@ -11,6 +11,7 @@ require (
 	github.com/dop251/goja v0.0.0-20221118162653-d4bf6fde1b86
 	github.com/ethereum/go-ethereum v1.10.25
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/rpc v1.2.0
@@ -66,7 +67,6 @@ require (
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
