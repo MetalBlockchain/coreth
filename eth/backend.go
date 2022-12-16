@@ -213,6 +213,8 @@ func New(
 			SnapshotVerify:                  config.SnapshotVerify,
 			SkipSnapshotRebuild:             config.SkipSnapshotRebuild,
 			Preimages:                       config.Preimages,
+			AcceptedCacheSize:               config.AcceptedCacheSize,
+			TxLookupLimit:                   config.TxLookupLimit,
 		}
 	)
 
@@ -237,10 +239,16 @@ func New(
 
 	eth.miner = miner.New(eth, &config.Miner, chainConfig, eth.EventMux(), eth.engine, clock)
 
+	allowUnprotectedTxHashes := make(map[common.Hash]struct{})
+	for _, txHash := range config.AllowUnprotectedTxHashes {
+		allowUnprotectedTxHashes[txHash] = struct{}{}
+	}
+
 	eth.APIBackend = &EthAPIBackend{
-		extRPCEnabled:       stack.Config().ExtRPCEnabled(),
-		allowUnprotectedTxs: config.AllowUnprotectedTxs,
-		eth:                 eth,
+		extRPCEnabled:            stack.Config().ExtRPCEnabled(),
+		allowUnprotectedTxs:      config.AllowUnprotectedTxs,
+		allowUnprotectedTxHashes: allowUnprotectedTxHashes,
+		eth:                      eth,
 	}
 	if config.AllowUnprotectedTxs {
 		log.Info("Unprotected transactions allowed")
@@ -274,10 +282,8 @@ func (s *Ethereum) APIs() []rpc.API {
 	apis = append(apis, s.stackRPCs...)
 
 	// Create [filterSystem] with the log cache size set in the config.
-	ethcfg := s.APIBackend.eth.config
 	filterSystem := filters.NewFilterSystem(s.APIBackend, filters.Config{
-		LogCacheSize: ethcfg.FilterLogCacheSize,
-		Timeout:      5 * time.Minute,
+		Timeout: 5 * time.Minute,
 	})
 
 	// Append all the local APIs and return

@@ -48,8 +48,8 @@ github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec h1:1Qb69m
 github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec/go.mod h1:CD8UlnlLDiqb36L110uqiP2iSflVjx9g/3U9hCI4q2U=
 github.com/MetalBlockchain/metal-ledger-go v0.0.13 h1:KmzSpRZnMm9+6j9kcHyTI3p/nK26IKi/c86PfmEMUl0=
 github.com/MetalBlockchain/metal-ledger-go v0.0.13/go.mod h1:3AZdNfAPOhZWZuyoH5VOycCU3h4ofUSHOlcZA7DIorA=
-github.com/MetalBlockchain/metalgo v1.9.3-rc.5 h1:gW2xstAh+/aGnUkLVERFkNxvMcOv8yz98Red3Y34Lnk=
-github.com/MetalBlockchain/metalgo v1.9.3-rc.5/go.mod h1:U0G8tI5vu8DzvA7Re+ewQSzbUs2GPl5QwT0q0eTkZdg=
+github.com/MetalBlockchain/metalgo v1.9.4-rc.6 h1:uBq1uAIi9ZJKG2hA10yx15TfI3FPg5KXlHsOk/Aqx8E=
+github.com/MetalBlockchain/metalgo v1.9.4-rc.6/go.mod h1:l0czois3v4ODl01ILOU6bbh9zFjxzTAAwtjCouv2Woo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/VictoriaMetrics/fastcache v1.10.0 h1:5hDJnLsKLpnUEToub7ETuRu8RCkb40woBZAUiKonXzY=
 github.com/VictoriaMetrics/fastcache v1.10.0/go.mod h1:tjiYeEfYXCqacuvYw/7UoDIeJaNxq6132xHICNP77w8=

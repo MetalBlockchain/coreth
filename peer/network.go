@@ -18,6 +18,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow/engine/common"
 	"github.com/MetalBlockchain/metalgo/snow/validators"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/version"
 
 	"github.com/MetalBlockchain/coreth/peer/stats"
@@ -153,7 +154,7 @@ func (n *network) request(nodeID ids.NodeID, request []byte, responseHandler mes
 
 	n.outstandingRequestHandlers[requestID] = responseHandler
 
-	nodeIDs := ids.NewNodeIDSet(1)
+	nodeIDs := set.NewSet[ids.NodeID](1)
 	nodeIDs.Add(nodeID)
 
 	// send app request to the peer

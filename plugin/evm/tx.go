@@ -22,6 +22,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
 	"github.com/MetalBlockchain/metalgo/utils/hashing"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/metalgo/vms/components/verify"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
@@ -103,7 +104,7 @@ type UnsignedAtomicTx interface {
 	UnsignedTx
 
 	// InputUTXOs returns the UTXOs this tx consumes
-	InputUTXOs() ids.Set
+	InputUTXOs() set.Set[ids.ID]
 	// Verify attempts to verify that the transaction is well formed
 	Verify(ctx *snow.Context, rules params.Rules) error
 	// Attempts to verify this transaction with the provided state.

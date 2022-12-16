@@ -17,6 +17,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
 	"github.com/MetalBlockchain/metalgo/utils/math"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/components/verify"
@@ -48,8 +49,8 @@ type UnsignedExportTx struct {
 }
 
 // InputUTXOs returns a set of all the hash(address:nonce) exporting funds.
-func (utx *UnsignedExportTx) InputUTXOs() ids.Set {
-	set := ids.NewSet(len(utx.Ins))
+func (utx *UnsignedExportTx) InputUTXOs() set.Set[ids.ID] {
+	set := set.NewSet[ids.ID](len(utx.Ins))
 	for _, in := range utx.Ins {
 		// Total populated bytes is exactly 32 bytes.
 		// 8 (Nonce) + 4 (Address Length) + 20 (Address)

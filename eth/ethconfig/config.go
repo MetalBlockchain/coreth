@@ -32,6 +32,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/eth/gasprice"
 	"github.com/MetalBlockchain/coreth/miner"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // DefaultFullGPOConfig contains default gasprice oracle settings for full node.
@@ -56,7 +57,7 @@ func NewDefaultConfig() Config {
 		TrieDirtyCache:        256,
 		TrieDirtyCommitTarget: 20,
 		SnapshotCache:         256,
-		FilterLogCacheSize:    32,
+		AcceptedCacheSize:     32,
 		Miner:                 miner.Config{},
 		TxPool:                core.DefaultTxPoolConfig,
 		RPCGasCap:             25000000,
@@ -100,8 +101,9 @@ type Config struct {
 	SnapshotCache         int
 	Preimages             bool
 
-	// This is the number of blocks for which logs will be cached in the filter system.
-	FilterLogCacheSize int
+	// AcceptedCacheSize is the depth of accepted headers cache and accepted
+	// logs cache at the accepted tip.
+	AcceptedCacheSize int
 
 	// Mining options
 	Miner miner.Config
@@ -132,6 +134,9 @@ type Config struct {
 	// Unprotected transactions are transactions that are signed without EIP-155
 	// replay protection.
 	AllowUnprotectedTxs bool
+	// AllowUnprotectedTxHashes provides a list of transaction hashes, which will be allowed
+	// to be issued without replay protection over the API even if AllowUnprotectedTxs is false.
+	AllowUnprotectedTxHashes []common.Hash
 
 	// OfflinePruning enables offline pruning on startup of the node. If a node is started
 	// with this configuration option, it must finish pruning before resuming normal operation.
@@ -144,4 +149,10 @@ type Config struct {
 	// their node before the network upgrade and their node accepts blocks that have
 	// identical state with the pre-upgrade ruleset.
 	SkipUpgradeCheck bool
+
+	// TxLookupLimit is the maximum number of blocks from head whose tx indices
+	// are reserved:
+	//  * 0:   means no limit
+	//  * N:   means N block limit [HEAD-N+1, HEAD] and delete extra indexes
+	TxLookupLimit uint64
 }

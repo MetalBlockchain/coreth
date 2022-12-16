@@ -10,12 +10,13 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/metalgo/api"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
 	"github.com/MetalBlockchain/metalgo/utils/formatting"
 	"github.com/MetalBlockchain/metalgo/utils/json"
-	"github.com/MetalBlockchain/coreth/params"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/log"
@@ -347,7 +348,7 @@ func (service *AvaxAPI) GetUTXOs(r *http.Request, args *api.GetUTXOsArgs, reply 
 	}
 	sourceChain := chainID
 
-	addrSet := ids.ShortSet{}
+	addrSet := set.Set[ids.ShortID]{}
 	for _, addrStr := range args.Addresses {
 		addr, err := service.vm.ParseLocalAddress(addrStr)
 		if err != nil {

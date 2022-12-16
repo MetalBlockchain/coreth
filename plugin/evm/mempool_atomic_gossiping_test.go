@@ -10,6 +10,7 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 
 	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/components/chain"
@@ -166,7 +167,7 @@ func createImportTx(t *testing.T, vm *VM, txID ids.ID, feeAmount uint64) *Tx {
 	}
 
 	// Sort the inputs and outputs to ensure the transaction is canonical
-	avax.SortTransferableInputs(importTx.ImportedInputs)
+	utils.Sort(importTx.ImportedInputs)
 	SortEVMOutputs(importTx.Outs)
 
 	tx := &Tx{UnsignedAtomicTx: importTx}

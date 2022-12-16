@@ -1,6 +1,19 @@
 # Release Notes
 
+## [v0.11.4](https://github.com/ava-labs/coreth/releases/tag/v0.11.4)
+
+- Add config option to perform database inspection on startup
+- Add configurable transaction indexing to reduce disk usage
+- Add special case to allow transactions using Nick's Method to bypass API level replay protection
+
 ## [v0.11.3](https://github.com/ava-labs/coreth/releases/tag/v0.11.3)
+
+- Add counter for number of processed and accepted transactions
+- Wait for state sync goroutines to complete on shutdown
+- Bump go-ethereum dependency to v1.10.26
+- Increase soft cap on transaction size limits
+- Add back isForkIncompatible checks for all existing forks
+- Clean up Apricot Phase 6 code
 
 ## [v0.11.2](https://github.com/ava-labs/coreth/releases/tag/v0.11.2)
 

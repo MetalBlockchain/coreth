@@ -9,14 +9,15 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/utils"
 
+	"github.com/MetalBlockchain/coreth/core/state"
+	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
-	"github.com/MetalBlockchain/coreth/core/state"
-	"github.com/MetalBlockchain/coreth/params"
 )
 
 type TestUnsignedTx struct {
@@ -28,7 +29,7 @@ type TestUnsignedTx struct {
 	BurnedV                     uint64 `serialize:"true"`
 	UnsignedBytesV              []byte
 	SignedBytesV                []byte
-	InputUTXOsV                 ids.Set
+	InputUTXOsV                 set.Set[ids.ID]
 	SemanticVerifyV             error
 	EVMStateTransferV           error
 }
@@ -62,7 +63,7 @@ func (t *TestUnsignedTx) Bytes() []byte { return t.UnsignedBytesV }
 func (t *TestUnsignedTx) SignedBytes() []byte { return t.SignedBytesV }
 
 // InputUTXOs implements the UnsignedAtomicTx interface
-func (t *TestUnsignedTx) InputUTXOs() ids.Set { return t.InputUTXOsV }
+func (t *TestUnsignedTx) InputUTXOs() set.Set[ids.ID] { return t.InputUTXOsV }
 
 // SemanticVerify implements the UnsignedAtomicTx interface
 func (t *TestUnsignedTx) SemanticVerify(vm *VM, stx *Tx, parent *Block, baseFee *big.Int, rules params.Rules) error {

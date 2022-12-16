@@ -12,8 +12,10 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/metalgo/utils/crypto"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
 )
@@ -112,8 +114,8 @@ func TestImportTxVerify(t *testing.T) {
 		},
 	}
 
-	// // Sort the inputs and outputs to ensure the transaction is canonical
-	avax.SortTransferableInputs(importTx.ImportedInputs)
+	// Sort the inputs and outputs to ensure the transaction is canonical
+	utils.Sort(importTx.ImportedInputs)
 	SortEVMOutputs(importTx.Outs)
 
 	tests := map[string]atomicTxVerifyTest{
@@ -476,7 +478,7 @@ func TestNewImportTx(t *testing.T) {
 		}
 
 		// Ensure that the UTXO has been removed from shared memory within Accept
-		addrSet := ids.ShortSet{}
+		addrSet := set.Set[ids.ShortID]{}
 		addrSet.Add(testShortIDAddrs[0])
 		utxos, _, _, err := vm.GetAtomicUTXOs(vm.ctx.XChainID, addrSet, ids.ShortEmpty, ids.Empty, -1)
 		if err != nil {
