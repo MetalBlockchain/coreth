@@ -3,7 +3,7 @@ module github.com/MetalBlockchain/coreth
 go 1.18
 
 require (
-	github.com/MetalBlockchain/metalgo v1.9.5-rc.0
+	github.com/MetalBlockchain/metalgo v1.9.4
 	github.com/VictoriaMetrics/fastcache v1.10.0
 	github.com/cespare/cp v0.1.0
 	github.com/davecgh/go-spew v1.1.1
@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/syndtr/goleveldb v1.0.1-0.20220614013038-64ee5596c38a
 	github.com/tyler-smith/go-bip39 v1.0.2
-	github.com/urfave/cli/v2 v2.10.2
+	github.com/urfave/cli/v2 v2.24.3
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.1.0
