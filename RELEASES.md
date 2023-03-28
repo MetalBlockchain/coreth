@@ -1,5 +1,16 @@
 # Release Notes
 
+## [v0.11.7](https://github.com/ava-labs/coreth/releases/tag/v0.11.7)
+
+- Enable state sync by default when syncing from an empty database
+- Increase block gas limit to 15M for Cortina Network Upgrade
+- Add back file tracer endpoint
+- Add back JS tracer
+
+## [v0.11.6](https://github.com/ava-labs/coreth/releases/tag/v0.11.6)
+
+- Bump AvalancheGo to v1.9.6
+
 ## [v0.11.5](https://github.com/ava-labs/coreth/releases/tag/v0.11.5)
 
 - Add support for eth_call over VM2VM messaging

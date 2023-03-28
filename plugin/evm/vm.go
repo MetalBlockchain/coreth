@@ -47,8 +47,8 @@ import (
 	// We must import this package (not referenced elsewhere) so that the native "callTracer"
 	// is added to a map of client-accessible tracers. In geth, this is done
 	// inside of cmd/geth.
-	_ "github.com/MetalBlockchain/coreth/eth/tracers/js"
-	_ "github.com/MetalBlockchain/coreth/eth/tracers/native"
+	_ "github.com/ava-labs/coreth/eth/tracers/js"
+	_ "github.com/ava-labs/coreth/eth/tracers/native"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
@@ -177,7 +177,6 @@ var (
 	errConflictingAtomicTx            = errors.New("conflicting atomic tx present")
 	errTooManyAtomicTx                = errors.New("too many atomic tx")
 	errMissingAtomicTxs               = errors.New("cannot build a block with non-empty extra data and zero atomic transactions")
-	errInvalidExtraStateRoot          = errors.New("invalid ExtraStateRoot")
 )
 
 var originalStderr *os.File
@@ -428,6 +427,12 @@ func (vm *VM) Initialize(
 	vm.ethConfig = ethconfig.NewDefaultConfig()
 	vm.ethConfig.Genesis = g
 	vm.ethConfig.NetworkId = vm.chainID.Uint64()
+	vm.genesisHash = vm.ethConfig.Genesis.ToBlock(nil).Hash() // must create genesis hash before [vm.readLastAccepted]
+	lastAcceptedHash, lastAcceptedHeight, err := vm.readLastAccepted()
+	if err != nil {
+		return err
+	}
+	log.Info(fmt.Sprintf("lastAccepted = %s", lastAcceptedHash))
 
 	// Set minimum price for mining and default gas price oracle value to the min
 	// gas price to prevent so transactions and blocks all use the correct fees
@@ -460,7 +465,7 @@ func (vm *VM) Initialize(
 	vm.ethConfig.PopulateMissingTries = vm.config.PopulateMissingTries
 	vm.ethConfig.PopulateMissingTriesParallelism = vm.config.PopulateMissingTriesParallelism
 	vm.ethConfig.AllowMissingTries = vm.config.AllowMissingTries
-	vm.ethConfig.SnapshotDelayInit = vm.config.StateSyncEnabled
+	vm.ethConfig.SnapshotDelayInit = vm.stateSyncEnabled(lastAcceptedHeight)
 	vm.ethConfig.SnapshotAsync = vm.config.SnapshotAsync
 	vm.ethConfig.SnapshotVerify = vm.config.SnapshotVerify
 	vm.ethConfig.OfflinePruning = vm.config.OfflinePruning
@@ -479,22 +484,14 @@ func (vm *VM) Initialize(
 		}
 	}
 
-	vm.genesisHash = vm.ethConfig.Genesis.ToBlock(nil).Hash()
-
 	vm.chainConfig = g.Config
 	vm.networkID = vm.ethConfig.NetworkId
-	vm.secpFactory = crypto.FactorySECP256K1R{Cache: cache.LRU{Size: secpFactoryCacheSize}}
+	vm.secpFactory = crypto.FactorySECP256K1R{Cache: cache.LRU[ids.ID, *crypto.PublicKeySECP256K1R]{Size: secpFactoryCacheSize}}
 
 	vm.codec = Codec
 
 	// TODO: read size from settings
 	vm.mempool = NewMempool(chainCtx.AVAXAssetID, defaultMempoolSize)
-
-	lastAcceptedHash, lastAcceptedHeight, err := vm.readLastAccepted()
-	if err != nil {
-		return err
-	}
-	log.Info(fmt.Sprintf("lastAccepted = %s", lastAcceptedHash))
 
 	if err := vm.initializeMetrics(); err != nil {
 		return err
@@ -606,9 +603,10 @@ func (vm *VM) initializeChain(lastAcceptedHash common.Hash) error {
 // If state sync is disabled, this function will wipe any ongoing summary from
 // disk to ensure that we do not continue syncing from an invalid snapshot.
 func (vm *VM) initializeStateSyncClient(lastAcceptedHeight uint64) error {
+	stateSyncEnabled := vm.stateSyncEnabled(lastAcceptedHeight)
 	// parse nodeIDs from state sync IDs in vm config
 	var stateSyncIDs []ids.NodeID
-	if vm.config.StateSyncEnabled && len(vm.config.StateSyncIDs) > 0 {
+	if stateSyncEnabled && len(vm.config.StateSyncIDs) > 0 {
 		nodeIDs := strings.Split(vm.config.StateSyncIDs, ",")
 		stateSyncIDs = make([]ids.NodeID, len(nodeIDs))
 		for i, nodeIDString := range nodeIDs {
@@ -632,7 +630,7 @@ func (vm *VM) initializeStateSyncClient(lastAcceptedHeight uint64) error {
 				BlockParser:      vm,
 			},
 		),
-		enabled:            vm.config.StateSyncEnabled,
+		enabled:            stateSyncEnabled,
 		skipResume:         vm.config.StateSyncSkipResume,
 		stateSyncMinBlocks: vm.config.StateSyncMinBlocks,
 		lastAcceptedHeight: lastAcceptedHeight, // TODO clean up how this is passed around
@@ -646,7 +644,7 @@ func (vm *VM) initializeStateSyncClient(lastAcceptedHeight uint64) error {
 
 	// If StateSync is disabled, clear any ongoing summary so that we will not attempt to resume
 	// sync using a snapshot that has been modified by the node running normal operations.
-	if !vm.config.StateSyncEnabled {
+	if !stateSyncEnabled {
 		return vm.StateSyncClient.StateSyncClearOngoingSummary()
 	}
 
@@ -818,19 +816,6 @@ func (vm *VM) postBatchOnFinalizeAndAssemble(header *types.Header, state *state.
 		size += txSize
 	}
 
-	// In Cortina the block header must include the atomic trie root.
-	if rules.IsCortina {
-		// Pass common.Hash{} as the current block's hash to the atomic backend, this avoids
-		// pinning changes to the atomic trie in memory, as we are still computing the header
-		// for this block and don't have its hash yet. Here we calculate the root of the atomic
-		// trie to store in the block header.
-		atomicTrieRoot, err := vm.atomicBackend.InsertTxs(common.Hash{}, header.Number.Uint64(), header.ParentHash, batchAtomicTxs)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		header.ExtraStateRoot = atomicTrieRoot
-	}
-
 	// If there is a non-zero number of transactions, marshal them and return the byte slice
 	// for the block's extra data along with the contribution and gas used.
 	if len(batchAtomicTxs) > 0 {
@@ -887,17 +872,9 @@ func (vm *VM) onExtraStateChange(block *types.Block, state *state.StateDB) (*big
 			}
 		}
 		// Update the atomic backend with [txs] from this block.
-		atomicRoot, err := vm.atomicBackend.InsertTxs(block.Hash(), block.NumberU64(), block.ParentHash(), txs)
+		_, err := vm.atomicBackend.InsertTxs(block.Hash(), block.NumberU64(), block.ParentHash(), txs)
 		if err != nil {
 			return nil, nil, err
-		}
-		if rules.IsCortina {
-			// In Cortina, the atomic trie root should be in ExtraStateRoot.
-			if header.ExtraStateRoot != atomicRoot {
-				return nil, nil, fmt.Errorf(
-					"%w: (expected %s) (got %s)", errInvalidExtraStateRoot, header.ExtraStateRoot, atomicRoot,
-				)
-			}
 		}
 	}
 
@@ -1739,7 +1716,7 @@ func (vm *VM) getAtomicTxFromPreApricot5BlockByHeight(height uint64) (*Tx, error
 // readLastAccepted reads the last accepted hash from [acceptedBlockDB] and returns the
 // last accepted block hash and height by reading directly from [vm.chaindb] instead of relying
 // on [chain].
-// Note: assumes chaindb, ethConfig, and genesisHash have been initialized.
+// Note: assumes [vm.chaindb] and [vm.genesisHash] have been initialized.
 func (vm *VM) readLastAccepted() (common.Hash, uint64, error) {
 	// Attempt to load last accepted block to determine if it is necessary to
 	// initialize state with the genesis block.
@@ -1797,4 +1774,14 @@ func attachEthService(handler *rpc.Server, apis []rpc.API, names []string) error
 	}
 
 	return nil
+}
+
+func (vm *VM) stateSyncEnabled(lastAcceptedHeight uint64) bool {
+	if vm.config.StateSyncEnabled != nil {
+		// if the config is set, use that
+		return *vm.config.StateSyncEnabled
+	}
+
+	// enable state sync by default if the chain is empty.
+	return lastAcceptedHeight == 0
 }
