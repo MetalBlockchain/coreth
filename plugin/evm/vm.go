@@ -58,31 +58,31 @@ import (
 
 	avalancheRPC "github.com/gorilla/rpc/v2"
 
-	"github.com/MetalBlockchain/metalgo/cache"
-	"github.com/MetalBlockchain/metalgo/codec"
-	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
-	"github.com/MetalBlockchain/metalgo/database"
-	"github.com/MetalBlockchain/metalgo/database/manager"
-	"github.com/MetalBlockchain/metalgo/database/prefixdb"
-	"github.com/MetalBlockchain/metalgo/database/versiondb"
-	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
-	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
-	"github.com/MetalBlockchain/metalgo/utils/crypto"
-	"github.com/MetalBlockchain/metalgo/utils/formatting/address"
-	"github.com/MetalBlockchain/metalgo/utils/logging"
-	"github.com/MetalBlockchain/metalgo/utils/math"
-	"github.com/MetalBlockchain/metalgo/utils/perms"
-	"github.com/MetalBlockchain/metalgo/utils/profiler"
-	"github.com/MetalBlockchain/metalgo/utils/set"
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
-	"github.com/MetalBlockchain/metalgo/utils/units"
-	"github.com/MetalBlockchain/metalgo/vms/components/avax"
-	"github.com/MetalBlockchain/metalgo/vms/components/chain"
-	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/cache"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/codec/linearcodec"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/manager"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/perms"
+	"github.com/ava-labs/avalanchego/utils/profiler"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/chain"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
 
@@ -267,7 +267,7 @@ type VM struct {
 	shutdownWg   sync.WaitGroup
 
 	fx          secp256k1fx.Fx
-	secpFactory crypto.FactorySECP256K1R
+	secpFactory secp256k1.Factory
 
 	// Continuous Profiler
 	profiler profiler.ContinuousProfiler
@@ -486,7 +486,11 @@ func (vm *VM) Initialize(
 
 	vm.chainConfig = g.Config
 	vm.networkID = vm.ethConfig.NetworkId
-	vm.secpFactory = crypto.FactorySECP256K1R{Cache: cache.LRU[ids.ID, *crypto.PublicKeySECP256K1R]{Size: secpFactoryCacheSize}}
+	vm.secpFactory = secp256k1.Factory{
+		Cache: cache.LRU[ids.ID, *secp256k1.PublicKey]{
+			Size: secpFactoryCacheSize,
+		},
+	}
 
 	vm.codec = Codec
 
@@ -1488,21 +1492,21 @@ func (vm *VM) GetAtomicUTXOs(
 
 // GetSpendableFunds returns a list of EVMInputs and keys (in corresponding
 // order) to total [amount] of [assetID] owned by [keys].
-// Note: we return [][]*crypto.PrivateKeySECP256K1R even though each input
+// Note: we return [][]*secp256k1.PrivateKey even though each input
 // corresponds to a single key, so that the signers can be passed in to
 // [tx.Sign] which supports multiple keys on a single input.
 func (vm *VM) GetSpendableFunds(
-	keys []*crypto.PrivateKeySECP256K1R,
+	keys []*secp256k1.PrivateKey,
 	assetID ids.ID,
 	amount uint64,
-) ([]EVMInput, [][]*crypto.PrivateKeySECP256K1R, error) {
+) ([]EVMInput, [][]*secp256k1.PrivateKey, error) {
 	// Note: current state uses the state of the preferred block.
 	state, err := vm.blockChain.State()
 	if err != nil {
 		return nil, nil, err
 	}
 	inputs := []EVMInput{}
-	signers := [][]*crypto.PrivateKeySECP256K1R{}
+	signers := [][]*secp256k1.PrivateKey{}
 	// Note: we assume that each key in [keys] is unique, so that iterating over
 	// the keys will not produce duplicated nonces in the returned EVMInput slice.
 	for _, key := range keys {
@@ -1534,7 +1538,7 @@ func (vm *VM) GetSpendableFunds(
 			AssetID: assetID,
 			Nonce:   nonce,
 		})
-		signers = append(signers, []*crypto.PrivateKeySECP256K1R{key})
+		signers = append(signers, []*secp256k1.PrivateKey{key})
 		amount -= balance
 	}
 
@@ -1550,15 +1554,15 @@ func (vm *VM) GetSpendableFunds(
 // This function accounts for the added cost of the additional inputs needed to
 // create the transaction and makes sure to skip any keys with a balance that is
 // insufficient to cover the additional fee.
-// Note: we return [][]*crypto.PrivateKeySECP256K1R even though each input
+// Note: we return [][]*secp256k1.PrivateKey even though each input
 // corresponds to a single key, so that the signers can be passed in to
 // [tx.Sign] which supports multiple keys on a single input.
 func (vm *VM) GetSpendableAVAXWithFee(
-	keys []*crypto.PrivateKeySECP256K1R,
+	keys []*secp256k1.PrivateKey,
 	amount uint64,
 	cost uint64,
 	baseFee *big.Int,
-) ([]EVMInput, [][]*crypto.PrivateKeySECP256K1R, error) {
+) ([]EVMInput, [][]*secp256k1.PrivateKey, error) {
 	// Note: current state uses the state of the preferred block.
 	state, err := vm.blockChain.State()
 	if err != nil {
@@ -1577,7 +1581,7 @@ func (vm *VM) GetSpendableAVAXWithFee(
 	amount = newAmount
 
 	inputs := []EVMInput{}
-	signers := [][]*crypto.PrivateKeySECP256K1R{}
+	signers := [][]*secp256k1.PrivateKey{}
 	// Note: we assume that each key in [keys] is unique, so that iterating over
 	// the keys will not produce duplicated nonces in the returned EVMInput slice.
 	for _, key := range keys {
@@ -1634,7 +1638,7 @@ func (vm *VM) GetSpendableAVAXWithFee(
 			AssetID: vm.ctx.AVAXAssetID,
 			Nonce:   nonce,
 		})
-		signers = append(signers, []*crypto.PrivateKeySECP256K1R{key})
+		signers = append(signers, []*secp256k1.PrivateKey{key})
 		amount -= inputAmount
 	}
 
