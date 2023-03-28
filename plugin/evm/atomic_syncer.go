@@ -14,9 +14,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/ava-labs/coreth/plugin/evm/message"
-	syncclient "github.com/ava-labs/coreth/sync/client"
-	"github.com/ava-labs/coreth/trie"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
+	syncclient "github.com/MetalBlockchain/coreth/sync/client"
+	"github.com/MetalBlockchain/coreth/trie"
 )
 
 var (
