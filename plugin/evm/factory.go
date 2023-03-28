@@ -5,7 +5,7 @@ package evm
 
 import (
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/utils/logging"
 	"github.com/MetalBlockchain/metalgo/vms"
 )
 
@@ -18,6 +18,6 @@ var (
 
 type Factory struct{}
 
-func (f *Factory) New(*snow.Context) (interface{}, error) {
+func (*Factory) New(logging.Logger) (interface{}, error) {
 	return &VM{}, nil
 }
