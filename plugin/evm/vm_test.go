@@ -169,18 +169,6 @@ func NewContext() *snow.Context {
 	return ctx
 }
 
-type snLookup struct {
-	chainsToSubnet map[ids.ID]ids.ID
-}
-
-func (sn *snLookup) SubnetID(chainID ids.ID) (ids.ID, error) {
-	subnetID, ok := sn.chainsToSubnet[chainID]
-	if !ok {
-		return ids.ID{}, errors.New("unknown chain")
-	}
-	return subnetID, nil
-}
-
 // setupGenesis sets up the genesis
 // If [genesisJSON] is empty, defaults to using [genesisJSONLatest]
 func setupGenesis(t *testing.T,
@@ -1285,13 +1273,11 @@ func TestConflictingImportTxsAcrossBlocks(t *testing.T) {
 // and the head of a longer chain (block D) does not corrupt the
 // canonical chain.
 //
-//	A
-//
-// / \
-// B  C
-//
-//	|
-//	D
+//	  A
+//	 / \
+//	B   C
+//	    |
+//	    D
 func TestSetPreferenceRace(t *testing.T) {
 	// Create two VMs which will agree on block A and then
 	// build the two distinct preferred chains above
@@ -1762,10 +1748,9 @@ func TestBonusBlocksTxs(t *testing.T) {
 // from another VM (which have a common ancestor under the finalized
 // frontier).
 //
-//	 A
-//	/ \
-//
-// # B   C
+//	  A
+//	 / \
+//	B   C
 //
 // verifies block B and C, then Accepts block B. Then we test to ensure
 // that the VM defends against any attempt to set the preference or to
@@ -1950,10 +1935,9 @@ func TestReorgProtection(t *testing.T) {
 // Regression test to ensure that a VM that accepts block C while preferring
 // block B will trigger a reorg.
 //
-//	 A
-//	/ \
-//
-// B   C
+//	  A
+//	 / \
+//	B   C
 func TestNonCanonicalAccept(t *testing.T) {
 	importAmount := uint64(1000000000)
 	issuer1, vm1, _, _, _ := GenesisVMWithUTXOs(t, true, genesisJSONApricotPhase0, "", "", map[ids.ShortID]uint64{
@@ -2124,13 +2108,11 @@ func TestNonCanonicalAccept(t *testing.T) {
 // D (preferring block B) does not trigger a reorg through the re-verification
 // of block C or D.
 //
-//	 A
-//	/ \
-//
-// B   C
-//
-//	|
-//	D
+//	  A
+//	 / \
+//	B   C
+//	    |
+//	    D
 func TestStickyPreference(t *testing.T) {
 	importAmount := uint64(1000000000)
 	issuer1, vm1, _, _, _ := GenesisVMWithUTXOs(t, true, genesisJSONApricotPhase0, "", "", map[ids.ShortID]uint64{
@@ -2400,13 +2382,11 @@ func TestStickyPreference(t *testing.T) {
 // block C but unable to parse block D because it names B as an uncle, which
 // are not supported.
 //
-//	 A
-//	/ \
-//
-// B   C
-//
-//	|
-//	D
+//	  A
+//	 / \
+//	B   C
+//	    |
+//	    D
 func TestUncleBlock(t *testing.T) {
 	importAmount := uint64(1000000000)
 	issuer1, vm1, _, _, _ := GenesisVMWithUTXOs(t, true, genesisJSONApricotPhase0, "", "", map[ids.ShortID]uint64{
@@ -2665,13 +2645,11 @@ func TestEmptyBlock(t *testing.T) {
 // Regression test to ensure that a VM that verifies block B, C, then
 // D (preferring block B) reorgs when C and then D are accepted.
 //
-//	 A
-//	/ \
-//
-// B   C
-//
-//	|
-//	D
+//	  A
+//	 / \
+//	B   C
+//	    |
+//	    D
 func TestAcceptReorg(t *testing.T) {
 	importAmount := uint64(1000000000)
 	issuer1, vm1, _, _, _ := GenesisVMWithUTXOs(t, true, genesisJSONApricotPhase0, "", "", map[ids.ShortID]uint64{
