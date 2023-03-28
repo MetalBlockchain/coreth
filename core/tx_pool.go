@@ -36,12 +36,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	"github.com/MetalBlockchain/coreth/core/state"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/metrics"
-	"github.com/MetalBlockchain/coreth/params"
-	"github.com/MetalBlockchain/coreth/vmerrs"
+	"github.com/ava-labs/coreth/consensus/dummy"
+	"github.com/ava-labs/coreth/core/state"
+	"github.com/ava-labs/coreth/core/types"
+	"github.com/ava-labs/coreth/metrics"
+	"github.com/ava-labs/coreth/params"
+	"github.com/ava-labs/coreth/vmerrs"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/prque"
 	"github.com/ethereum/go-ethereum/event"
@@ -261,7 +261,7 @@ type TxPool struct {
 	istanbul bool // Fork indicator whether we are in the istanbul stage.
 	eip2718  bool // Fork indicator whether we are using EIP-2718 type transactions.
 	eip1559  bool // Fork indicator whether we are using EIP-1559 type transactions.
-	cortina  bool // Fork indicator whether we cortina is activated.
+	cortina  bool // Fork indicator whether cortina is activated. (equivalent to Shanghai in go-ethereum)
 
 	currentHead *types.Header
 	// [currentState] is the state of the blockchain head. It is reset whenever

@@ -308,7 +308,7 @@ func TestStateProcessorErrors(t *testing.T) {
 		}
 	}
 
-	// ErrMaxInitCodeSizeExceeded, for this we need extra Shanghai (EIP-3860) enabled.
+	// ErrMaxInitCodeSizeExceeded, for this we need extra Shanghai (Cortina/EIP-3860) enabled.
 	{
 		var (
 			db    = rawdb.NewMemoryDatabase()
