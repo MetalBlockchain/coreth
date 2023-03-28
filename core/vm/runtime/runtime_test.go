@@ -47,7 +47,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/asm"
 
 	// force-load js tracers to trigger registration
-	_ "github.com/ava-labs/coreth/eth/tracers/js"
+	_ "github.com/MetalBlockchain/coreth/eth/tracers/js"
 )
 
 func TestDefaults(t *testing.T) {
