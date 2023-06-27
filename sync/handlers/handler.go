@@ -10,6 +10,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
 	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
 	"github.com/MetalBlockchain/coreth/trie"
@@ -41,6 +42,7 @@ type syncHandler struct {
 // NewSyncHandler constructs the handler for serving state sync.
 func NewSyncHandler(
 	provider SyncDataProvider,
+	diskDB ethdb.KeyValueReader,
 	evmTrieDB *trie.Database,
 	atomicTrieDB *trie.Database,
 	networkCodec codec.Manager,
@@ -50,7 +52,7 @@ func NewSyncHandler(
 		stateTrieLeafsRequestHandler:  NewLeafsRequestHandler(evmTrieDB, provider, networkCodec, stats),
 		atomicTrieLeafsRequestHandler: NewLeafsRequestHandler(atomicTrieDB, nil, networkCodec, stats),
 		blockRequestHandler:           NewBlockRequestHandler(provider, networkCodec, stats),
-		codeRequestHandler:            NewCodeRequestHandler(evmTrieDB.DiskDB(), networkCodec, stats),
+		codeRequestHandler:            NewCodeRequestHandler(diskDB, networkCodec, stats),
 	}
 }
 
