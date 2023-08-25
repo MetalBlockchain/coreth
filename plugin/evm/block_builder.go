@@ -11,9 +11,9 @@ import (
 	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/metalgo/snow"
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/coreth/core"
 	"github.com/ethereum/go-ethereum/log"
 )
 

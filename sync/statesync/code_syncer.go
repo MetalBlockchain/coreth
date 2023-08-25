@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
-	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/ethereum/go-ethereum/common"
 )
 
