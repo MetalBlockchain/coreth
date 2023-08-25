@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ava-labs/avalanchego/utils/timer"
+	"github.com/MetalBlockchain/metalgo/utils/timer"
 	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
 

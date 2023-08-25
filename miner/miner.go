@@ -28,7 +28,7 @@
 package miner
 
 import (
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/txpool"

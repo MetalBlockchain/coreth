@@ -110,6 +110,60 @@ var (
 		// TODO Add DUpgrade timestamp
 	}
 
+	MetalMainnetChainConfig = &ChainConfig{
+		ChainID:                         MetalMainnetChainID,
+		HomesteadBlock:                  big.NewInt(0),
+		DAOForkBlock:                    big.NewInt(0),
+		DAOForkSupport:                  true,
+		EIP150Block:                     big.NewInt(0),
+		EIP150Hash:                      common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
+		EIP155Block:                     big.NewInt(0),
+		EIP158Block:                     big.NewInt(0),
+		ByzantiumBlock:                  big.NewInt(0),
+		ConstantinopleBlock:             big.NewInt(0),
+		PetersburgBlock:                 big.NewInt(0),
+		IstanbulBlock:                   big.NewInt(0),
+		MuirGlacierBlock:                big.NewInt(0),
+		ApricotPhase1BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase2BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase3BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase4BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase5BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhasePre6BlockTimestamp:  utils.TimeToNewUint64(time.Date(2022, time.September, 8, 20, 0, 0, 0, time.UTC)),
+		ApricotPhase6BlockTimestamp:     utils.TimeToNewUint64(time.Date(2022, time.September, 8, 22, 0, 0, 0, time.UTC)),
+		ApricotPhasePost6BlockTimestamp: utils.TimeToNewUint64(time.Date(2022, time.September, 9, 3, 0, 0, 0, time.UTC)),
+		BanffBlockTimestamp:             utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC)),
+		CortinaBlockTimestamp:           utils.TimeToNewUint64(time.Date(2023, time.August, 17, 10, 0, 0, 0, time.UTC)),
+		// TODO Add DUpgrade timestamp
+	}
+
+	MetalTahoeChainConfig = &ChainConfig{
+		ChainID:                         MetalTahoeChainID,
+		HomesteadBlock:                  big.NewInt(0),
+		DAOForkBlock:                    big.NewInt(0),
+		DAOForkSupport:                  true,
+		EIP150Block:                     big.NewInt(0),
+		EIP150Hash:                      common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
+		EIP155Block:                     big.NewInt(0),
+		EIP158Block:                     big.NewInt(0),
+		ByzantiumBlock:                  big.NewInt(0),
+		ConstantinopleBlock:             big.NewInt(0),
+		PetersburgBlock:                 big.NewInt(0),
+		IstanbulBlock:                   big.NewInt(0),
+		MuirGlacierBlock:                big.NewInt(0),
+		ApricotPhase1BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase2BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase3BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase4BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase5BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhasePre6BlockTimestamp:  utils.TimeToNewUint64(time.Date(2022, time.September, 8, 20, 0, 0, 0, time.UTC)),
+		ApricotPhase6BlockTimestamp:     utils.TimeToNewUint64(time.Date(2022, time.September, 8, 22, 0, 0, 0, time.UTC)),
+		ApricotPhasePost6BlockTimestamp: utils.TimeToNewUint64(time.Date(2022, time.September, 9, 3, 0, 0, 0, time.UTC)),
+		BanffBlockTimestamp:             utils.TimeToNewUint64(time.Date(2022, time.December, 12, 14, 0, 0, 0, time.UTC)),
+		CortinaBlockTimestamp:           utils.TimeToNewUint64(time.Date(2023, time.June, 28, 15, 0, 0, 0, time.UTC)),
+		// TODO Add DUpgrade timestamp
+	}
+
 	// AvalancheLocalChainConfig is the configuration for the Avalanche Local Network
 	AvalancheLocalChainConfig = &ChainConfig{
 		ChainID:                         AvalancheLocalChainID,
@@ -587,17 +641,17 @@ func (c *ChainConfig) Description() string {
 	if c.MuirGlacierBlock != nil {
 		banner += fmt.Sprintf(" - Muir Glacier:                #%-8v (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/muir-glacier.md)\n", c.MuirGlacierBlock)
 	}
-	banner += fmt.Sprintf(" - Apricot Phase 1 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.3.0)\n", c.ApricotPhase1BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 2 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.4.0)\n", c.ApricotPhase2BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 3 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.5.0)\n", c.ApricotPhase3BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 4 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.6.0)\n", c.ApricotPhase4BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 5 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.7.0)\n", c.ApricotPhase5BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase P6 Timestamp        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.8.0)\n", c.ApricotPhasePre6BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase 6 Timestamp:        #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.8.0)\n", c.ApricotPhase6BlockTimestamp)
-	banner += fmt.Sprintf(" - Apricot Phase Post-6 Timestamp:   #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.8.0\n", c.ApricotPhasePost6BlockTimestamp)
-	banner += fmt.Sprintf(" - Banff Timestamp:                  #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.9.0)\n", c.BanffBlockTimestamp)
-	banner += fmt.Sprintf(" - Cortina Timestamp:                #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.10.0)\n", c.CortinaBlockTimestamp)
-	banner += fmt.Sprintf(" - DUpgrade Timestamp               #%-8v (https://github.com/ava-labs/avalanchego/releases/tag/v1.11.0)\n", c.DUpgradeBlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 1 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.3.0)\n", c.ApricotPhase1BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 2 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.4.0)\n", c.ApricotPhase2BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 3 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.5.0)\n", c.ApricotPhase3BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 4 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.6.0)\n", c.ApricotPhase4BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 5 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.7.0)\n", c.ApricotPhase5BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase P6 Timestamp        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.8.0)\n", c.ApricotPhasePre6BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase 6 Timestamp:        #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.8.0)\n", c.ApricotPhase6BlockTimestamp)
+	banner += fmt.Sprintf(" - Apricot Phase Post-6 Timestamp:   #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.8.0\n", c.ApricotPhasePost6BlockTimestamp)
+	banner += fmt.Sprintf(" - Banff Timestamp:                  #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.9.0)\n", c.BanffBlockTimestamp)
+	banner += fmt.Sprintf(" - Cortina Timestamp:                #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.10.0)\n", c.CortinaBlockTimestamp)
+	banner += fmt.Sprintf(" - DUpgrade Timestamp               #%-8v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.11.0)\n", c.DUpgradeBlockTimestamp)
 	banner += "\n"
 	return banner
 }

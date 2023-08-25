@@ -9,8 +9,8 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/codec"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils/units"
 )
 
 const (
