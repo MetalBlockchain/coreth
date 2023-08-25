@@ -27,12 +27,12 @@
 package tests
 
 import (
-	"github.com/ava-labs/coreth/core"
-	"github.com/ava-labs/coreth/core/state"
-	"github.com/ava-labs/coreth/core/state/snapshot"
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/ethdb"
-	"github.com/ava-labs/coreth/trie"
+	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/state"
+	"github.com/MetalBlockchain/coreth/core/state/snapshot"
+	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/ethereum/go-ethereum/common"
 )
 

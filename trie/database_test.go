@@ -27,9 +27,9 @@
 package trie
 
 import (
-	"github.com/ava-labs/coreth/core/rawdb"
-	"github.com/ava-labs/coreth/ethdb"
-	"github.com/ava-labs/coreth/trie/triedb/hashdb"
+	"github.com/MetalBlockchain/coreth/core/rawdb"
+	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/trie/triedb/hashdb"
 )
 
 // newTestDatabase initializes the trie database with specified scheme.

@@ -17,7 +17,7 @@
 package vm
 
 import (
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/params"
 )
 
 // LookupInstructionSet returns the instructionset for the fork configured by

@@ -15,11 +15,11 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 
-	"github.com/ava-labs/coreth/core"
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/ethdb"
-	"github.com/ava-labs/coreth/trie"
-	"github.com/ava-labs/coreth/trie/trienode"
+	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/types"
+	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/trie/trienode"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 )

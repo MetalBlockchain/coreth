@@ -21,7 +21,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/params"
 )
 
 func TestCalcBlobFee(t *testing.T) {

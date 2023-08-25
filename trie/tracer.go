@@ -17,7 +17,7 @@
 package trie
 
 import (
-	"github.com/ava-labs/coreth/trie/trienode"
+	"github.com/MetalBlockchain/coreth/trie/trienode"
 	"github.com/ethereum/go-ethereum/common"
 )
 
