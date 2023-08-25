@@ -7,8 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ava-labs/avalanchego/utils/timer"
+	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/MetalBlockchain/metalgo/utils/timer"
 
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/metalgo/snow"
@@ -26,7 +27,7 @@ type blockBuilder struct {
 	ctx         *snow.Context
 	chainConfig *params.ChainConfig
 
-	txPool   *core.TxPool
+	txPool   *txpool.TxPool
 	mempool  *Mempool
 	gossiper Gossiper
 

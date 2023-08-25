@@ -9,10 +9,8 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/codec"
 
-	"github.com/ethereum/go-ethereum/common"
-
-	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/utils/units"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 const (
@@ -20,7 +18,7 @@ const (
 	// any [EthTxsGossip] or [AtomicTxGossip] message. We do not limit inbound messages to
 	// this size, however. Max inbound message size is enforced by the codec
 	// (512KB).
-	EthMsgSoftCapSize = common.StorageSize(64 * units.KiB)
+	EthMsgSoftCapSize = 64 * units.KiB
 )
 
 var (

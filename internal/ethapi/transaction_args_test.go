@@ -35,6 +35,7 @@ import (
 
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -227,7 +228,7 @@ func newBackendMock() *backendMock {
 		PetersburgBlock:             big.NewInt(0),
 		IstanbulBlock:               big.NewInt(0),
 		MuirGlacierBlock:            big.NewInt(0),
-		ApricotPhase3BlockTimestamp: big.NewInt(1000),
+		ApricotPhase3BlockTimestamp: utils.NewUint64(1000),
 	}
 	return &backendMock{
 		current: &types.Header{

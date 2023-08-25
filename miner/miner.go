@@ -28,9 +28,10 @@
 package miner
 
 import (
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/ethereum/go-ethereum/common"
@@ -40,12 +41,12 @@ import (
 // Backend wraps all methods required for mining.
 type Backend interface {
 	BlockChain() *core.BlockChain
-	TxPool() *core.TxPool
+	TxPool() *txpool.TxPool
 }
 
 // Config is the configuration parameters of mining.
 type Config struct {
-	Etherbase common.Address `toml:",omitempty"` // Public address for block mining rewards (default = first account)
+	Etherbase common.Address `toml:",omitempty"` // Public address for block mining rewards
 }
 
 type Miner struct {

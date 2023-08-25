@@ -39,8 +39,13 @@ type SecureTrie = StateTrie
 
 // NewSecure creates a new StateTrie.
 // Deprecated: use NewStateTrie.
-func NewSecure(owner common.Hash, root common.Hash, db *Database) (*SecureTrie, error) {
-	return NewStateTrie(owner, root, db)
+func NewSecure(stateRoot common.Hash, owner common.Hash, root common.Hash, db *Database) (*SecureTrie, error) {
+	id := &ID{
+		StateRoot: stateRoot,
+		Owner:     owner,
+		Root:      root,
+	}
+	return NewStateTrie(id, db)
 }
 
 // StateTrie wraps a trie with key hashing. In a stateTrie trie, all
@@ -66,11 +71,11 @@ type StateTrie struct {
 // If root is the zero hash or the sha3 hash of an empty string, the
 // trie is initially empty. Otherwise, New will panic if db is nil
 // and returns MissingNodeError if the root node cannot be found.
-func NewStateTrie(owner common.Hash, root common.Hash, db *Database) (*StateTrie, error) {
+func NewStateTrie(id *ID, db *Database) (*StateTrie, error) {
 	if db == nil {
 		panic("trie.NewStateTrie called without a database")
 	}
-	trie, err := New(owner, root, db)
+	trie, err := New(id, db)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +100,11 @@ func (t *StateTrie) TryGet(key []byte) ([]byte, error) {
 	return t.trie.TryGet(t.hashKey(key))
 }
 
-// TryGetAccount attempts to retrieve an account with provided trie path.
+// TryGetAccount attempts to retrieve an account with provided account address.
 // If the specified account is not in the trie, nil will be returned.
 // If a trie node is not found in the database, a MissingNodeError is returned.
-func (t *StateTrie) TryGetAccount(key []byte) (*types.StateAccount, error) {
-	res, err := t.trie.TryGet(t.hashKey(key))
+func (t *StateTrie) TryGetAccount(address common.Address) (*types.StateAccount, error) {
+	res, err := t.trie.TryGet(t.hashKey(address.Bytes()))
 	if res == nil || err != nil {
 		return nil, err
 	}
@@ -108,11 +113,11 @@ func (t *StateTrie) TryGetAccount(key []byte) (*types.StateAccount, error) {
 	return ret, err
 }
 
-// TryGetAccountWithPreHashedKey does the same thing as TryGetAccount, however
-// it expects a key that is already hashed. This constitutes an abstraction leak,
-// since the client code needs to know the key format.
-func (t *StateTrie) TryGetAccountWithPreHashedKey(key []byte) (*types.StateAccount, error) {
-	res, err := t.trie.TryGet(key)
+// TryGetAccountByHash does the same thing as TryGetAccount, however
+// it expects an account hash that is the hash of address. This constitutes an
+// abstraction leak, since the client code needs to know the key format.
+func (t *StateTrie) TryGetAccountByHash(addrHash common.Hash) (*types.StateAccount, error) {
+	res, err := t.trie.TryGet(addrHash.Bytes())
 	if res == nil || err != nil {
 		return nil, err
 	}
@@ -161,8 +166,8 @@ func (t *StateTrie) TryUpdate(key, value []byte) error {
 
 // TryUpdateAccount account will abstract the write of an account to the
 // secure trie.
-func (t *StateTrie) TryUpdateAccount(key []byte, acc *types.StateAccount) error {
-	hk := t.hashKey(key)
+func (t *StateTrie) TryUpdateAccount(address common.Address, acc *types.StateAccount) error {
+	hk := t.hashKey(address.Bytes())
 	data, err := rlp.EncodeToBytes(acc)
 	if err != nil {
 		return err
@@ -170,7 +175,7 @@ func (t *StateTrie) TryUpdateAccount(key []byte, acc *types.StateAccount) error 
 	if err := t.trie.TryUpdate(hk, data); err != nil {
 		return err
 	}
-	t.getSecKeyCache()[string(hk)] = common.CopyBytes(key)
+	t.getSecKeyCache()[string(hk)] = address.Bytes()
 	return nil
 }
 
@@ -191,8 +196,8 @@ func (t *StateTrie) TryDelete(key []byte) error {
 }
 
 // TryDeleteAccount abstracts an account deletion from the trie.
-func (t *StateTrie) TryDeleteAccount(key []byte) error {
-	hk := t.hashKey(key)
+func (t *StateTrie) TryDeleteAccount(address common.Address) error {
+	hk := t.hashKey(address.Bytes())
 	delete(t.getSecKeyCache(), string(hk))
 	return t.trie.TryDelete(hk)
 }
@@ -216,7 +221,7 @@ func (t *StateTrie) GetKey(shaKey []byte) []byte {
 // All cached preimages will be also flushed if preimages recording is enabled.
 // Once the trie is committed, it's not usable anymore. A new trie must
 // be created with new root and updated trie database for following usage
-func (t *StateTrie) Commit(collectLeaf bool) (common.Hash, *NodeSet, error) {
+func (t *StateTrie) Commit(collectLeaf bool) (common.Hash, *NodeSet) {
 	// Write all the pre-images to the actual disk database
 	if len(t.getSecKeyCache()) > 0 {
 		if t.preimages != nil {

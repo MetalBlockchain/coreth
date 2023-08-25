@@ -38,6 +38,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/crypto/sha3"
@@ -83,6 +84,8 @@ func mkDynamicCreationTx(nonce uint64, gasLimit uint64, gasTipCap, gasFeeCap *bi
 	}), signer, testKey)
 	return tx
 }
+
+func u64(val uint64) *uint64 { return &val }
 
 // TestStateProcessorErrors tests the output from the 'core' errors
 // as defined in core/error.go. These errors are generated when the
@@ -201,7 +204,7 @@ func TestStateProcessorErrors(t *testing.T) {
 				want: "could not apply tx 0 [0xd82a0c2519acfeac9a948258c47e784acd20651d9d80f9a1c67b4137651c3a24]: insufficient funds for gas * price + value: address 0x71562b71999873DB5b286dF957af199Ec94617F7 have 4000000000000000000 want 2431633873983640103894990685182446064918669677978451844828609264166175722438635000",
 			},
 		} {
-			block := GenerateBadBlock(gspec.ToBlock(nil), dummy.NewFaker(), tt.txs, gspec.Config)
+			block := GenerateBadBlock(gspec.ToBlock(), dummy.NewFaker(), tt.txs, gspec.Config)
 			_, err := blockchain.InsertChain(types.Blocks{block})
 			if err == nil {
 				t.Fatal("block imported without errors")
@@ -229,8 +232,8 @@ func TestStateProcessorErrors(t *testing.T) {
 					PetersburgBlock:             big.NewInt(0),
 					IstanbulBlock:               big.NewInt(0),
 					MuirGlacierBlock:            big.NewInt(0),
-					ApricotPhase1BlockTimestamp: big.NewInt(0),
-					ApricotPhase2BlockTimestamp: big.NewInt(0),
+					ApricotPhase1BlockTimestamp: utils.NewUint64(0),
+					ApricotPhase2BlockTimestamp: utils.NewUint64(0),
 				},
 				Alloc: GenesisAlloc{
 					common.HexToAddress("0x71562b71999873DB5b286dF957af199Ec94617F7"): GenesisAccount{
@@ -254,7 +257,7 @@ func TestStateProcessorErrors(t *testing.T) {
 				want: "could not apply tx 0 [0x88626ac0d53cb65308f2416103c62bb1f18b805573d4f96a3640bbbfff13c14f]: transaction type not supported",
 			},
 		} {
-			block := GenerateBadBlock(gspec.ToBlock(nil), dummy.NewFaker(), tt.txs, gspec.Config)
+			block := GenerateBadBlock(gspec.ToBlock(), dummy.NewFaker(), tt.txs, gspec.Config)
 			_, err := blockchain.InsertChain(types.Blocks{block})
 			if err == nil {
 				t.Fatal("block imported without errors")
@@ -294,7 +297,7 @@ func TestStateProcessorErrors(t *testing.T) {
 				want: "could not apply tx 0 [0x88626ac0d53cb65308f2416103c62bb1f18b805573d4f96a3640bbbfff13c14f]: sender not an eoa: address 0x71562b71999873DB5b286dF957af199Ec94617F7, codehash: 0x9280914443471259d4570a8661015ae4a5b80186dbc619658fb494bebc3da3d1",
 			},
 		} {
-			block := GenerateBadBlock(gspec.ToBlock(nil), dummy.NewFaker(), tt.txs, gspec.Config)
+			block := GenerateBadBlock(gspec.ToBlock(), dummy.NewFaker(), tt.txs, gspec.Config)
 			_, err := blockchain.InsertChain(types.Blocks{block})
 			if err == nil {
 				t.Fatal("block imported without errors")
@@ -324,17 +327,17 @@ func TestStateProcessorErrors(t *testing.T) {
 					PetersburgBlock:                 big.NewInt(0),
 					IstanbulBlock:                   big.NewInt(0),
 					MuirGlacierBlock:                big.NewInt(0),
-					ApricotPhase1BlockTimestamp:     big.NewInt(0),
-					ApricotPhase2BlockTimestamp:     big.NewInt(0),
-					ApricotPhase3BlockTimestamp:     big.NewInt(0),
-					ApricotPhase4BlockTimestamp:     big.NewInt(0),
-					ApricotPhase5BlockTimestamp:     big.NewInt(0),
-					ApricotPhasePre6BlockTimestamp:  big.NewInt(0),
-					ApricotPhase6BlockTimestamp:     big.NewInt(0),
-					ApricotPhasePost6BlockTimestamp: big.NewInt(0),
-					BanffBlockTimestamp:             big.NewInt(0),
-					CortinaBlockTimestamp:           big.NewInt(0),
-					DUpgradeBlockTimestamp:          big.NewInt(0),
+					ApricotPhase1BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhase2BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhase3BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhase4BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhase5BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhasePre6BlockTimestamp:  utils.NewUint64(0),
+					ApricotPhase6BlockTimestamp:     utils.NewUint64(0),
+					ApricotPhasePost6BlockTimestamp: utils.NewUint64(0),
+					BanffBlockTimestamp:             utils.NewUint64(0),
+					CortinaBlockTimestamp:           utils.NewUint64(0),
+					DUpgradeBlockTimestamp:          utils.NewUint64(0),
 				},
 				Alloc: GenesisAlloc{
 					common.HexToAddress("0x71562b71999873DB5b286dF957af199Ec94617F7"): GenesisAccount{
@@ -367,7 +370,7 @@ func TestStateProcessorErrors(t *testing.T) {
 				want: "could not apply tx 0 [0x849278f616d51ab56bba399551317213ce7a10e4d9cbc3d14bb663e50cb7ab99]: intrinsic gas too low: have 54299, want 54300",
 			},
 		} {
-			block := GenerateBadBlock(gspec.ToBlock(nil), dummy.NewFaker(), tt.txs, gspec.Config)
+			block := GenerateBadBlock(gspec.ToBlock(), dummy.NewFaker(), tt.txs, gspec.Config)
 			_, err := blockchain.InsertChain(types.Blocks{block})
 			if err == nil {
 				t.Fatal("block imported without errors")
@@ -398,10 +401,10 @@ func GenerateBadBlock(parent *types.Block, engine consensus.Engine, txs types.Tr
 		Time:      parent.Time() + 10,
 		UncleHash: types.EmptyUncleHash,
 	}
-	if config.IsApricotPhase3(new(big.Int).SetUint64(header.Time)) {
+	if config.IsApricotPhase3(header.Time) {
 		header.Extra, header.BaseFee, _ = dummy.CalcBaseFee(config, parent.Header(), header.Time)
 	}
-	if config.IsApricotPhase4(new(big.Int).SetUint64(header.Time)) {
+	if config.IsApricotPhase4(header.Time) {
 		header.BlockGasCost = big.NewInt(0)
 		header.ExtDataGasUsed = big.NewInt(0)
 	}
@@ -426,7 +429,7 @@ func GenerateBadBlock(parent *types.Block, engine consensus.Engine, txs types.Tr
 }
 
 func CostOfUsingGasLimitEachBlock(gspec *Genesis) {
-	genesis := gspec.ToBlock(nil)
+	genesis := gspec.ToBlock()
 	totalPaid := big.NewInt(0)
 	parent := genesis.Header()
 	gasLimit := new(big.Int).SetUint64(gspec.GasLimit)
@@ -528,7 +531,7 @@ func nextBlock(config *params.ChainConfig, parent *types.Header, gasUsed uint64)
 		Number:     new(big.Int).Add(parent.Number, common.Big1),
 		Time:       parent.Time + 2,
 	}
-	if config.IsApricotPhase3(new(big.Int).SetUint64(header.Time)) {
+	if config.IsApricotPhase3(header.Time) {
 		header.Extra, header.BaseFee, _ = dummy.CalcBaseFee(config, parent, header.Time)
 	}
 	header.GasUsed = gasUsed

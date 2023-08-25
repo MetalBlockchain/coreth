@@ -198,12 +198,12 @@ func nearestCommitHeight(blockNumber uint64, commitInterval uint64) uint64 {
 }
 
 func (a *atomicTrie) OpenTrie(root common.Hash) (*trie.Trie, error) {
-	return trie.New(common.Hash{}, root, a.trieDB)
+	return trie.New(trie.TrieID(root), a.trieDB)
 }
 
 // commit calls commit on the underlying trieDB and updates metadata pointers.
 func (a *atomicTrie) commit(height uint64, root common.Hash) error {
-	if err := a.trieDB.Commit(root, false, nil); err != nil {
+	if err := a.trieDB.Commit(root, false); err != nil {
 		return err
 	}
 	log.Info("committed atomic trie", "root", root.String(), "height", height)
@@ -260,7 +260,7 @@ func (a *atomicTrie) updateLastCommitted(root common.Hash, height uint64) error 
 // Iterator returns a types.AtomicTrieIterator that iterates the trie from the given
 // atomic trie root, starting at the specified [cursor].
 func (a *atomicTrie) Iterator(root common.Hash, cursor []byte) (AtomicTrieIterator, error) {
-	t, err := trie.New(common.Hash{}, root, a.trieDB)
+	t, err := trie.New(trie.TrieID(root), a.trieDB)
 	if err != nil {
 		return nil, err
 	}
