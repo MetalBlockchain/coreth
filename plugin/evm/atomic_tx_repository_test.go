@@ -10,10 +10,10 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/database"
+	"github.com/MetalBlockchain/metalgo/database/prefixdb"
+	"github.com/MetalBlockchain/metalgo/database/versiondb"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/MetalBlockchain/metalgo/codec"

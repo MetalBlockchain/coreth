@@ -13,11 +13,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
+	"github.com/MetalBlockchain/metalgo/chains/atomic"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/snow"
 )
 
 func TestCalculateDynamicFee(t *testing.T) {

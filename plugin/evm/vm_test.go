@@ -24,12 +24,12 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 
-	"github.com/ava-labs/coreth/eth/filters"
-	"github.com/ava-labs/coreth/internal/ethapi"
-	"github.com/ava-labs/coreth/metrics"
-	"github.com/ava-labs/coreth/plugin/evm/message"
-	"github.com/ava-labs/coreth/trie"
-	"github.com/ava-labs/coreth/utils"
+	"github.com/MetalBlockchain/coreth/eth/filters"
+	"github.com/MetalBlockchain/coreth/internal/ethapi"
+	"github.com/MetalBlockchain/coreth/metrics"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/utils"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -11,8 +11,8 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/ava-labs/coreth/core/state"
-	"github.com/ava-labs/coreth/params"
+	"github.com/MetalBlockchain/coreth/core/state"
+	"github.com/MetalBlockchain/coreth/params"
 
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/ids"
