@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/MetalBlockchain/metalgo/cache"
-	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/coreth/metrics"
+	"github.com/ava-labs/avalanchego/cache"
+	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ethereum/go-ethereum/log"
+
+	"github.com/ava-labs/coreth/gossip"
+	"github.com/ava-labs/coreth/metrics"
 )
 
 const (
@@ -69,12 +71,19 @@ type Mempool struct {
 	txHeap *txHeap
 	// utxoSpenders maps utxoIDs to the transaction consuming them in the mempool
 	utxoSpenders map[ids.ID]*Tx
+	// bloom is a bloom filter containing the txs in the mempool
+	bloom *gossip.BloomFilter
 
 	metrics *mempoolMetrics
 }
 
 // NewMempool returns a Mempool with [maxSize]
-func NewMempool(AVAXAssetID ids.ID, maxSize int) *Mempool {
+func NewMempool(AVAXAssetID ids.ID, maxSize int) (*Mempool, error) {
+	bloom, err := gossip.NewBloomFilter(txGossipBloomMaxItems, txGossipBloomFalsePositiveRate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize bloom filter: %w", err)
+	}
+
 	return &Mempool{
 		AVAXAssetID:  AVAXAssetID,
 		issuedTxs:    make(map[ids.ID]*Tx),
@@ -84,8 +93,9 @@ func NewMempool(AVAXAssetID ids.ID, maxSize int) *Mempool {
 		txHeap:       newTxHeap(maxSize),
 		maxSize:      maxSize,
 		utxoSpenders: make(map[ids.ID]*Tx),
+		bloom:        bloom,
 		metrics:      newMempoolMetrics(),
-	}
+	}, nil
 }
 
 // Len returns the number of transactions in the mempool
@@ -123,6 +133,10 @@ func (m *Mempool) atomicTxGasPrice(tx *Tx) (uint64, error) {
 		return 0, err
 	}
 	return burned / gasUsed, nil
+}
+
+func (m *Mempool) Add(tx *GossipAtomicTx) error {
+	return m.AddTx(tx.Tx)
 }
 
 // Add attempts to add [tx] to the mempool and returns an error if
@@ -266,7 +280,40 @@ func (m *Mempool) addTx(tx *Tx, force bool) error {
 	// and CancelCurrentTx.
 	m.newTxs = append(m.newTxs, tx)
 	m.addPending()
+
+	m.bloom.Add(&GossipAtomicTx{Tx: tx})
+	if gossip.ResetBloomFilterIfNeeded(m.bloom, txGossipBloomMaxFilledRatio) {
+		log.Debug("resetting bloom filter", "reason", "reached max filled ratio")
+
+		for _, pendingTx := range m.txHeap.minHeap.items {
+			m.bloom.Add(&GossipAtomicTx{Tx: pendingTx.tx})
+		}
+	}
+
 	return nil
+}
+
+func (m *Mempool) Get(filter func(tx *GossipAtomicTx) bool) []*GossipAtomicTx {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	gossipTxs := make([]*GossipAtomicTx, 0, len(m.txHeap.maxHeap.items))
+	for _, item := range m.txHeap.maxHeap.items {
+		gossipTx := &GossipAtomicTx{Tx: item.tx}
+		if !filter(gossipTx) {
+			continue
+		}
+		gossipTxs = append(gossipTxs, gossipTx)
+	}
+
+	return gossipTxs
+}
+
+func (m *Mempool) GetFilter() *gossip.BloomFilter {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	return m.bloom
 }
 
 // NextTx returns a transaction to be issued from the mempool.
