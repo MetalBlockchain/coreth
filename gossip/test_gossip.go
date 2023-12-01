@@ -4,7 +4,7 @@
 package gossip
 
 import (
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 )
 
 var (

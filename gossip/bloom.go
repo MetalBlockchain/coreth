@@ -8,7 +8,7 @@ import (
 	"hash"
 	"time"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/MetalBlockchain/metalgo/utils/math"
 	bloomfilter "github.com/holiman/bloomfilter/v2"
 	"golang.org/x/exp/rand"
 )

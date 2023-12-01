@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/MetalBlockchain/metalgo/cache"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/ava-labs/coreth/gossip"
-	"github.com/ava-labs/coreth/metrics"
+	"github.com/MetalBlockchain/coreth/gossip"
+	"github.com/MetalBlockchain/coreth/metrics"
 )
 
 const (

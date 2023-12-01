@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/ava-labs/avalanchego/network/p2p"
+	"github.com/MetalBlockchain/metalgo/network/p2p"
 
 	"github.com/ethereum/go-ethereum/log"
 

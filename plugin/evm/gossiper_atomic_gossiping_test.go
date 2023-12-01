@@ -10,16 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanchego/snow"
+	"github.com/MetalBlockchain/metalgo/snow"
 	bloomfilter "github.com/holiman/bloomfilter/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/utils/set"
 
-	"github.com/ava-labs/coreth/gossip"
-	"github.com/ava-labs/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/gossip"
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 )
 
 // locally issued txs should be gossiped
