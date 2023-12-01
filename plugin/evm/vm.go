@@ -17,7 +17,6 @@ import (
 	"time"
 
 	avalanchegoMetrics "github.com/MetalBlockchain/metalgo/api/metrics"
-	"github.com/MetalBlockchain/metalgo/network/p2p"
 
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	corethConstants "github.com/MetalBlockchain/coreth/constants"
@@ -29,7 +28,6 @@ import (
 	"github.com/MetalBlockchain/coreth/eth"
 	"github.com/MetalBlockchain/coreth/eth/ethconfig"
 	"github.com/MetalBlockchain/coreth/ethdb"
-	"github.com/MetalBlockchain/coreth/gossip"
 	corethPrometheus "github.com/MetalBlockchain/coreth/metrics/prometheus"
 	"github.com/MetalBlockchain/coreth/miner"
 	"github.com/MetalBlockchain/coreth/node"
@@ -129,22 +127,7 @@ const (
 	bytesToIDCacheSize  = 5 * units.MiB
 
 	targetAtomicTxsSize = 40 * units.KiB
-
-	ethTxGossipProtocol    = 0x0
-	atomicTxGossipProtocol = 0x1
-
-	// threshold on how full a tx gossip bloom filter can get before it's reset
-	txGossipBloomMaxFilledRatio = 0.75
-	// maximum anticipated amount of entries in the tx gossip bloom filter
-	txGossipBloomMaxItems = 4096
-	// maximum false positive rate for lookups
-	txGossipBloomFalsePositiveRate = 0.001
 )
-
-var txGossipConfig = gossip.Config{
-	Frequency: 10 * time.Second,
-	PollSize:  10,
-}
 
 // Define the API endpoints for the VM
 const (
@@ -273,9 +256,7 @@ type VM struct {
 
 	builder *blockBuilder
 
-	gossiper         Gossiper
-	ethTxGossiper    *gossip.Gossiper[GossipEthTx, *GossipEthTx]
-	atomicTxGossiper *gossip.Gossiper[GossipAtomicTx, *GossipAtomicTx]
+	gossiper Gossiper
 
 	baseCodec codec.Registry
 	codec     codec.Manager
@@ -294,10 +275,6 @@ type VM struct {
 	peer.Network
 	client       peer.NetworkClient
 	networkCodec codec.Manager
-
-	router               *p2p.Router
-	ethTxGossipClient    *p2p.Client
-	atomicTxGossipClient *p2p.Client
 
 	// Metrics
 	multiGatherer avalanchegoMetrics.MultiGatherer
@@ -526,19 +503,15 @@ func (vm *VM) Initialize(
 	vm.codec = Codec
 
 	// TODO: read size from settings
-	vm.mempool, err = NewMempool(chainCtx.AVAXAssetID, defaultMempoolSize)
-	if err != nil {
-		return fmt.Errorf("failed to initialize mempool: %w", err)
-	}
+	vm.mempool = NewMempool(chainCtx.AVAXAssetID, defaultMempoolSize)
 
 	if err := vm.initializeMetrics(); err != nil {
 		return err
 	}
 
 	// initialize peer network
-	vm.router = p2p.NewRouter(vm.ctx.Log, appSender)
 	vm.networkCodec = message.Codec
-	vm.Network = peer.NewNetwork(vm.router, appSender, vm.networkCodec, message.CrossChainCodec, chainCtx.NodeID, vm.config.MaxOutboundActiveRequests, vm.config.MaxOutboundActiveCrossChainRequests)
+	vm.Network = peer.NewNetwork(appSender, vm.networkCodec, message.CrossChainCodec, chainCtx.NodeID, vm.config.MaxOutboundActiveRequests, vm.config.MaxOutboundActiveCrossChainRequests)
 	vm.client = peer.NewNetworkClient(vm.Network)
 
 	if err := vm.initializeChain(lastAcceptedHash); err != nil {
@@ -964,9 +937,7 @@ func (vm *VM) SetState(_ context.Context, state snow.State) error {
 		return vm.fx.Bootstrapping()
 	case snow.NormalOp:
 		// Initialize goroutines related to block building once we enter normal operation as there is no need to handle mempool gossip before this point.
-		if err := vm.initBlockBuilding(); err != nil {
-			return fmt.Errorf("failed to initialize block building: %w", err)
-		}
+		vm.initBlockBuilding()
 		vm.bootstrapped = true
 		return vm.fx.Bootstrapped()
 	default:
@@ -975,56 +946,13 @@ func (vm *VM) SetState(_ context.Context, state snow.State) error {
 }
 
 // initBlockBuilding starts goroutines to manage block building
-func (vm *VM) initBlockBuilding() error {
+func (vm *VM) initBlockBuilding() {
 	// NOTE: gossip network must be initialized first otherwise ETH tx gossip will not work.
 	gossipStats := NewGossipStats()
 	vm.gossiper = vm.createGossiper(gossipStats)
 	vm.builder = vm.NewBlockBuilder(vm.toEngine)
 	vm.builder.awaitSubmittedTxs()
 	vm.Network.SetGossipHandler(NewGossipHandler(vm, gossipStats))
-
-	ethTxPool, err := NewGossipEthTxPool(vm.txPool)
-	if err != nil {
-		return err
-	}
-	vm.shutdownWg.Add(1)
-	go ethTxPool.Subscribe(vm.shutdownChan, &vm.shutdownWg)
-
-	ethTxGossipHandler := gossip.NewHandler[*GossipEthTx](ethTxPool, message.SDKCodec, message.Version)
-	ethTxGossipClient, err := vm.router.RegisterAppProtocol(ethTxGossipProtocol, ethTxGossipHandler)
-	if err != nil {
-		return err
-	}
-	vm.ethTxGossipClient = ethTxGossipClient
-
-	atomicTxGossipHandler := gossip.NewHandler[*GossipAtomicTx](vm.mempool, message.SDKCodec, message.Version)
-	atomicTxGossipClient, err := vm.router.RegisterAppProtocol(atomicTxGossipProtocol, atomicTxGossipHandler)
-	if err != nil {
-		return err
-	}
-	vm.atomicTxGossipClient = atomicTxGossipClient
-
-	vm.ethTxGossiper = gossip.NewGossiper[GossipEthTx, *GossipEthTx](
-		txGossipConfig,
-		ethTxPool,
-		vm.ethTxGossipClient,
-		message.SDKCodec,
-		message.Version,
-	)
-	vm.shutdownWg.Add(1)
-	go vm.ethTxGossiper.Gossip(vm.shutdownChan, &vm.shutdownWg)
-
-	vm.atomicTxGossiper = gossip.NewGossiper[GossipAtomicTx, *GossipAtomicTx](
-		txGossipConfig,
-		vm.mempool,
-		vm.atomicTxGossipClient,
-		message.SDKCodec,
-		message.Version,
-	)
-	vm.shutdownWg.Add(1)
-	go vm.atomicTxGossiper.Gossip(vm.shutdownChan, &vm.shutdownWg)
-
-	return nil
 }
 
 // setAppRequestHandlers sets the request handlers for the VM to serve state sync
@@ -1409,7 +1337,7 @@ func (vm *VM) issueTx(tx *Tx, local bool) error {
 		}
 		return err
 	}
-
+	// NOTE: Gossiping of the issued [Tx] is handled in [AddTx]
 	return nil
 }
 

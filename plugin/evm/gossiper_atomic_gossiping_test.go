@@ -10,15 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/snow"
-	bloomfilter "github.com/holiman/bloomfilter/v2"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/set"
 
-	"github.com/MetalBlockchain/coreth/gossip"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 )
 
@@ -26,11 +22,10 @@ import (
 func TestMempoolAtmTxsIssueTxAndGossiping(t *testing.T) {
 	assert := assert.New(t)
 
-	_, vm, _, sharedMemory, sender := GenesisVM(t, false, "", "", "")
+	_, vm, _, sharedMemory, sender := GenesisVM(t, true, "", "", "")
 	defer func() {
 		assert.NoError(vm.Shutdown(context.Background()))
 	}()
-	assert.NoError(vm.Connected(context.Background(), ids.GenerateTestNodeID(), nil))
 
 	// Create conflicting transactions
 	importTxs := createImportTxOptions(t, vm, sharedMemory)
@@ -61,36 +56,12 @@ func TestMempoolAtmTxsIssueTxAndGossiping(t *testing.T) {
 		return nil
 	}
 
-	addedToBloomFilter := false
-	sender.SendAppRequestF = func(ctx context.Context, _ set.Set[ids.NodeID], _ uint32, bytes []byte) error {
-		gossipedLock.Lock()
-		defer gossipedLock.Unlock()
-
-		bytes = bytes[1:] // first byte is an sdk identifier
-		msg := gossip.PullGossipRequest{}
-		_, err := vm.networkCodec.Unmarshal(bytes, &msg)
-		require.NoError(t, err)
-
-		filter := &gossip.BloomFilter{
-			Bloom: &bloomfilter.Filter{},
-			Salt:  msg.SaltBytes,
-		}
-		require.NoError(t, filter.Bloom.UnmarshalBinary(msg.FilterBytes))
-		if !filter.Has(&GossipAtomicTx{Tx: tx}) {
-			return nil
-		}
-		addedToBloomFilter = true
-		return nil
-	}
-	assert.NoError(vm.SetState(context.Background(), snow.NormalOp))
-
 	// Optimistically gossip raw tx
 	assert.NoError(vm.issueTx(tx, true /*=local*/))
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 	gossipedLock.Lock()
 	assert.Equal(1, gossiped)
 	gossipedLock.Unlock()
-	assert.True(addedToBloomFilter)
 
 	// Test hash on retry
 	assert.NoError(vm.gossiper.GossipAtomicTxs([]*Tx{tx}))
