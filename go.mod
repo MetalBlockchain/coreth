@@ -3,7 +3,7 @@ module github.com/MetalBlockchain/coreth
 go 1.20
 
 require (
-	github.com/MetalBlockchain/metalgo v1.10.10
+	github.com/MetalBlockchain/metalgo v1.10.12-rc.5
 	github.com/VictoriaMetrics/fastcache v1.10.0
 	github.com/cespare/cp v0.1.0
 	github.com/cockroachdb/pebble v0.0.0-20230209160836-829675f94811
@@ -80,6 +80,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
+	github.com/google/renameio/v2 v2.0.0 // indirect
 	github.com/graph-gophers/graphql-go v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0 // indirect
