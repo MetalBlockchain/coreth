@@ -40,6 +40,7 @@ import (
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/MetalBlockchain/coreth/params"
+	"github.com/MetalBlockchain/coreth/predicate"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/statesync"
 	"github.com/MetalBlockchain/coreth/trie"
@@ -282,6 +283,11 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest) *syncVMSetup {
 		err                error
 	)
 	generateAndAcceptBlocks(t, serverVM, parentsToGet, func(i int, gen *core.BlockGen) {
+		b, err := predicate.NewResults().Bytes()
+		if err != nil {
+			t.Fatal(err)
+		}
+		gen.AppendExtra(b)
 		switch i {
 		case 0:
 			// spend the UTXOs from shared memory
@@ -491,6 +497,11 @@ func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
 	txsPerBlock := 10
 	toAddress := testEthAddrs[2] // arbitrary choice
 	generateAndAcceptBlocks(t, syncerVM, blocksToBuild, func(_ int, gen *core.BlockGen) {
+		b, err := predicate.NewResults().Bytes()
+		if err != nil {
+			t.Fatal(err)
+		}
+		gen.AppendExtra(b)
 		i := 0
 		for k := range fundedAccounts {
 			tx := types.NewTransaction(gen.TxNonce(k.Address), toAddress, big.NewInt(1), 21000, initialBaseFee, nil)
@@ -517,6 +528,11 @@ func testSyncerVM(t *testing.T, vmSetup *syncVMSetup, test syncTest) {
 
 	// Generate blocks after we have entered normal consensus as well
 	generateAndAcceptBlocks(t, syncerVM, blocksToBuild, func(_ int, gen *core.BlockGen) {
+		b, err := predicate.NewResults().Bytes()
+		if err != nil {
+			t.Fatal(err)
+		}
+		gen.AppendExtra(b)
 		i := 0
 		for k := range fundedAccounts {
 			tx := types.NewTransaction(gen.TxNonce(k.Address), toAddress, big.NewInt(1), 21000, initialBaseFee, nil)
