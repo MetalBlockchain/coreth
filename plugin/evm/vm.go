@@ -468,10 +468,10 @@ func (vm *VM) Initialize(
 		config := *params.AvalancheLocalChainConfig
 		g.Config = &config
 	case g.Config.ChainID.Cmp(params.MetalMainnetChainID) == 0:
-		config = *params.MetalMainnetChainConfig
+		config := *params.MetalMainnetChainConfig
 		g.Config = &config
 	case g.Config.ChainID.Cmp(params.MetalTahoeChainID) == 0:
-		config = *params.MetalTahoeChainConfig
+		config := *params.MetalTahoeChainConfig
 		g.Config = &config
 	}
 	// If the DUpgrade is activated, activate the Warp Precompile at the same time
