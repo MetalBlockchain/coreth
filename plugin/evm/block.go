@@ -6,6 +6,8 @@ package evm
 import (
 	"bytes"
 	"context"
+	_ "embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -28,15 +30,17 @@ import (
 
 var (
 	bonusBlockMainnetHeights = make(map[uint64]ids.ID)
-	// first height that processed a TX included on a
-	// bonus block is the canonical height for that TX.
-	canonicalBlockMainnetHeights = []uint64{
-		102928, 103035, 103038, 103114, 103193,
-		103234, 103338, 103444, 103480, 103491,
-		103513, 103533, 103535, 103538, 103541,
-		103546, 103571, 103572, 103619,
-		103287, 103624, 103591,
-	}
+
+	//go:embed bonus_blocks.json
+	mainnetBonusBlocksJson []byte
+
+	// mainnetBonusBlocksParsed is a map of bonus block numbers to the parsed
+	// data. These blocks are hardcoded so nodes that do not have these blocks
+	// can add their atomic operations to the atomic trie so all nodes on have a
+	// canonical atomic trie.
+	// Initially, bonus blocks were not indexed into the atomic trie. However, a
+	// regression caused some nodes to index these blocks.
+	mainnetBonusBlocksParsed map[uint64]*types.Block = make(map[uint64]*types.Block)
 
 	errMissingUTXOs = errors.New("missing UTXOs")
 )
@@ -108,6 +112,30 @@ func init() {
 			panic(err)
 		}
 		bonusBlockMainnetHeights[height] = blkID
+	}
+
+	var rlpMap map[uint64]string
+	err := json.Unmarshal(mainnetBonusBlocksJson, &rlpMap)
+	if err != nil {
+		panic(err)
+	}
+	for height, rlpHex := range rlpMap {
+		expectedHash, ok := bonusBlockMainnetHeights[height]
+		if !ok {
+			panic(fmt.Sprintf("missing bonus block at height %d", height))
+		}
+		var ethBlock types.Block
+		if err := rlp.DecodeBytes(common.Hex2Bytes(rlpHex), &ethBlock); err != nil {
+			panic(fmt.Sprintf("failed to decode bonus block at height %d: %s", height, err))
+		}
+		if ids.ID(ethBlock.Hash()) != expectedHash {
+			panic(fmt.Sprintf("block ID mismatch at (%s != %s)", ids.ID(ethBlock.Hash()), expectedHash))
+		}
+
+		mainnetBonusBlocksParsed[height] = &ethBlock
+	}
+	if len(mainnetBonusBlocksParsed) != len(bonusBlockMainnetHeights) {
+		panic("mismatched bonus block heights")
 	}
 }
 
@@ -371,9 +399,9 @@ func (b *Block) verifyPredicates(predicateContext *precompileconfig.PredicateCon
 	rules := b.vm.chainConfig.AvalancheRules(b.ethBlock.Number(), b.ethBlock.Timestamp())
 
 	switch {
-	case !rules.IsDUpgrade && rules.PredicatersExist():
-		return errors.New("cannot enable predicates before DUpgrade activation")
-	case !rules.IsDUpgrade:
+	case !rules.IsDurango && rules.PredicatersExist():
+		return errors.New("cannot enable predicates before Durango activation")
+	case !rules.IsDurango:
 		return nil
 	}
 

@@ -42,7 +42,6 @@ import (
 	"github.com/MetalBlockchain/coreth/core/bloombits"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/interfaces"
 	"github.com/MetalBlockchain/coreth/internal/ethapi"
@@ -78,8 +77,8 @@ func (b *testBackend) ChainDb() ethdb.Database {
 	return b.db
 }
 
-func (b *testBackend) GetVMConfig() *vm.Config {
-	return &vm.Config{AllowUnfinalizedQueries: true}
+func (b *testBackend) IsAllowUnfinalizedQueries() bool {
+	return true
 }
 
 func (b *testBackend) GetMaxBlocksPerRequest() int64 {

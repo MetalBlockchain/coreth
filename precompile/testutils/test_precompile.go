@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/coreth/precompile/contract"
 	"github.com/MetalBlockchain/coreth/precompile/modules"
 	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -92,7 +92,7 @@ func (test PrecompileTest) setup(t testing.TB, module modules.Module, state cont
 	chainConfig := test.ChainConfig
 	if chainConfig == nil {
 		mockChainConfig := precompileconfig.NewMockChainConfig(ctrl)
-		mockChainConfig.EXPECT().IsDUpgrade(gomock.Any()).AnyTimes().Return(true)
+		mockChainConfig.EXPECT().IsDurango(gomock.Any()).AnyTimes().Return(true)
 		chainConfig = mockChainConfig
 	}
 
@@ -103,7 +103,7 @@ func (test PrecompileTest) setup(t testing.TB, module modules.Module, state cont
 		blockContext.EXPECT().Number().Return(big.NewInt(0)).AnyTimes()
 		blockContext.EXPECT().Timestamp().Return(uint64(time.Now().Unix())).AnyTimes()
 	}
-	snowContext := snow.DefaultContextTest()
+	snowContext := utils.TestSnowContext()
 
 	accessibleState := contract.NewMockAccessibleState(ctrl)
 	accessibleState.EXPECT().GetStateDB().Return(state).AnyTimes()

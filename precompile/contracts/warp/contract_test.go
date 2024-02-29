@@ -9,16 +9,17 @@ import (
 	"testing"
 
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/utils"
+	agoUtils "github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
+
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/precompile/contract"
 	"github.com/MetalBlockchain/coreth/precompile/testutils"
 	"github.com/MetalBlockchain/coreth/predicate"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/coreth/vmerrs"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
@@ -27,7 +28,7 @@ import (
 func TestGetBlockchainID(t *testing.T) {
 	callerAddr := common.HexToAddress("0x0123")
 
-	defaultSnowCtx := snow.DefaultContextTest()
+	defaultSnowCtx := utils.TestSnowContext()
 	blockchainID := defaultSnowCtx.ChainID
 
 	tests := map[string]testutils.PrecompileTest{
@@ -85,9 +86,9 @@ func TestGetBlockchainID(t *testing.T) {
 func TestSendWarpMessage(t *testing.T) {
 	callerAddr := common.HexToAddress("0x0123")
 
-	defaultSnowCtx := snow.DefaultContextTest()
+	defaultSnowCtx := utils.TestSnowContext()
 	blockchainID := defaultSnowCtx.ChainID
-	sendWarpMessagePayload := utils.RandomBytes(100)
+	sendWarpMessagePayload := agoUtils.RandomBytes(100)
 
 	sendWarpMessageInput, err := PackSendWarpMessage(sendWarpMessagePayload)
 	require.NoError(t, err)
@@ -147,10 +148,16 @@ func TestSendWarpMessage(t *testing.T) {
 				return bytes
 			}(),
 			AfterHook: func(t testing.TB, state contract.StateDB) {
-				logsData := state.GetLogData()
+				logsTopics, logsData := state.GetLogData()
+				require.Len(t, logsTopics, 1)
+				topics := logsTopics[0]
+				require.Len(t, topics, 3)
+				require.Equal(t, topics[0], WarpABI.Events["SendWarpMessage"].ID)
+				require.Equal(t, topics[1], callerAddr.Hash())
+				require.Equal(t, topics[2], common.Hash(unsignedWarpMessage.ID()))
+
 				require.Len(t, logsData, 1)
 				logData := logsData[0]
-
 				unsignedWarpMsg, err := UnpackSendWarpEventDataToMessage(logData)
 				require.NoError(t, err)
 				addressedPayload, err := payload.ParseAddressedCall(unsignedWarpMsg.Payload)

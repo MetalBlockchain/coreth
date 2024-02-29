@@ -10,7 +10,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/MetalBlockchain/coreth/accounts/abi"
-	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/precompile/contract"
 	"github.com/MetalBlockchain/coreth/vmerrs"
 
@@ -28,9 +27,9 @@ const (
 	// Note: using trie write for the gas cost results in a conservative overestimate since the message is stored in a
 	// flat database that can be cleaned up after a period of time instead of the EVM trie.
 
-	SendWarpMessageGasCost uint64 = params.LogGas + 4*params.LogTopicGas + AddWarpMessageGasCost + contract.WriteGasCostPerSlot
+	SendWarpMessageGasCost uint64 = contract.LogGas + 3*contract.LogTopicGas + AddWarpMessageGasCost + contract.WriteGasCostPerSlot
 	// SendWarpMessageGasCostPerByte cost accounts for producing a signed message of a given size
-	SendWarpMessageGasCostPerByte uint64 = params.LogDataGas
+	SendWarpMessageGasCostPerByte uint64 = contract.LogDataGas
 
 	GasCostPerWarpSigner            uint64 = 500
 	GasCostPerWarpMessageBytes      uint64 = 100
@@ -109,7 +108,8 @@ func getBlockchainID(accessibleState contract.AccessibleState, caller common.Add
 // UnpackGetVerifiedWarpBlockHashInput attempts to unpack [input] into the uint32 type argument
 // assumes that [input] does not include selector (omits first 4 func signature bytes)
 func UnpackGetVerifiedWarpBlockHashInput(input []byte) (uint32, error) {
-	res, err := WarpABI.UnpackInput("getVerifiedWarpBlockHash", input)
+	// We don't use strict mode here because it was disabled with Durango.
+	res, err := WarpABI.UnpackInput("getVerifiedWarpBlockHash", input, false)
 	if err != nil {
 		return 0, err
 	}
@@ -149,7 +149,8 @@ func getVerifiedWarpBlockHash(accessibleState contract.AccessibleState, caller c
 // UnpackGetVerifiedWarpMessageInput attempts to unpack [input] into the uint32 type argument
 // assumes that [input] does not include selector (omits first 4 func signature bytes)
 func UnpackGetVerifiedWarpMessageInput(input []byte) (uint32, error) {
-	res, err := WarpABI.UnpackInput("getVerifiedWarpMessage", input)
+	// We don't use strict mode here because it was disabled with the Durango.
+	res, err := WarpABI.UnpackInput("getVerifiedWarpMessage", input, false)
 	if err != nil {
 		return 0, err
 	}
@@ -191,7 +192,8 @@ func getVerifiedWarpMessage(accessibleState contract.AccessibleState, caller com
 // UnpackSendWarpMessageInput attempts to unpack [input] as []byte
 // assumes that [input] does not include selector (omits first 4 func signature bytes)
 func UnpackSendWarpMessageInput(input []byte) ([]byte, error) {
-	res, err := WarpABI.UnpackInput("sendWarpMessage", input)
+	// We don't use strict mode here because it was disabled with the Durango.
+	res, err := WarpABI.UnpackInput("sendWarpMessage", input, false)
 	if err != nil {
 		return []byte{}, err
 	}

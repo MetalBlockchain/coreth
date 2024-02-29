@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/snow/validators"
 	"github.com/MetalBlockchain/metalgo/utils/constants"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -23,7 +23,7 @@ func TestGetValidatorSetPrimaryNetwork(t *testing.T) {
 	otherSubnetID := ids.GenerateTestID()
 
 	mockState := validators.NewMockState(ctrl)
-	snowCtx := snow.DefaultContextTest()
+	snowCtx := utils.TestSnowContext()
 	snowCtx.SubnetID = mySubnetID
 	snowCtx.ValidatorState = mockState
 	state := NewState(snowCtx)

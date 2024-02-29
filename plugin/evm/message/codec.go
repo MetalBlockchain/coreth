@@ -4,6 +4,8 @@
 package message
 
 import (
+	"time"
+
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
 	"github.com/MetalBlockchain/metalgo/utils/units"
@@ -22,7 +24,7 @@ var (
 
 func init() {
 	Codec = codec.NewManager(maxMessageSize)
-	c := linearcodec.NewDefault()
+	c := linearcodec.NewDefault(time.Time{})
 
 	errs := wrappers.Errs{}
 	errs.Add(
@@ -54,7 +56,7 @@ func init() {
 	}
 
 	CrossChainCodec = codec.NewManager(maxMessageSize)
-	ccc := linearcodec.NewDefault()
+	ccc := linearcodec.NewDefault(time.Time{})
 
 	errs = wrappers.Errs{}
 	errs.Add(

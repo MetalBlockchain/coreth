@@ -6,35 +6,36 @@ package evm
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/MetalBlockchain/coreth/core/types"
+
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
 	"github.com/MetalBlockchain/metalgo/vms/components/verify"
-	"github.com/stretchr/testify/require"
-
-	"github.com/MetalBlockchain/metalgo/ids"
 )
 
-func TestGossipAtomicTxMarshal(t *testing.T) {
+func TestGossipAtomicTxMarshaller(t *testing.T) {
 	require := require.New(t)
 
-	expected := &GossipAtomicTx{
+	want := &GossipAtomicTx{
 		Tx: &Tx{
 			UnsignedAtomicTx: &UnsignedImportTx{},
 			Creds:            []verify.Verifiable{},
 		},
 	}
+	marshaller := GossipAtomicTxMarshaller{}
 
 	key0 := testKeys[0]
-	require.NoError(expected.Tx.Sign(Codec, [][]*secp256k1.PrivateKey{{key0}}))
+	require.NoError(want.Tx.Sign(Codec, [][]*secp256k1.PrivateKey{{key0}}))
 
-	bytes, err := expected.Marshal()
+	bytes, err := marshaller.MarshalGossip(want)
 	require.NoError(err)
 
-	actual := &GossipAtomicTx{}
-	require.NoError(actual.Unmarshal(bytes))
-
+	got, err := marshaller.UnmarshalGossip(bytes)
 	require.NoError(err)
-	require.Equal(expected.GetID(), actual.GetID())
+	require.Equal(want.GossipID(), got.GossipID())
 }
 
 func TestAtomicMempoolIterate(t *testing.T) {
@@ -117,4 +118,19 @@ func TestAtomicMempoolIterate(t *testing.T) {
 			require.Subset(tt.possibleValues, matches)
 		})
 	}
+}
+
+func TestGossipEthTxMarshaller(t *testing.T) {
+	require := require.New(t)
+
+	blobTx := &types.BlobTx{}
+	want := &GossipEthTx{Tx: types.NewTx(blobTx)}
+	marshaller := GossipEthTxMarshaller{}
+
+	bytes, err := marshaller.MarshalGossip(want)
+	require.NoError(err)
+
+	got, err := marshaller.UnmarshalGossip(bytes)
+	require.NoError(err)
+	require.Equal(want.GossipID(), got.GossipID())
 }
