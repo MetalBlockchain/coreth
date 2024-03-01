@@ -32,9 +32,9 @@ import (
 	"time"
 
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/prque"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 )

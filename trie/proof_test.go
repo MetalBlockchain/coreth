@@ -36,9 +36,9 @@ import (
 	"testing"
 
 	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethdb/memorydb"
 )
 
 // Prng is a pseudo random number generator seeded by strong randomness.

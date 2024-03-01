@@ -9,10 +9,10 @@ import (
 	"sync"
 
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	syncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"golang.org/x/sync/errgroup"
 )
 

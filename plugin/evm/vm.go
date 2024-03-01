@@ -30,7 +30,6 @@ import (
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/eth"
 	"github.com/MetalBlockchain/coreth/eth/ethconfig"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	corethPrometheus "github.com/MetalBlockchain/coreth/metrics/prometheus"
 	"github.com/MetalBlockchain/coreth/miner"
 	"github.com/MetalBlockchain/coreth/node"
@@ -49,6 +48,7 @@ import (
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/coreth/warp"
 	warpValidators "github.com/MetalBlockchain/coreth/warp/validators"
+	"github.com/ethereum/go-ethereum/ethdb"
 
 	"github.com/prometheus/client_golang/prometheus"
 	// Force-load tracer engine to trigger registration
@@ -423,7 +423,7 @@ func (vm *VM) Initialize(
 	vm.shutdownChan = make(chan struct{}, 1)
 	// Use NewNested rather than New so that the structure of the database
 	// remains the same regardless of the provided baseDB type.
-	vm.chaindb = Database{prefixdb.NewNested(ethDBPrefix, db)}
+	vm.chaindb = rawdb.NewDatabase(Database{prefixdb.NewNested(ethDBPrefix, db)})
 	vm.db = versiondb.New(db)
 	vm.acceptedBlockDB = prefixdb.New(acceptedPrefix, vm.db)
 	vm.metadataDB = prefixdb.New(metadataPrefix, vm.db)
@@ -572,14 +572,14 @@ func (vm *VM) Initialize(
 
 	vm.codec = Codec
 
-	// TODO: read size from settings
-	vm.mempool, err = NewMempool(chainCtx, defaultMempoolSize, vm.verifyTxAtTip)
-	if err != nil {
-		return fmt.Errorf("failed to initialize mempool: %w", err)
-	}
-
 	if err := vm.initializeMetrics(); err != nil {
 		return err
+	}
+
+	// TODO: read size from settings
+	vm.mempool, err = NewMempool(chainCtx, vm.sdkMetrics, defaultMempoolSize, vm.verifyTxAtTip)
+	if err != nil {
+		return fmt.Errorf("failed to initialize mempool: %w", err)
 	}
 
 	// initialize peer network
@@ -1119,7 +1119,7 @@ func (vm *VM) initBlockBuilding() error {
 	vm.builder.awaitSubmittedTxs()
 	vm.Network.SetGossipHandler(NewGossipHandler(vm, gossipStats))
 
-	ethTxPool, err := NewGossipEthTxPool(vm.txPool)
+	ethTxPool, err := NewGossipEthTxPool(vm.txPool, vm.sdkMetrics)
 	if err != nil {
 		return err
 	}

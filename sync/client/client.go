@@ -13,7 +13,6 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/ids"
 
-	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/sync/client/stats"
 
@@ -24,11 +23,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 
+	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/peer"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 const (
@@ -151,7 +151,7 @@ func parseLeafsResponse(codec codec.Manager, reqIntf message.Request, data []byt
 	// Populate proof when ProofVals are present in the response. Its ok to pass it as nil to the trie.VerifyRangeProof
 	// function as it will assert that all the leaves belonging to the specified root are present.
 	if len(leafsResponse.ProofVals) > 0 {
-		proof = memorydb.New()
+		proof = rawdb.NewMemoryDatabase()
 		defer proof.Close()
 		for _, proofVal := range leafsResponse.ProofVals {
 			proofKey := crypto.Keccak256(proofVal)

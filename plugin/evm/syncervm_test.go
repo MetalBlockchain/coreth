@@ -37,13 +37,13 @@ import (
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/predicate"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/statesync"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 func TestSkipStateSync(t *testing.T) {
@@ -556,7 +556,7 @@ func patchBlock(blk *types.Block, root common.Hash, db ethdb.Database) *types.Bl
 	header := blk.Header()
 	header.Root = root
 	receipts := rawdb.ReadRawReceipts(db, blk.Hash(), blk.NumberU64())
-	newBlk := types.NewBlock(
+	newBlk := types.NewBlockWithExtData(
 		header, blk.Transactions(), blk.Uncles(), receipts, trie.NewStackTrie(nil), blk.ExtData(), true,
 	)
 	rawdb.WriteBlock(db, newBlk)

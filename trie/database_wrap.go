@@ -21,11 +21,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/trie/triedb/hashdb"
 	"github.com/MetalBlockchain/coreth/trie/trienode"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 )
 

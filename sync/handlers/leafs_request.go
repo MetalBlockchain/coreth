@@ -16,14 +16,14 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb"
-	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
 	"github.com/MetalBlockchain/coreth/sync/syncutils"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
+	"github.com/ethereum/go-ethereum/ethdb/memorydb"
 	"github.com/ethereum/go-ethereum/log"
 )
 

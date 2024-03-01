@@ -5,7 +5,7 @@ package syncutils
 
 import (
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
-	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 var (

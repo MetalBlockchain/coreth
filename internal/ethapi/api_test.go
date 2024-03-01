@@ -51,13 +51,13 @@ import (
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/core/vm"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"
 	"golang.org/x/crypto/sha3"
 )
@@ -709,7 +709,7 @@ func TestRPCMarshalBlock(t *testing.T) {
 		}
 		txs = append(txs, tx)
 	}
-	block := types.NewBlock(&types.Header{Number: big.NewInt(100)}, txs, nil, nil, newHasher(), nil, false)
+	block := types.NewBlock(&types.Header{Number: big.NewInt(100)}, txs, nil, nil, newHasher())
 
 	var testSuite = []struct {
 		inclTx bool

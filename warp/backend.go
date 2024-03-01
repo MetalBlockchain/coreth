@@ -16,7 +16,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-	"github.com/MetalBlockchain/coreth/ethdb"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 )
 

@@ -12,8 +12,8 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/ethdb/memorydb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
@@ -104,7 +104,7 @@ func TestBlockRequestHandler(t *testing.T) {
 	var gspec = &core.Genesis{
 		Config: params.TestChainConfig,
 	}
-	memdb := memorydb.New()
+	memdb := rawdb.NewMemoryDatabase()
 	genesis := gspec.MustCommit(memdb)
 	engine := dummy.NewETHFaker()
 	blocks, _, err := core.GenerateChain(params.TestChainConfig, genesis, engine, memdb, 96, 0, func(i int, b *core.BlockGen) {})
@@ -161,7 +161,7 @@ func TestBlockRequestHandlerLargeBlocks(t *testing.T) {
 		}
 		signer = types.LatestSigner(gspec.Config)
 	)
-	memdb := memorydb.New()
+	memdb := rawdb.NewMemoryDatabase()
 	genesis := gspec.MustCommit(memdb)
 	engine := dummy.NewETHFaker()
 	blocks, _, err := core.GenerateChain(gspec.Config, genesis, engine, memdb, 96, 0, func(i int, b *core.BlockGen) {
@@ -214,7 +214,7 @@ func TestBlockRequestHandlerCtxExpires(t *testing.T) {
 	var gspec = &core.Genesis{
 		Config: params.TestChainConfig,
 	}
-	memdb := memorydb.New()
+	memdb := rawdb.NewMemoryDatabase()
 	genesis := gspec.MustCommit(memdb)
 	engine := dummy.NewETHFaker()
 	blocks, _, err := core.GenerateChain(params.TestChainConfig, genesis, engine, memdb, 11, 0, func(i int, b *core.BlockGen) {})

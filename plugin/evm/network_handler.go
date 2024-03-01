@@ -8,7 +8,6 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/metrics"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	syncHandlers "github.com/MetalBlockchain/coreth/sync/handlers"
@@ -16,6 +15,7 @@ import (
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/warp"
 	warpHandlers "github.com/MetalBlockchain/coreth/warp/handlers"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 var _ message.RequestHandler = &networkHandler{}

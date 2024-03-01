@@ -12,6 +12,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/logging"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/MetalBlockchain/metalgo/network/p2p"
 	"github.com/MetalBlockchain/metalgo/network/p2p/gossip"
@@ -108,8 +109,8 @@ func (tx *GossipAtomicTx) GossipID() ids.ID {
 	return tx.Tx.ID()
 }
 
-func NewGossipEthTxPool(mempool *txpool.TxPool) (*GossipEthTxPool, error) {
-	bloom, err := gossip.NewBloomFilter(txGossipBloomMinTargetElements, txGossipBloomTargetFalsePositiveRate, txGossipBloomResetFalsePositiveRate)
+func NewGossipEthTxPool(mempool *txpool.TxPool, registerer prometheus.Registerer) (*GossipEthTxPool, error) {
+	bloom, err := gossip.NewBloomFilter(registerer, "eth_tx_bloom_filter", txGossipBloomMinTargetElements, txGossipBloomTargetFalsePositiveRate, txGossipBloomResetFalsePositiveRate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bloom filter: %w", err)
 	}
@@ -139,7 +140,7 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 			return
 		case pendingTxs := <-g.pendingTxs:
 			g.lock.Lock()
-			optimalElements := (g.mempool.PendingSize() + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
+			optimalElements := (g.mempool.PendingSize(false) + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
 			for _, pendingTx := range pendingTxs.Txs {
 				tx := &GossipEthTx{Tx: pendingTx}
 				g.bloom.Add(tx)
@@ -153,7 +154,7 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 					log.Debug("resetting bloom filter", "reason", "reached max filled ratio")
 
 					g.mempool.IteratePending(func(tx *types.Transaction) bool {
-						g.bloom.Add(&GossipEthTx{Tx: pendingTx})
+						g.bloom.Add(&GossipEthTx{Tx: tx})
 						return true
 					})
 				}

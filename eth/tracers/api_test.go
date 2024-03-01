@@ -47,13 +47,13 @@ import (
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/eth/tracers/logger"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/internal/ethapi"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 var (
@@ -177,7 +177,7 @@ func (b *testBackend) StateAtBlock(ctx context.Context, block *types.Block, reex
 }
 
 func (b *testBackend) StateAtNextBlock(ctx context.Context, parent, nextBlock *types.Block, reexec uint64, base *state.StateDB, readOnly bool, preferDisk bool) (*state.StateDB, StateReleaseFunc, error) {
-	statedb, release, err := b.StateAtBlock(ctx, parent, reexec, nil, true, false)
+	statedb, release, err := b.StateAtBlock(ctx, parent, reexec, base, readOnly, preferDisk)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -232,7 +232,8 @@ func TestTraceCall(t *testing.T) {
 			accounts[0].addr: {Balance: big.NewInt(params.Ether)},
 			accounts[1].addr: {Balance: big.NewInt(params.Ether)},
 			accounts[2].addr: {Balance: big.NewInt(params.Ether)},
-		}}
+		},
+	}
 	genBlocks := 10
 	signer := types.HomesteadSigner{}
 	backend := newTestBackend(t, genBlocks, genesis, func(i int, b *core.BlockGen) {

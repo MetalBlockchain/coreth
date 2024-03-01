@@ -28,8 +28,8 @@ package trie
 
 import (
 	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/trie/triedb/hashdb"
+	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 // newTestDatabase initializes the trie database with specified scheme.

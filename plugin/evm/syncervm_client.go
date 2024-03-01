@@ -18,12 +18,12 @@ import (
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
 	"github.com/MetalBlockchain/coreth/eth"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	syncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/statesync"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -264,7 +264,7 @@ func (client *stateSyncerClient) syncBlocks(ctx context.Context, fromHash common
 		}
 		blocks, err := client.client.GetBlocks(ctx, nextHash, nextHeight, parentsPerRequest)
 		if err != nil {
-			log.Warn("could not get blocks from peer", "err", err, "nextHash", nextHash, "remaining", i+1)
+			log.Error("could not get blocks from peer", "err", err, "nextHash", nextHash, "remaining", i+1)
 			return err
 		}
 		for _, block := range blocks {

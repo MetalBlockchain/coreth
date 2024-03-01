@@ -43,10 +43,10 @@ import (
 	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/eth/gasprice"
 	"github.com/MetalBlockchain/coreth/eth/tracers"
-	"github.com/MetalBlockchain/coreth/ethdb"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"
 )
 
