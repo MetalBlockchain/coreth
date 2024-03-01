@@ -20,9 +20,11 @@ import (
 	avalanchegoMetrics "github.com/MetalBlockchain/metalgo/api/metrics"
 	"github.com/MetalBlockchain/metalgo/network/p2p"
 	"github.com/MetalBlockchain/metalgo/network/p2p/gossip"
+	avalanchegoConstants "github.com/MetalBlockchain/metalgo/utils/constants"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	corethConstants "github.com/MetalBlockchain/coreth/constants"
+	"github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/state"
@@ -30,6 +32,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/eth"
 	"github.com/MetalBlockchain/coreth/eth/ethconfig"
+	"github.com/MetalBlockchain/coreth/metrics"
 	corethPrometheus "github.com/MetalBlockchain/coreth/metrics/prometheus"
 	"github.com/MetalBlockchain/coreth/miner"
 	"github.com/MetalBlockchain/coreth/node"
@@ -37,10 +40,7 @@ import (
 	"github.com/MetalBlockchain/coreth/peer"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 
-	// Force-load precompiles to trigger registration
 	warpPrecompile "github.com/MetalBlockchain/coreth/precompile/contracts/warp"
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
-	_ "github.com/MetalBlockchain/coreth/precompile/registry"
 	"github.com/MetalBlockchain/coreth/rpc"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/client/stats"
@@ -48,9 +48,7 @@ import (
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/coreth/warp"
 	warpValidators "github.com/MetalBlockchain/coreth/warp/validators"
-	"github.com/ethereum/go-ethereum/ethdb"
 
-	"github.com/prometheus/client_golang/prometheus"
 	// Force-load tracer engine to trigger registration
 	//
 	// We must import this package (not referenced elsewhere) so that the native "callTracer"
@@ -59,11 +57,14 @@ import (
 	_ "github.com/MetalBlockchain/coreth/eth/tracers/js"
 	_ "github.com/MetalBlockchain/coreth/eth/tracers/native"
 
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
+	// Force-load precompiles to trigger registration
+	_ "github.com/MetalBlockchain/coreth/precompile/registry"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
-
-	"github.com/MetalBlockchain/coreth/metrics"
 
 	avalancheRPC "github.com/gorilla/rpc/v2"
 
@@ -78,7 +79,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/snow/choices"
 	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
 	"github.com/MetalBlockchain/metalgo/utils/formatting/address"
 	"github.com/MetalBlockchain/metalgo/utils/logging"
@@ -97,13 +97,16 @@ import (
 	avalancheJSON "github.com/MetalBlockchain/metalgo/utils/json"
 )
 
+var (
+	_ block.ChainVM                      = &VM{}
+	_ block.BuildBlockWithContextChainVM = &VM{}
+	_ block.StateSyncableVM              = &VM{}
+	_ statesyncclient.EthBlockParser     = &VM{}
+)
+
 const (
 	x2cRateInt64       int64 = 1_000_000_000
 	x2cRateMinus1Int64 int64 = x2cRateInt64 - 1
-
-	// Prefixes for metrics gatherers
-	ethMetricsPrefix        = "eth"
-	chainStateMetricsPrefix = "chain_state"
 )
 
 var (
@@ -113,10 +116,6 @@ var (
 	// places on the X and P chains, but is 18 decimal places within the EVM.
 	x2cRate       = big.NewInt(x2cRateInt64)
 	x2cRateMinus1 = big.NewInt(x2cRateMinus1Int64)
-
-	_ block.ChainVM                  = &VM{}
-	_ block.StateSyncableVM          = &VM{}
-	_ statesyncclient.EthBlockParser = &VM{}
 )
 
 const (
@@ -133,6 +132,10 @@ const (
 	unverifiedCacheSize    = 5 * units.MiB
 	bytesToIDCacheSize     = 5 * units.MiB
 	warpSignatureCacheSize = 500
+
+	// Prefixes for metrics gatherers
+	ethMetricsPrefix        = "eth"
+	chainStateMetricsPrefix = "chain_state"
 
 	targetAtomicTxsSize = 40 * units.KiB
 
@@ -392,6 +395,7 @@ func (vm *VM) Initialize(
 	// Create logger
 	alias, err := vm.ctx.BCLookup.PrimaryAlias(vm.ctx.ChainID)
 	if err != nil {
+		// fallback to ChainID string instead of erroring
 		alias = vm.ctx.ChainID.String()
 	}
 
@@ -526,6 +530,7 @@ func (vm *VM) Initialize(
 	vm.ethConfig.AllowUnprotectedTxs = vm.config.AllowUnprotectedTxs
 	vm.ethConfig.AllowUnprotectedTxHashes = vm.config.AllowUnprotectedTxHashes
 	vm.ethConfig.Preimages = vm.config.Preimages
+	vm.ethConfig.Pruning = vm.config.Pruning
 	vm.ethConfig.TrieCleanCache = vm.config.TrieCleanCache
 	vm.ethConfig.TrieCleanJournal = vm.config.TrieCleanJournal
 	vm.ethConfig.TrieCleanRejournal = vm.config.TrieCleanRejournal.Duration
@@ -533,7 +538,6 @@ func (vm *VM) Initialize(
 	vm.ethConfig.TrieDirtyCommitTarget = vm.config.TrieDirtyCommitTarget
 	vm.ethConfig.TriePrefetcherParallelism = vm.config.TriePrefetcherParallelism
 	vm.ethConfig.SnapshotCache = vm.config.SnapshotCache
-	vm.ethConfig.Pruning = vm.config.Pruning
 	vm.ethConfig.AcceptorQueueLimit = vm.config.AcceptorQueueLimit
 	vm.ethConfig.PopulateMissingTries = vm.config.PopulateMissingTries
 	vm.ethConfig.PopulateMissingTriesParallelism = vm.config.PopulateMissingTriesParallelism
@@ -716,7 +720,7 @@ func (vm *VM) initializeChain(lastAcceptedHash common.Hash) error {
 	if err != nil {
 		return err
 	}
-	vm.eth.SetEtherbase(corethConstants.BlackholeAddr)
+	vm.eth.SetEtherbase(constants.BlackholeAddr)
 	vm.txPool = vm.eth.TxPool()
 	vm.blockChain = vm.eth.BlockChain()
 	vm.miner = vm.eth.Miner()
@@ -824,8 +828,8 @@ func (vm *VM) initChainState(lastAcceptedBlock *types.Block) error {
 	return vm.multiGatherer.Register(chainStateMetricsPrefix, chainStateRegisterer)
 }
 
-func (vm *VM) createConsensusCallbacks() *dummy.ConsensusCallbacks {
-	return &dummy.ConsensusCallbacks{
+func (vm *VM) createConsensusCallbacks() dummy.ConsensusCallbacks {
+	return dummy.ConsensusCallbacks{
 		OnFinalizeAndAssemble: vm.onFinalizeAndAssemble,
 		OnExtraStateChange:    vm.onExtraStateChange,
 	}
@@ -1260,11 +1264,11 @@ func (vm *VM) Shutdown(context.Context) error {
 	return nil
 }
 
+// buildBlock builds a block to be wrapped by ChainState
 func (vm *VM) buildBlock(ctx context.Context) (snowman.Block, error) {
 	return vm.buildBlockWithContext(ctx, nil)
 }
 
-// buildBlock builds a block to be wrapped by ChainState
 func (vm *VM) buildBlockWithContext(ctx context.Context, proposerVMBlockCtx *block.Context) (snowman.Block, error) {
 	if proposerVMBlockCtx != nil {
 		log.Debug("Building block with context", "pChainBlockHeight", proposerVMBlockCtx.PChainHeight)
@@ -1376,8 +1380,7 @@ func (vm *VM) VerifyHeightIndex(context.Context) error {
 	return nil
 }
 
-// GetBlockAtHeight implements the HeightIndexedChainVM interface and returns the
-// canonical block at [blkHeight].
+// GetBlockAtHeight returns the canonical block at [blkHeight].
 // If [blkHeight] is less than the height of the last accepted block, this will return
 // the block accepted at that height. Otherwise, it may return a blkID that has not yet
 // been accepted.
@@ -1443,6 +1446,7 @@ func (vm *VM) CreateHandlers(context.Context) (map[string]http.Handler, error) {
 		}
 		enabledAPIs = append(enabledAPIs, "snowman")
 	}
+
 	if vm.config.WarpAPIEnabled {
 		validatorsState := warpValidators.NewState(vm.ctx)
 		if err := handler.RegisterName("warp", warp.NewAPI(vm.ctx.NetworkID, vm.ctx.SubnetID, vm.ctx.ChainID, validatorsState, vm.warpBackend, vm.client)); err != nil {
@@ -1554,7 +1558,7 @@ func (vm *VM) ParseAddress(addrStr string) (ids.ID, ids.ShortID, error) {
 		return ids.ID{}, ids.ShortID{}, err
 	}
 
-	expectedHRP := constants.GetHRP(vm.ctx.NetworkID)
+	expectedHRP := avalanchegoConstants.GetHRP(vm.ctx.NetworkID)
 	if hrp != expectedHRP {
 		return ids.ID{}, ids.ShortID{}, fmt.Errorf("expected hrp %q but got %q",
 			expectedHRP, hrp)

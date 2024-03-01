@@ -9,8 +9,10 @@ import (
 
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/ids"
+
 	"github.com/MetalBlockchain/coreth/internal/ethapi"
 	"github.com/MetalBlockchain/coreth/rpc"
+
 	"github.com/ethereum/go-ethereum/log"
 )
 

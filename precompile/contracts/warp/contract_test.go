@@ -14,7 +14,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/precompile/contract"
 	"github.com/MetalBlockchain/coreth/precompile/testutils"
