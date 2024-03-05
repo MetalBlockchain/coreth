@@ -32,12 +32,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
-	"github.com/MetalBlockchain/metalgo/version"
 	"github.com/MetalBlockchain/coreth/precompile/modules"
 	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/coreth/utils"
+	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/utils/constants"
+	"github.com/MetalBlockchain/metalgo/version"
 	"github.com/ethereum/go-ethereum/common"
 )
 

@@ -383,7 +383,7 @@ func TestInternals(t *testing.T) {
 					},
 				}, false)
 
-			evm := vm.NewEVM(context, txContext, statedb, params.AvalancheMainnetChainConfig, vm.Config{Tracer: tc.tracer})
+			evm := vm.NewEVM(context, txContext, statedb, params.MetalMainnetChainConfig, vm.Config{Tracer: tc.tracer})
 			msg := &core.Message{
 				To:                &to,
 				From:              origin,
