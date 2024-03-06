@@ -32,12 +32,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/precompile/modules"
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
-	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/metalgo/version"
+	"github.com/MetalBlockchain/coreth/precompile/modules"
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -1060,6 +1060,12 @@ type Rules struct {
 	AccepterPrecompiles map[common.Address]precompileconfig.Accepter
 }
 
+// IsPrecompileEnabled returns true if the precompile at [addr] is enabled for this rule set.
+func (r *Rules) IsPrecompileEnabled(addr common.Address) bool {
+	_, ok := r.ActivePrecompiles[addr]
+	return ok
+}
+
 // Rules ensures c's ChainID is not nil.
 func (c *ChainConfig) rules(num *big.Int, timestamp uint64) Rules {
 	chainID := c.ChainID
@@ -1114,10 +1120,4 @@ func (c *ChainConfig) AvalancheRules(blockNum *big.Int, timestamp uint64) Rules 
 	}
 
 	return rules
-}
-
-// IsPrecompileEnabled returns true if the precompile at [addr] is enabled for this rule set.
-func (r *Rules) IsPrecompileEnabled(addr common.Address) bool {
-	_, ok := r.ActivePrecompiles[addr]
-	return ok
 }

@@ -8,8 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/params"

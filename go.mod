@@ -1,9 +1,9 @@
 module github.com/MetalBlockchain/coreth
 
-go 1.20
+go 1.21
 
 require (
-	github.com/MetalBlockchain/metalgo v1.10.19-legacy-upgrade-times-3
+	github.com/MetalBlockchain/metalgo v1.11.1
 	github.com/VictoriaMetrics/fastcache v1.10.0
 	github.com/cespare/cp v0.1.0
 	github.com/davecgh/go-spew v1.1.1
