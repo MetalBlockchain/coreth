@@ -427,12 +427,6 @@ var (
 )
 
 func getChainConfig(networkID uint32, chainID *big.Int) *ChainConfig {
-	banffBlockTimestamp := getUpgradeTime(networkID, version.BanffTimes)
-
-	if networkID == constants.MainnetID {
-		banffBlockTimestamp = utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC))
-	}
-
 	return &ChainConfig{
 		ChainID:                         chainID,
 		HomesteadBlock:                  big.NewInt(0),
@@ -446,15 +440,15 @@ func getChainConfig(networkID uint32, chainID *big.Int) *ChainConfig {
 		PetersburgBlock:                 big.NewInt(0),
 		IstanbulBlock:                   big.NewInt(0),
 		MuirGlacierBlock:                big.NewInt(0),
-		ApricotPhase1BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase1Times),
-		ApricotPhase2BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase2Times),
-		ApricotPhase3BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase3Times),
-		ApricotPhase4BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase4Times),
-		ApricotPhase5BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase5Times),
+		ApricotPhase1BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase2BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase3BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase4BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase5BlockTimestamp:     utils.NewUint64(0),
 		ApricotPhasePre6BlockTimestamp:  getUpgradeTime(networkID, version.ApricotPhasePre6Times),
 		ApricotPhase6BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase6Times),
 		ApricotPhasePost6BlockTimestamp: getUpgradeTime(networkID, version.ApricotPhasePost6Times),
-		BanffBlockTimestamp:             banffBlockTimestamp,
+		BanffBlockTimestamp:             getUpgradeTime(networkID, version.BanffTimes),
 		CortinaBlockTimestamp:           getUpgradeTime(networkID, version.CortinaTimes),
 		DurangoBlockTimestamp:           getUpgradeTime(networkID, version.DurangoTimes),
 	}
