@@ -32,12 +32,12 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
-	"github.com/MetalBlockchain/metalgo/version"
 	"github.com/MetalBlockchain/coreth/precompile/modules"
 	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/coreth/utils"
+	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/utils/constants"
+	"github.com/MetalBlockchain/metalgo/version"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -427,6 +427,12 @@ var (
 )
 
 func getChainConfig(networkID uint32, chainID *big.Int) *ChainConfig {
+	banffBlockTimestamp := getUpgradeTime(networkID, version.BanffTimes)
+
+	if networkID == constants.MainnetID {
+		banffBlockTimestamp = utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC))
+	}
+
 	return &ChainConfig{
 		ChainID:                         chainID,
 		HomesteadBlock:                  big.NewInt(0),
@@ -448,7 +454,7 @@ func getChainConfig(networkID uint32, chainID *big.Int) *ChainConfig {
 		ApricotPhasePre6BlockTimestamp:  getUpgradeTime(networkID, version.ApricotPhasePre6Times),
 		ApricotPhase6BlockTimestamp:     getUpgradeTime(networkID, version.ApricotPhase6Times),
 		ApricotPhasePost6BlockTimestamp: getUpgradeTime(networkID, version.ApricotPhasePost6Times),
-		BanffBlockTimestamp:             getUpgradeTime(networkID, version.BanffTimes),
+		BanffBlockTimestamp:             banffBlockTimestamp,
 		CortinaBlockTimestamp:           getUpgradeTime(networkID, version.CortinaTimes),
 		DurangoBlockTimestamp:           getUpgradeTime(networkID, version.DurangoTimes),
 	}
