@@ -65,7 +65,31 @@ var (
 	AvalancheFujiChainConfig = getChainConfig(constants.TahoeID, AvalancheFujiChainID)
 
 	// MetalMainnetChainConfig is the configuration for the Metal Blockchain Main Network
-	MetalMainnetChainConfig = getChainConfig(constants.MainnetID, MetalMainnetChainID)
+	MetalMainnetChainConfig = &ChainConfig{
+		ChainID:                         MetalMainnetChainID,
+		HomesteadBlock:                  big.NewInt(0),
+		DAOForkBlock:                    big.NewInt(0),
+		DAOForkSupport:                  true,
+		EIP150Block:                     big.NewInt(0),
+		EIP155Block:                     big.NewInt(0),
+		EIP158Block:                     big.NewInt(0),
+		ByzantiumBlock:                  big.NewInt(0),
+		ConstantinopleBlock:             big.NewInt(0),
+		PetersburgBlock:                 big.NewInt(0),
+		IstanbulBlock:                   big.NewInt(0),
+		MuirGlacierBlock:                big.NewInt(0),
+		ApricotPhase1BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase2BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase3BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase4BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhase5BlockTimestamp:     utils.NewUint64(0),
+		ApricotPhasePre6BlockTimestamp:  getUpgradeTime(constants.MainnetID, version.ApricotPhasePre6Times),
+		ApricotPhase6BlockTimestamp:     getUpgradeTime(constants.MainnetID, version.ApricotPhase6Times),
+		ApricotPhasePost6BlockTimestamp: getUpgradeTime(constants.MainnetID, version.ApricotPhasePost6Times),
+		BanffBlockTimestamp:             utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC)), // TODO: Figure out how to fix this
+		CortinaBlockTimestamp:           getUpgradeTime(constants.MainnetID, version.CortinaTimes),
+		DurangoBlockTimestamp:           getUpgradeTime(constants.MainnetID, version.DurangoTimes),
+	}
 
 	// MetalTahoeChainConfig is the configuration for the Tahoe Test Network
 	MetalTahoeChainConfig = getChainConfig(constants.TahoeID, MetalTahoeChainID)
