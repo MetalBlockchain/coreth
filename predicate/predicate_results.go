@@ -6,7 +6,6 @@ package predicate
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
@@ -25,7 +24,7 @@ var Codec codec.Manager
 func init() {
 	Codec = codec.NewManager(MaxResultsSize)
 
-	c := linearcodec.NewDefault(time.Time{})
+	c := linearcodec.NewDefault()
 	errs := wrappers.Errs{}
 	errs.Add(
 		c.RegisterType(Results{}),

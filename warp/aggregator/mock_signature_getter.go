@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	bls "github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	ids "github.com/MetalBlockchain/metalgo/ids"
+	bls "github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	warp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	gomock "go.uber.org/mock/gomock"
 )

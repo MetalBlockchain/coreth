@@ -35,8 +35,8 @@ import (
 	"strings"
 
 	"github.com/MetalBlockchain/coreth/accounts/abi/bind"
+	"github.com/MetalBlockchain/coreth/cmd/utils"
 	"github.com/MetalBlockchain/coreth/internal/flags"
-	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"

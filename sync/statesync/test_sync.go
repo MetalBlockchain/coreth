@@ -10,7 +10,6 @@ import (
 
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/state/snapshot"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/sync/syncutils"
 	"github.com/MetalBlockchain/coreth/trie"
@@ -48,7 +47,7 @@ func assertDBConsistency(t testing.TB, root common.Hash, clientDB ethdb.Database
 		}
 		// check snapshot consistency
 		snapshotVal := rawdb.ReadAccountSnapshot(clientDB, accHash)
-		expectedSnapshotVal := snapshot.SlimAccountRLP(acc.Nonce, acc.Balance, acc.Root, acc.CodeHash, acc.IsMultiCoin)
+		expectedSnapshotVal := types.SlimAccountRLP(acc)
 		assert.Equal(t, expectedSnapshotVal, snapshotVal)
 
 		// check code consistency
