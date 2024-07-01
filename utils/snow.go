@@ -7,6 +7,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/api/metrics"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/metalgo/snow/validators"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	"github.com/MetalBlockchain/metalgo/utils/logging"
 )
@@ -18,14 +19,15 @@ func TestSnowContext() *snow.Context {
 	}
 	pk := bls.PublicFromSecretKey(sk)
 	return &snow.Context{
-		NetworkID:    0,
-		SubnetID:     ids.Empty,
-		ChainID:      ids.Empty,
-		NodeID:       ids.EmptyNodeID,
-		PublicKey:    pk,
-		Log:          logging.NoLog{},
-		BCLookup:     ids.NewAliaser(),
-		Metrics:      metrics.NewOptionalGatherer(),
-		ChainDataDir: "",
+		NetworkID:      0,
+		SubnetID:       ids.Empty,
+		ChainID:        ids.Empty,
+		NodeID:         ids.EmptyNodeID,
+		PublicKey:      pk,
+		Log:            logging.NoLog{},
+		BCLookup:       ids.NewAliaser(),
+		Metrics:        metrics.NewOptionalGatherer(),
+		ChainDataDir:   "",
+		ValidatorState: &validators.TestState{},
 	}
 }

@@ -39,6 +39,7 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/peer"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/trie/triedb/hashdb"
 
 	warpPrecompile "github.com/MetalBlockchain/coreth/precompile/contracts/warp"
 	"github.com/MetalBlockchain/coreth/rpc"
@@ -622,14 +623,11 @@ func (vm *VM) Initialize(
 		bonusBlockRepair  map[uint64]*types.Block
 	)
 	if vm.chainID.Cmp(params.AvalancheMainnetChainID) == 0 {
-		bonusBlockHeights = bonusBlockMainnetHeights
-		bonusBlockRepair = mainnetBonusBlocksParsed
+		bonusBlockRepair, bonusBlockHeights, err = readMainnetBonusBlocks()
+		if err != nil {
+			return fmt.Errorf("failed to read mainnet bonus blocks: %w", err)
+		}
 	}
-	defer func() {
-		// Free memory after VM is initialized
-		mainnetBonusBlocksParsed = nil
-		mainnetBonusBlocksJson = nil
-	}()
 
 	// initialize atomic repository
 	vm.atomicTxRepository, err = NewAtomicTxRepository(
@@ -1255,10 +1253,12 @@ func (vm *VM) setAppRequestHandlers() {
 	// Create separate EVM TrieDB (read only) for serving leafs requests.
 	// We create a separate TrieDB here, so that it has a separate cache from the one
 	// used by the node when processing blocks.
-	evmTrieDB := trie.NewDatabaseWithConfig(
+	evmTrieDB := trie.NewDatabase(
 		vm.chaindb,
 		&trie.Config{
-			Cache: vm.config.StateSyncServerTrieCache,
+			HashDB: &hashdb.Config{
+				CleanCacheSize: vm.config.StateSyncServerTrieCache * units.MiB,
+			},
 		},
 	)
 	networkHandler := newNetworkHandler(
