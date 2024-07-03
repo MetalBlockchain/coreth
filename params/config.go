@@ -533,6 +533,8 @@ type ChainConfig struct {
 	DurangoBlockTimestamp *uint64 `json:"durangoBlockTimestamp,omitempty"`
 	// Cancun activates the Cancun upgrade from Ethereum. (nil = no fork, 0 = already activated)
 	CancunTime *uint64 `json:"cancunTime,omitempty"`
+	// Verkle activates the Verkle upgrade from Ethereum. (nil = no fork, 0 = already activated)
+	VerkleTime *uint64 `json:"verkleTime,omitempty"` // Verkle switch time (nil = no fork, 0 = already on verkle)
 
 	UpgradeConfig `json:"-"` // Config specified in upgradeBytes (avalanche network upgrades or enable/disabling precompiles). Skip encoding/decoding directly into ChainConfig.
 }
@@ -578,7 +580,7 @@ func (c *ChainConfig) Description() string {
 	banner += fmt.Sprintf(" - Apricot Phase Post-6 Timestamp:   @%-10v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.8.0\n", ptrToString(c.ApricotPhasePost6BlockTimestamp))
 	banner += fmt.Sprintf(" - Banff Timestamp:                  @%-10v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.9.0)\n", ptrToString(c.BanffBlockTimestamp))
 	banner += fmt.Sprintf(" - Cortina Timestamp:                @%-10v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.10.0)\n", ptrToString(c.CortinaBlockTimestamp))
-	banner += fmt.Sprintf(" - Durango Timestamp:               @%-10v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.11.0)\n", ptrToString(c.DurangoBlockTimestamp))
+	banner += fmt.Sprintf(" - Durango Timestamp:                @%-10v (https://github.com/MetalBlockchain/metalgo/releases/tag/v1.11.0)\n", ptrToString(c.DurangoBlockTimestamp))
 	banner += "\n"
 
 	upgradeConfigBytes, err := json.Marshal(c.UpgradeConfig)
@@ -714,6 +716,12 @@ func (c *ChainConfig) IsDurango(time uint64) bool {
 // with a timestamp after the Cancun upgrade time.
 func (c *ChainConfig) IsCancun(num *big.Int, time uint64) bool {
 	return utils.IsTimestampForked(c.CancunTime, time)
+}
+
+// IsVerkle returns whether [time] represents a block
+// with a timestamp after the Verkle upgrade time.
+func (c *ChainConfig) IsVerkle(num *big.Int, time uint64) bool {
+	return utils.IsTimestampForked(c.VerkleTime, time)
 }
 
 func (r *Rules) PredicatersExist() bool {

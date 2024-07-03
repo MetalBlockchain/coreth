@@ -15,7 +15,7 @@ binary_path=${CORETH_BINARY_PATH:-"$GOPATH/src/github.com/!metal!blockchain/aval
 DOCKERHUB_REPO="metalblockchain/metalgo"
 
 # Current branch
-CURRENT_BRANCH=${CURRENT_BRANCH:-$(git describe --tags --exact-match 2> /dev/null || git symbolic-ref -q --short HEAD || git rev-parse --short HEAD)}
+CURRENT_BRANCH=${CURRENT_BRANCH:-$(git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD || git rev-parse --short HEAD)}
 echo "Using branch: ${CURRENT_BRANCH}"
 
 # Image build id

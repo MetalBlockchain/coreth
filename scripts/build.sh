@@ -25,6 +25,6 @@ fi
 # including the .git/ directory within the Docker image.
 CORETH_COMMIT=${CORETH_COMMIT:-$(git rev-list -1 HEAD)}
 
-# Build Coreth, which is run as a subprocess
+# Build Coreth, which runs as a subprocess
 echo "Building Coreth @ GitCommit: $CORETH_COMMIT"
 go build -ldflags "-X github.com/MetalBlockchain/coreth/plugin/evm.GitCommit=$CORETH_COMMIT" -o "$binary_path" "plugin/"*.go
