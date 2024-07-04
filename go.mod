@@ -2,8 +2,6 @@ module github.com/MetalBlockchain/coreth
 
 go 1.21.11
 
-toolchain go1.22.3
-
 require (
 	github.com/MetalBlockchain/metalgo v1.11.7-rc.3
 	github.com/VictoriaMetrics/fastcache v1.12.1
