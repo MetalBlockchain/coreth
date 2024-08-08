@@ -5,22 +5,17 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/MetalBlockchain/metalgo/database/memdb"
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman/snowmantest"
-	"github.com/MetalBlockchain/metalgo/snow/engine/common"
-	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/coreth/warp"
+	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,7 +31,7 @@ func TestMessageSignatureHandler(t *testing.T) {
 	offchainMessage, err := avalancheWarp.NewUnsignedMessage(snowCtx.NetworkID, snowCtx.ChainID, addressedPayload.Bytes())
 	require.NoError(t, err)
 
-	backend, err := warp.NewBackend(snowCtx.NetworkID, snowCtx.ChainID, warpSigner, &block.TestVM{TestVM: common.TestVM{T: t}}, database, 100, [][]byte{offchainMessage.Bytes()})
+	backend, err := warp.NewBackend(snowCtx.NetworkID, snowCtx.ChainID, warpSigner, warptest.EmptyBlockClient, database, 100, [][]byte{offchainMessage.Bytes()})
 	require.NoError(t, err)
 
 	msg, err := avalancheWarp.NewUnsignedMessage(snowCtx.NetworkID, snowCtx.ChainID, []byte("test"))
@@ -136,25 +131,12 @@ func TestBlockSignatureHandler(t *testing.T) {
 
 	warpSigner := avalancheWarp.NewSigner(blsSecretKey, snowCtx.NetworkID, snowCtx.ChainID)
 	blkID := ids.GenerateTestID()
-	testVM := &block.TestVM{
-		TestVM: common.TestVM{T: t},
-		GetBlockF: func(ctx context.Context, i ids.ID) (snowman.Block, error) {
-			if i == blkID {
-				return &snowmantest.Block{
-					TestDecidable: choices.TestDecidable{
-						IDV:     blkID,
-						StatusV: choices.Accepted,
-					},
-				}, nil
-			}
-			return nil, errors.New("invalid blockID")
-		},
-	}
+	blockClient := warptest.MakeBlockClient(blkID)
 	backend, err := warp.NewBackend(
 		snowCtx.NetworkID,
 		snowCtx.ChainID,
 		warpSigner,
-		testVM,
+		blockClient,
 		database,
 		100,
 		nil,

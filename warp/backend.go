@@ -11,7 +11,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/cache"
 	"github.com/MetalBlockchain/metalgo/database"
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
 	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
@@ -28,7 +27,7 @@ var (
 const batchSize = ethdb.IdealBatchSize
 
 type BlockClient interface {
-	GetBlock(ctx context.Context, blockID ids.ID) (snowman.Block, error)
+	GetAcceptedBlock(ctx context.Context, blockID ids.ID) (snowman.Block, error)
 }
 
 // Backend tracks signature-eligible warp messages and provides an interface to fetch them.
@@ -169,12 +168,9 @@ func (b *backend) GetBlockSignature(blockID ids.ID) ([bls.SignatureLen]byte, err
 		return sig, nil
 	}
 
-	block, err := b.blockClient.GetBlock(context.TODO(), blockID)
+	_, err := b.blockClient.GetAcceptedBlock(context.TODO(), blockID)
 	if err != nil {
 		return [bls.SignatureLen]byte{}, fmt.Errorf("failed to get block %s: %w", blockID, err)
-	}
-	if block.Status() != choices.Accepted {
-		return [bls.SignatureLen]byte{}, fmt.Errorf("block %s was not accepted", blockID)
 	}
 
 	var signature [bls.SignatureLen]byte

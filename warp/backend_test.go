@@ -4,22 +4,16 @@
 package warp
 
 import (
-	"context"
-	"errors"
 	"testing"
 
 	"github.com/MetalBlockchain/metalgo/database/memdb"
 	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman/snowmantest"
-	"github.com/MetalBlockchain/metalgo/snow/engine/common"
-	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
 	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	"github.com/MetalBlockchain/metalgo/utils/hashing"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
+	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -128,26 +122,13 @@ func TestGetBlockSignature(t *testing.T) {
 	require := require.New(t)
 
 	blkID := ids.GenerateTestID()
-	testVM := &block.TestVM{
-		TestVM: common.TestVM{T: t},
-		GetBlockF: func(ctx context.Context, i ids.ID) (snowman.Block, error) {
-			if i == blkID {
-				return &snowmantest.Block{
-					TestDecidable: choices.TestDecidable{
-						IDV:     blkID,
-						StatusV: choices.Accepted,
-					},
-				}, nil
-			}
-			return nil, errors.New("invalid blockID")
-		},
-	}
+	blockClient := warptest.MakeBlockClient(blkID)
 	db := memdb.New()
 
 	sk, err := bls.NewSecretKey()
 	require.NoError(err)
 	warpSigner := avalancheWarp.NewSigner(sk, networkID, sourceChainID)
-	backend, err := NewBackend(networkID, sourceChainID, warpSigner, testVM, db, 500, nil)
+	backend, err := NewBackend(networkID, sourceChainID, warpSigner, blockClient, db, 500, nil)
 	require.NoError(err)
 
 	blockHashPayload, err := payload.NewHash(blkID)

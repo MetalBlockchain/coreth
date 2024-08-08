@@ -20,7 +20,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/database/prefixdb"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
@@ -351,7 +350,6 @@ func createSyncServerAndClientVMs(t *testing.T, test syncTest, numBlocks int) *s
 	require.NoError(err)
 	internalBlock, err := serverVM.parseBlock(context.Background(), blockBytes)
 	require.NoError(err)
-	internalBlock.(*Block).SetStatus(choices.Accepted)
 	require.NoError(serverVM.State.SetLastAcceptedBlock(internalBlock))
 
 	// patch syncableInterval for test

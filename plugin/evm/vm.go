@@ -76,7 +76,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/database/versiondb"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/snow/choices"
 	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
@@ -599,7 +598,15 @@ func (vm *VM) Initialize(
 	for i, hexMsg := range vm.config.WarpOffChainMessages {
 		offchainWarpMessages[i] = []byte(hexMsg)
 	}
-	vm.warpBackend, err = warp.NewBackend(vm.ctx.NetworkID, vm.ctx.ChainID, vm.ctx.WarpSigner, vm, vm.warpDB, warpSignatureCacheSize, offchainWarpMessages)
+	vm.warpBackend, err = warp.NewBackend(
+		vm.ctx.NetworkID,
+		vm.ctx.ChainID,
+		vm.ctx.WarpSigner,
+		vm,
+		vm.warpDB,
+		warpSignatureCacheSize,
+		offchainWarpMessages,
+	)
 	if err != nil {
 		return err
 	}
@@ -778,14 +785,12 @@ func (vm *VM) initChainState(lastAcceptedBlock *types.Block) error {
 	if err != nil {
 		return fmt.Errorf("failed to create block wrapper for the last accepted block: %w", err)
 	}
-	block.status = choices.Accepted
 
 	config := &chain.Config{
 		DecidedCacheSize:      decidedCacheSize,
 		MissingCacheSize:      missingCacheSize,
 		UnverifiedCacheSize:   unverifiedCacheSize,
 		BytesToIDCacheSize:    bytesToIDCacheSize,
-		GetBlockIDAtHeight:    vm.GetBlockIDAtHeight,
 		GetBlock:              vm.getBlock,
 		UnmarshalBlock:        vm.parseBlock,
 		BuildBlock:            vm.buildBlock,
@@ -1384,6 +1389,27 @@ func (vm *VM) getBlock(_ context.Context, id ids.ID) (snowman.Block, error) {
 	return vm.newBlock(ethBlock)
 }
 
+// GetAcceptedBlock attempts to retrieve block [blkID] from the VM. This method
+// only returns accepted blocks.
+func (vm *VM) GetAcceptedBlock(ctx context.Context, blkID ids.ID) (snowman.Block, error) {
+	blk, err := vm.GetBlock(ctx, blkID)
+	if err != nil {
+		return nil, err
+	}
+
+	height := blk.Height()
+	acceptedBlkID, err := vm.GetBlockIDAtHeight(ctx, height)
+	if err != nil {
+		return nil, err
+	}
+
+	if acceptedBlkID != blkID {
+		// The provided block is not accepted.
+		return nil, database.ErrNotFound
+	}
+	return blk, nil
+}
+
 // SetPreference sets what the current tail of the chain is
 func (vm *VM) SetPreference(ctx context.Context, blkID ids.ID) error {
 	// Since each internal handler used by [vm.State] always returns a block
@@ -1403,20 +1429,21 @@ func (vm *VM) VerifyHeightIndex(context.Context) error {
 	return nil
 }
 
-// GetBlockAtHeight returns the canonical block at [blkHeight].
-// If [blkHeight] is less than the height of the last accepted block, this will return
-// the block accepted at that height. Otherwise, it may return a blkID that has not yet
-// been accepted.
-// Note: the engine assumes that if a block is not found at [blkHeight], then
-// [database.ErrNotFound] will be returned. This indicates that the VM has state synced
-// and does not have all historical blocks available.
-func (vm *VM) GetBlockIDAtHeight(_ context.Context, blkHeight uint64) (ids.ID, error) {
-	ethBlock := vm.blockChain.GetBlockByNumber(blkHeight)
-	if ethBlock == nil {
+// GetBlockAtHeight returns the canonical block at [height].
+// Note: the engine assumes that if a block is not found at [height], then
+// [database.ErrNotFound] will be returned. This indicates that the VM has state
+// synced and does not have all historical blocks available.
+func (vm *VM) GetBlockIDAtHeight(_ context.Context, height uint64) (ids.ID, error) {
+	lastAcceptedBlock := vm.LastAcceptedBlock()
+	if lastAcceptedBlock.Height() < height {
 		return ids.ID{}, database.ErrNotFound
 	}
 
-	return ids.ID(ethBlock.Hash()), nil
+	hash := vm.blockChain.GetCanonicalHash(height)
+	if hash == (common.Hash{}) {
+		return ids.ID{}, database.ErrNotFound
+	}
+	return ids.ID(hash), nil
 }
 
 func (vm *VM) Version(context.Context) (string, error) {
@@ -1513,7 +1540,9 @@ func (vm *VM) CreateStaticHandlers(context.Context) (map[string]http.Handler, er
 // accepted, then nil will be returned immediately.
 // If the ancestry of [ancestor] cannot be fetched, then [errRejectedParent] may be returned.
 func (vm *VM) conflicts(inputs set.Set[ids.ID], ancestor *Block) error {
-	for ancestor.Status() != choices.Accepted {
+	lastAcceptedBlock := vm.LastAcceptedBlock()
+	lastAcceptedHeight := lastAcceptedBlock.Height()
+	for ancestor.Height() > lastAcceptedHeight {
 		// If any of the atomic transactions in the ancestor conflict with [inputs]
 		// return an error.
 		for _, atomicTx := range ancestor.atomicTxs {
@@ -1533,10 +1562,6 @@ func (vm *VM) conflicts(inputs set.Set[ids.ID], ancestor *Block) error {
 		// been verified.
 		nextAncestorIntf, err := vm.GetBlockInternal(context.TODO(), nextAncestorID)
 		if err != nil {
-			return errRejectedParent
-		}
-
-		if blkStatus := nextAncestorIntf.Status(); blkStatus == choices.Unknown || blkStatus == choices.Rejected {
 			return errRejectedParent
 		}
 		nextAncestor, ok := nextAncestorIntf.(*Block)
@@ -1668,9 +1693,6 @@ func (vm *VM) verifyTxs(txs []*Tx, parentHash common.Hash, baseFee *big.Int, hei
 	if err != nil {
 		return errRejectedParent
 	}
-	if blkStatus := ancestorInf.Status(); blkStatus == choices.Unknown || blkStatus == choices.Rejected {
-		return errRejectedParent
-	}
 	ancestor, ok := ancestorInf.(*Block)
 	if !ok {
 		return fmt.Errorf("expected parent block %s, to be *Block but is %T", ancestor.ID(), ancestorInf)
@@ -1706,40 +1728,15 @@ func (vm *VM) GetAtomicUTXOs(
 		limit = maxUTXOsToFetch
 	}
 
-	addrsList := make([][]byte, addrs.Len())
-	for i, addr := range addrs.List() {
-		addrsList[i] = addr.Bytes()
-	}
-
-	allUTXOBytes, lastAddr, lastUTXO, err := vm.ctx.SharedMemory.Indexed(
+	return avax.GetAtomicUTXOs(
+		vm.ctx.SharedMemory,
+		vm.codec,
 		chainID,
-		addrsList,
-		startAddr.Bytes(),
-		startUTXOID[:],
+		addrs,
+		startAddr,
+		startUTXOID,
 		limit,
 	)
-	if err != nil {
-		return nil, ids.ShortID{}, ids.ID{}, fmt.Errorf("error fetching atomic UTXOs: %w", err)
-	}
-
-	lastAddrID, err := ids.ToShortID(lastAddr)
-	if err != nil {
-		lastAddrID = ids.ShortEmpty
-	}
-	lastUTXOID, err := ids.ToID(lastUTXO)
-	if err != nil {
-		lastUTXOID = ids.Empty
-	}
-
-	utxos := make([]*avax.UTXO, len(allUTXOBytes))
-	for i, utxoBytes := range allUTXOBytes {
-		utxo := &avax.UTXO{}
-		if _, err := vm.codec.Unmarshal(utxoBytes, utxo); err != nil {
-			return nil, ids.ShortID{}, ids.ID{}, fmt.Errorf("error parsing UTXO: %w", err)
-		}
-		utxos[i] = utxo
-	}
-	return utxos, lastAddrID, lastUTXOID, nil
 }
 
 // GetSpendableFunds returns a list of EVMInputs and keys (in corresponding
