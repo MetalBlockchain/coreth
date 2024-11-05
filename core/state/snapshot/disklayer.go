@@ -33,7 +33,7 @@ import (
 
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -43,7 +43,7 @@ import (
 // diskLayer is a low level persistent snapshot built on top of a key-value store.
 type diskLayer struct {
 	diskdb ethdb.KeyValueStore // Key-value store containing the base snapshot
-	triedb *trie.Database      // Trie node cache for reconstruction purposes
+	triedb *triedb.Database    // Trie node cache for reconstruction purposes
 	cache  *utils.MeteredCache // Cache to avoid hitting the disk for direct access
 
 	blockHash common.Hash // Block hash of the base snapshot

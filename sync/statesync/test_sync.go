@@ -1,8 +1,6 @@
 // (c) 2021-2022, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-//go:build test
-
 package statesync
 
 import (
@@ -14,7 +12,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/sync/syncutils"
-	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -25,7 +23,7 @@ import (
 // assertDBConsistency checks [serverTrieDB] and [clientTrieDB] have the same EVM state trie at [root],
 // and that [clientTrieDB.DiskDB] has corresponding account & snapshot values.
 // Also verifies any code referenced by the EVM state is present in [clientTrieDB] and the hash is correct.
-func assertDBConsistency(t testing.TB, root common.Hash, clientDB ethdb.Database, serverTrieDB, clientTrieDB *trie.Database) {
+func assertDBConsistency(t testing.TB, root common.Hash, clientDB ethdb.Database, serverTrieDB, clientTrieDB *triedb.Database) {
 	numSnapshotAccounts := 0
 	accountIt := rawdb.IterateAccountSnapshots(clientDB)
 	defer accountIt.Release()
@@ -90,7 +88,7 @@ func assertDBConsistency(t testing.TB, root common.Hash, clientDB ethdb.Database
 	assert.Equal(t, trieAccountLeaves, numSnapshotAccounts)
 }
 
-func fillAccountsWithStorage(t *testing.T, serverDB ethdb.Database, serverTrieDB *trie.Database, root common.Hash, numAccounts int) common.Hash {
+func fillAccountsWithStorage(t *testing.T, serverDB ethdb.Database, serverTrieDB *triedb.Database, root common.Hash, numAccounts int) common.Hash {
 	newRoot, _ := syncutils.FillAccounts(t, serverTrieDB, root, numAccounts, func(t *testing.T, index int, account types.StateAccount) types.StateAccount {
 		codeBytes := make([]byte, 256)
 		_, err := rand.Read(codeBytes)
@@ -117,7 +115,7 @@ func fillAccountsWithStorage(t *testing.T, serverDB ethdb.Database, serverTrieDB
 // - One has a uniquely generated storage trie,
 // returns the new trie root and a map of funded keys to StateAccount structs.
 func FillAccountsWithOverlappingStorage(
-	t *testing.T, trieDB *trie.Database, root common.Hash, numAccounts int, numOverlappingStorageRoots int,
+	t *testing.T, trieDB *triedb.Database, root common.Hash, numAccounts int, numOverlappingStorageRoots int,
 ) (common.Hash, map[*keystore.Key]*types.StateAccount) {
 	storageRoots := make([]common.Hash, 0, numOverlappingStorageRoots)
 	for i := 0; i < numOverlappingStorageRoots; i++ {

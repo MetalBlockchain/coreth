@@ -17,15 +17,13 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/holiman/uint256"
 
+	"github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/eth/filters"
-	"github.com/MetalBlockchain/coreth/internal/ethapi"
 	"github.com/MetalBlockchain/coreth/metrics"
-	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/utils"
 
@@ -39,21 +37,24 @@ import (
 	"github.com/MetalBlockchain/metalgo/database/prefixdb"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/snow/validators"
+	"github.com/MetalBlockchain/metalgo/snow/validators/validatorstest"
+	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/MetalBlockchain/metalgo/utils/cb58"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
 	"github.com/MetalBlockchain/metalgo/utils/formatting"
 	"github.com/MetalBlockchain/metalgo/utils/hashing"
 	"github.com/MetalBlockchain/metalgo/utils/logging"
 	"github.com/MetalBlockchain/metalgo/utils/set"
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/components/chain"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
 
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/snow/engine/enginetest"
+	constantsEng "github.com/MetalBlockchain/metalgo/utils/constants"
 
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
@@ -63,7 +64,6 @@ import (
 	"github.com/MetalBlockchain/coreth/rpc"
 
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
-	"github.com/MetalBlockchain/coreth/accounts/abi"
 	accountKeystore "github.com/MetalBlockchain/coreth/accounts/keystore"
 )
 
@@ -83,6 +83,7 @@ var (
 		g := new(core.Genesis)
 		g.Difficulty = big.NewInt(0)
 		g.GasLimit = 0x5f5e100
+		g.Timestamp = uint64(upgrade.InitiallyActiveTime.Unix())
 
 		// Use chainId: 43111, so that it does not overlap with any Avalanche ChainIDs, which may have their
 		// config overridden in vm.Initialize.
@@ -97,7 +98,7 @@ var (
 		if cfg.IsDurango(0) {
 			addr := common.HexToAddress("0x99b9DEA54C48Dfea6aA9A4Ca4623633EE04ddbB5")
 			balance := new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
-			g.Alloc[addr] = core.GenesisAccount{Balance: balance}
+			g.Alloc[addr] = types.GenesisAccount{Balance: balance}
 		}
 
 		b, err := json.Marshal(g)
@@ -113,6 +114,12 @@ var (
 		return &cpy
 	}
 
+	activateEtna = func(cfg *params.ChainConfig, etnaTime uint64) *params.ChainConfig {
+		cpy := *cfg
+		cpy.EtnaTimestamp = &etnaTime
+		return &cpy
+	}
+
 	genesisJSONApricotPhase0     = genesisJSON(params.TestLaunchConfig)
 	genesisJSONApricotPhase1     = genesisJSON(params.TestApricotPhase1Config)
 	genesisJSONApricotPhase2     = genesisJSON(params.TestApricotPhase2Config)
@@ -125,8 +132,8 @@ var (
 	genesisJSONBanff             = genesisJSON(params.TestBanffChainConfig)
 	genesisJSONCortina           = genesisJSON(params.TestCortinaChainConfig)
 	genesisJSONDurango           = genesisJSON(params.TestDurangoChainConfig)
-	genesisJSONEUpgrade          = genesisJSON(params.TestEUpgradeChainConfig)
-	genesisJSONLatest            = genesisJSONEUpgrade
+	genesisJSONEtna              = genesisJSON(params.TestEtnaChainConfig)
+	genesisJSONLatest            = genesisJSONEtna
 
 	genesisJSONCancun = genesisJSON(activateCancun(params.TestChainConfig))
 
@@ -161,9 +168,9 @@ func newPrefundedGenesis(
 	balance int,
 	addresses ...common.Address,
 ) *core.Genesis {
-	alloc := core.GenesisAlloc{}
+	alloc := types.GenesisAlloc{}
 	for _, address := range addresses {
-		alloc[address] = core.GenesisAccount{
+		alloc[address] = types.GenesisAccount{
 			Balance: big.NewInt(int64(balance)),
 		}
 	}
@@ -207,12 +214,12 @@ func NewContext() *snow.Context {
 	_ = aliaser.Alias(testCChainID, testCChainID.String())
 	_ = aliaser.Alias(testXChainID, "X")
 	_ = aliaser.Alias(testXChainID, testXChainID.String())
-	ctx.ValidatorState = &validators.TestState{
+	ctx.ValidatorState = &validatorstest.State{
 		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
 			subnetID, ok := map[ids.ID]ids.ID{
-				constants.PlatformChainID: constants.PrimaryNetworkID,
-				testXChainID:              constants.PrimaryNetworkID,
-				testCChainID:              constants.PrimaryNetworkID,
+				constantsEng.PlatformChainID: constantsEng.PrimaryNetworkID,
+				testXChainID:                 constantsEng.PrimaryNetworkID,
+				testCChainID:                 constantsEng.PrimaryNetworkID,
 			}[chainID]
 			if !ok {
 				return ids.Empty, errors.New("unknown chain")
@@ -276,15 +283,35 @@ func GenesisVM(t *testing.T,
 	genesisJSON string,
 	configJSON string,
 	upgradeJSON string,
-) (chan commonEng.Message,
-	*VM, database.Database,
+) (
+	chan commonEng.Message,
+	*VM,
+	database.Database,
 	*atomic.Memory,
-	*commonEng.SenderTest,
+	*enginetest.Sender,
 ) {
-	vm := &VM{}
-	vm.p2pSender = &commonEng.FakeSender{}
+	return GenesisVMWithClock(t, finishBootstrapping, genesisJSON, configJSON, upgradeJSON, mockable.Clock{})
+}
+
+// GenesisVMWithClock creates a VM instance as GenesisVM does, but also allows
+// setting the vm's time before [Initialize] is called.
+func GenesisVMWithClock(
+	t *testing.T,
+	finishBootstrapping bool,
+	genesisJSON string,
+	configJSON string,
+	upgradeJSON string,
+	clock mockable.Clock,
+) (
+	chan commonEng.Message,
+	*VM,
+	database.Database,
+	*atomic.Memory,
+	*enginetest.Sender,
+) {
+	vm := &VM{clock: clock}
 	ctx, dbManager, genesisBytes, issuer, m := setupGenesis(t, genesisJSON)
-	appSender := &commonEng.SenderTest{T: t}
+	appSender := &enginetest.Sender{T: t}
 	appSender.CantSendAppGossip = true
 	appSender.SendAppGossipF = func(context.Context, commonEng.SendConfig, []byte) error { return nil }
 	err := vm.Initialize(
@@ -346,7 +373,7 @@ func addUTXO(sharedMemory *atomic.Memory, ctx *snow.Context, txID ids.ID, index 
 // GenesisVMWithUTXOs creates a GenesisVM and generates UTXOs in the X-Chain Shared Memory containing AVAX based on the [utxos] map
 // Generates UTXOIDs by using a hash of the address in the [utxos] map such that the UTXOs will be generated deterministically.
 // If [genesisJSON] is empty, defaults to using [genesisJSONLatest]
-func GenesisVMWithUTXOs(t *testing.T, finishBootstrapping bool, genesisJSON string, configJSON string, upgradeJSON string, utxos map[ids.ShortID]uint64) (chan commonEng.Message, *VM, database.Database, *atomic.Memory, *commonEng.SenderTest) {
+func GenesisVMWithUTXOs(t *testing.T, finishBootstrapping bool, genesisJSON string, configJSON string, upgradeJSON string, utxos map[ids.ShortID]uint64) (chan commonEng.Message, *VM, database.Database, *atomic.Memory, *enginetest.Sender) {
 	issuer, vm, db, sharedMemory, sender := GenesisVM(t, finishBootstrapping, genesisJSON, configJSON, upgradeJSON)
 	for addr, avaxAmount := range utxos {
 		txID, err := ids.ToID(hashing.ComputeHash256(addr.Bytes()))
@@ -369,156 +396,6 @@ func TestVMConfig(t *testing.T) {
 	require.Equal(t, vm.config.RPCTxFeeCap, txFeeCap, "Tx Fee Cap should be set")
 	require.Equal(t, vm.config.EthAPIs(), enabledEthAPIs, "EnabledEthAPIs should be set")
 	require.NoError(t, vm.Shutdown(context.Background()))
-}
-
-func TestCrossChainMessagestoVM(t *testing.T) {
-	crossChainCodec := message.CrossChainCodec
-	require := require.New(t)
-
-	//  the following is based on this contract:
-	//  contract T {
-	//  	event received(address sender, uint amount, bytes memo);
-	//  	event receivedAddr(address sender);
-	//
-	//  	function receive(bytes calldata memo) external payable returns (string memory res) {
-	//  		emit received(msg.sender, msg.value, memo);
-	//  		emit receivedAddr(msg.sender);
-	//		return "hello world";
-	//  	}
-	//  }
-
-	const abiBin = `0x608060405234801561001057600080fd5b506102a0806100206000396000f3fe60806040526004361061003b576000357c010000000000000000000000000000000000000000000000000000000090048063a69b6ed014610040575b600080fd5b6100b76004803603602081101561005657600080fd5b810190808035906020019064010000000081111561007357600080fd5b82018360208201111561008557600080fd5b803590602001918460018302840111640100000000831117156100a757600080fd5b9091929391929390505050610132565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100f75780820151818401526020810190506100dc565b50505050905090810190601f1680156101245780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b60607f75fd880d39c1daf53b6547ab6cb59451fc6452d27caa90e5b6649dd8293b9eed33348585604051808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001848152602001806020018281038252848482818152602001925080828437600081840152601f19601f8201169050808301925050509550505050505060405180910390a17f46923992397eac56cf13058aced2a1871933622717e27b24eabc13bf9dd329c833604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390a16040805190810160405280600b81526020017f68656c6c6f20776f726c6400000000000000000000000000000000000000000081525090509291505056fea165627a7a72305820ff0c57dad254cfeda48c9cfb47f1353a558bccb4d1bc31da1dae69315772d29e0029`
-	const abiJSON = `[ { "constant": false, "inputs": [ { "name": "memo", "type": "bytes" } ], "name": "receive", "outputs": [ { "name": "res", "type": "string" } ], "payable": true, "stateMutability": "payable", "type": "function" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "sender", "type": "address" }, { "indexed": false, "name": "amount", "type": "uint256" }, { "indexed": false, "name": "memo", "type": "bytes" } ], "name": "received", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "sender", "type": "address" } ], "name": "receivedAddr", "type": "event" } ]`
-	parsed, err := abi.JSON(strings.NewReader(abiJSON))
-	require.NoErrorf(err, "could not parse abi: %v")
-
-	calledSendCrossChainAppResponseFn := false
-	importAmount := uint64(5000000000)
-	issuer, vm, _, _, appSender := GenesisVMWithUTXOs(t, true, "", "", "", map[ids.ShortID]uint64{
-		testShortIDAddrs[0]: importAmount,
-	})
-
-	defer func() {
-		err := vm.Shutdown(context.Background())
-		require.NoError(err)
-	}()
-
-	appSender.SendCrossChainAppResponseF = func(ctx context.Context, respondingChainID ids.ID, requestID uint32, responseBytes []byte) {
-		calledSendCrossChainAppResponseFn = true
-
-		var response message.EthCallResponse
-		if _, err = crossChainCodec.Unmarshal(responseBytes, &response); err != nil {
-			require.NoErrorf(err, "unexpected error during unmarshal: %w")
-		}
-
-		result := core.ExecutionResult{}
-		err = json.Unmarshal(response.ExecutionResult, &result)
-		require.NoError(err)
-		require.NotNil(result.ReturnData)
-
-		finalResult, err := parsed.Unpack("receive", result.ReturnData)
-		require.NoError(err)
-		require.NotNil(finalResult)
-		require.Equal("hello world", finalResult[0])
-	}
-
-	newTxPoolHeadChan := make(chan core.NewTxPoolReorgEvent, 1)
-	vm.txPool.SubscribeNewReorgEvent(newTxPoolHeadChan)
-
-	importTx, err := vm.newImportTx(vm.ctx.XChainID, testEthAddrs[0], initialBaseFee, []*secp256k1.PrivateKey{testKeys[0]})
-	require.NoError(err)
-
-	err = vm.mempool.AddLocalTx(importTx)
-	require.NoError(err)
-
-	<-issuer
-
-	blk1, err := vm.BuildBlock(context.Background())
-	require.NoError(err)
-
-	err = blk1.Verify(context.Background())
-	require.NoError(err)
-
-	err = vm.SetPreference(context.Background(), blk1.ID())
-	require.NoError(err)
-
-	err = blk1.Accept(context.Background())
-	require.NoError(err)
-
-	newHead := <-newTxPoolHeadChan
-	if newHead.Head.Hash() != common.Hash(blk1.ID()) {
-		t.Fatalf("Expected new block to match")
-	}
-
-	lastAcceptedID, err := vm.LastAccepted(context.Background())
-	require.NoError(err)
-
-	if lastAcceptedID != blk1.ID() {
-		t.Fatalf("Expected last accepted blockID to be the accepted block: %s, but found %s", blk1.ID(), lastAcceptedID)
-	}
-
-	contractTx := types.NewContractCreation(0, common.Big0, 200000, new(big.Int).Mul(big.NewInt(3), initialBaseFee), common.FromHex(abiBin))
-	contractSignedTx, err := types.SignTx(contractTx, types.NewEIP155Signer(vm.chainID), testKeys[0].ToECDSA())
-	require.NoError(err)
-
-	errs := vm.txPool.AddRemotesSync([]*types.Transaction{contractSignedTx})
-	for _, err := range errs {
-		require.NoError(err)
-	}
-	testAddr := crypto.PubkeyToAddress(testKeys[0].ToECDSA().PublicKey)
-	contractAddress := crypto.CreateAddress(testAddr, 0)
-
-	<-issuer
-
-	blk2, err := vm.BuildBlock(context.Background())
-	require.NoError(err)
-
-	err = blk2.Verify(context.Background())
-	require.NoError(err)
-
-	err = vm.SetPreference(context.Background(), blk2.ID())
-	require.NoError(err)
-
-	err = blk2.Accept(context.Background())
-	require.NoError(err)
-
-	newHead = <-newTxPoolHeadChan
-	if newHead.Head.Hash() != common.Hash(blk2.ID()) {
-		t.Fatalf("Expected new block to match")
-	}
-
-	lastAcceptedID, err = vm.LastAccepted(context.Background())
-	require.NoError(err)
-
-	if lastAcceptedID != blk2.ID() {
-		t.Fatalf("Expected last accepted blockID to be the accepted block: %s, but found %s", blk2.ID(), lastAcceptedID)
-	}
-
-	input, err := parsed.Pack("receive", []byte("X"))
-	require.NoError(err)
-
-	data := hexutil.Bytes(input)
-
-	requestArgs, err := json.Marshal(&ethapi.TransactionArgs{
-		To:   &contractAddress,
-		Data: &data,
-	})
-	require.NoError(err)
-
-	var ethCallRequest message.CrossChainRequest = message.EthCallRequest{
-		RequestArgs: requestArgs,
-	}
-
-	crossChainRequest, err := crossChainCodec.Marshal(message.Version, &ethCallRequest)
-	require.NoError(err)
-
-	requestingChainID := ids.ID(common.BytesToHash([]byte{1, 2, 3, 4, 5}))
-
-	// we need all items in the acceptor queue to be processed before we process a cross chain request
-	vm.blockChain.DrainAcceptorQueue()
-	err = vm.Network.CrossChainAppRequest(context.Background(), requestingChainID, 1, time.Now().Add(60*time.Second), crossChainRequest)
-	require.NoError(err)
-	require.True(calledSendCrossChainAppResponseFn, "sendCrossChainAppResponseFn was not called")
 }
 
 func TestVMConfigDefaults(t *testing.T) {
@@ -1225,9 +1102,9 @@ func TestReissueAtomicTxHigherGasPrice(t *testing.T) {
 				t.Fatalf("Expected to fail with err: %s, but found err: %s", errConflictingAtomicTx, err)
 			}
 
-			assert.True(t, vm.mempool.has(importTx1.ID()))
-			assert.True(t, vm.mempool.has(importTx2.ID()))
-			assert.False(t, vm.mempool.has(reissuanceTx1.ID()))
+			assert.True(t, vm.mempool.Has(importTx1.ID()))
+			assert.True(t, vm.mempool.Has(importTx2.ID()))
+			assert.False(t, vm.mempool.Has(reissuanceTx1.ID()))
 
 			reissuanceTx2, err := vm.newImportTxWithUTXOs(vm.ctx.XChainID, testEthAddrs[0], new(big.Int).Mul(big.NewInt(4), initialBaseFee), kc, []*avax.UTXO{utxo1, utxo2})
 			if err != nil {
@@ -3272,7 +3149,7 @@ func TestConfigureLogLevel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			vm := &VM{}
 			ctx, dbManager, genesisBytes, issuer, _ := setupGenesis(t, test.genesisJSON)
-			appSender := &commonEng.SenderTest{T: t}
+			appSender := &enginetest.Sender{T: t}
 			appSender.CantSendAppGossip = true
 			appSender.SendAppGossipF = func(context.Context, commonEng.SendConfig, []byte) error { return nil }
 			err := vm.Initialize(
@@ -3977,21 +3854,21 @@ func TestParentBeaconRootBlock(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:          "non-empty parent beacon root in Cancun",
-			genesisJSON:   genesisJSONCancun,
+			name:          "non-empty parent beacon root in E-Upgrade (Cancun)",
+			genesisJSON:   genesisJSONEtna,
 			beaconRoot:    &common.Hash{0x01},
 			expectedError: true,
 			errString:     "expected empty hash",
 		},
 		{
-			name:          "empty parent beacon root in Cancun",
-			genesisJSON:   genesisJSONCancun,
+			name:          "empty parent beacon root in E-Upgrade (Cancun)",
+			genesisJSON:   genesisJSONEtna,
 			beaconRoot:    &common.Hash{},
 			expectedError: false,
 		},
 		{
-			name:          "nil parent beacon root in Cancun",
-			genesisJSON:   genesisJSONCancun,
+			name:          "nil parent beacon root in E-Upgrade (Cancun)",
+			genesisJSON:   genesisJSONEtna,
 			beaconRoot:    nil,
 			expectedError: true,
 			errString:     "header is missing parentBeaconRoot",
@@ -4064,4 +3941,70 @@ func TestParentBeaconRootBlock(t *testing.T) {
 			errCheck(err)
 		})
 	}
+}
+
+func TestNoBlobsAllowed(t *testing.T) {
+	ctx := context.Background()
+	require := require.New(t)
+
+	gspec := new(core.Genesis)
+	err := json.Unmarshal([]byte(genesisJSONCancun), gspec)
+	require.NoError(err)
+
+	// Make one block with a single blob tx
+	signer := types.NewCancunSigner(gspec.Config.ChainID)
+	blockGen := func(_ int, b *core.BlockGen) {
+		b.SetCoinbase(constants.BlackholeAddr)
+		fee := big.NewInt(500)
+		fee.Add(fee, b.BaseFee())
+		tx, err := types.SignTx(types.NewTx(&types.BlobTx{
+			Nonce:      0,
+			GasTipCap:  uint256.NewInt(1),
+			GasFeeCap:  uint256.MustFromBig(fee),
+			Gas:        params.TxGas,
+			To:         testEthAddrs[0],
+			BlobFeeCap: uint256.NewInt(1),
+			BlobHashes: []common.Hash{{1}}, // This blob is expected to cause verification to fail
+			Value:      new(uint256.Int),
+		}), signer, testKeys[0].ToECDSA())
+		require.NoError(err)
+		b.AddTx(tx)
+	}
+	// FullFaker used to skip header verification so we can generate a block with blobs
+	_, blocks, _, err := core.GenerateChainWithGenesis(gspec, dummy.NewFullFaker(), 1, 10, blockGen)
+	require.NoError(err)
+
+	// Create a VM with the genesis (will use header verification)
+	_, vm, _, _, _ := GenesisVM(t, true, genesisJSONCancun, "", "")
+	defer func() { require.NoError(vm.Shutdown(ctx)) }()
+
+	// Verification should fail
+	vmBlock, err := vm.newBlock(blocks[0])
+	require.NoError(err)
+	_, err = vm.ParseBlock(ctx, vmBlock.Bytes())
+	require.ErrorContains(err, "blobs not enabled on avalanche networks")
+	err = vmBlock.Verify(ctx)
+	require.ErrorContains(err, "blobs not enabled on avalanche networks")
+}
+
+func TestMinFeeSetAtEtna(t *testing.T) {
+	require := require.New(t)
+	now := time.Now()
+	etnaTime := uint64(now.Add(1 * time.Second).Unix())
+
+	genesis := genesisJSON(
+		activateEtna(params.TestEtnaChainConfig, etnaTime),
+	)
+	clock := mockable.Clock{}
+	clock.Set(now)
+
+	_, vm, _, _, _ := GenesisVMWithClock(t, false, genesis, "", "", clock)
+	initial := vm.txPool.MinFee()
+	require.Equal(params.ApricotPhase4MinBaseFee, initial.Int64())
+
+	require.Eventually(
+		func() bool { return params.EtnaMinBaseFee == vm.txPool.MinFee().Int64() },
+		5*time.Second,
+		1*time.Second,
+	)
 }

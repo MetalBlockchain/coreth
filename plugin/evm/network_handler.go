@@ -12,7 +12,7 @@ import (
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	syncHandlers "github.com/MetalBlockchain/coreth/sync/handlers"
 	syncStats "github.com/MetalBlockchain/coreth/sync/handlers/stats"
-	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/MetalBlockchain/coreth/warp"
 	warpHandlers "github.com/MetalBlockchain/coreth/warp/handlers"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -32,8 +32,8 @@ type networkHandler struct {
 func newNetworkHandler(
 	provider syncHandlers.SyncDataProvider,
 	diskDB ethdb.KeyValueReader,
-	evmTrieDB *trie.Database,
-	atomicTrieDB *trie.Database,
+	evmTrieDB *triedb.Database,
+	atomicTrieDB *triedb.Database,
 	warpBackend warp.Backend,
 	networkCodec codec.Manager,
 ) message.RequestHandler {

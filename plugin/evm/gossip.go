@@ -90,10 +90,6 @@ func (t txGossipHandler) AppRequest(ctx context.Context, nodeID ids.NodeID, dead
 	return t.appRequestHandler.AppRequest(ctx, nodeID, deadline, requestBytes)
 }
 
-func (t txGossipHandler) CrossChainAppRequest(context.Context, ids.ID, time.Time, []byte) ([]byte, error) {
-	return nil, nil
-}
-
 type GossipAtomicTxMarshaller struct{}
 
 func (g GossipAtomicTxMarshaller) MarshalGossip(tx *GossipAtomicTx) ([]byte, error) {
@@ -164,7 +160,7 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 			return
 		case pendingTxs := <-g.pendingTxs:
 			g.lock.Lock()
-			optimalElements := (g.mempool.PendingSize(false) + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
+			optimalElements := (g.mempool.PendingSize(txpool.PendingFilter{}) + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
 			for _, pendingTx := range pendingTxs.Txs {
 				tx := &GossipEthTx{Tx: pendingTx}
 				g.bloom.Add(tx)

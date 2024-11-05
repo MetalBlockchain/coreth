@@ -34,6 +34,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -49,7 +50,7 @@ const (
 // generateSnapshot regenerates a brand new snapshot based on an existing state
 // database and head block asynchronously. The snapshot is returned immediately
 // and generation is continued in the background until done.
-func generateSnapshot(diskdb ethdb.KeyValueStore, triedb *trie.Database, cache int, blockHash, root common.Hash, wiper chan struct{}) *diskLayer {
+func generateSnapshot(diskdb ethdb.KeyValueStore, triedb *triedb.Database, cache int, blockHash, root common.Hash, wiper chan struct{}) *diskLayer {
 	// Wipe any previously existing snapshot from the database if no wiper is
 	// currently in progress.
 	if wiper == nil {
