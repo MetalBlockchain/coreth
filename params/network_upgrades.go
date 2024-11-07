@@ -199,7 +199,7 @@ func (n *NetworkUpgrades) Description() string {
 func getNetworkUpgrades(agoUpgrade upgrade.Config, chainID *big.Int) NetworkUpgrades {
 	banffBlockTimestamp := utils.TimeToNewUint64(agoUpgrade.BanffTime)
 
-	if chainID == MetalMainnetChainID {
+	if chainID.Cmp(MetalMainnetChainID) == 0 {
 		banffBlockTimestamp = utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC)) // TODO: Figure out how to fix this
 	}
 
