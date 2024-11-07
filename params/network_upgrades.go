@@ -5,10 +5,12 @@ package params
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
+	"time"
 
-	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/MetalBlockchain/coreth/utils"
+	"github.com/MetalBlockchain/metalgo/upgrade"
 )
 
 type NetworkUpgrades struct {
@@ -194,7 +196,13 @@ func (n *NetworkUpgrades) Description() string {
 	return banner
 }
 
-func getNetworkUpgrades(agoUpgrade upgrade.Config) NetworkUpgrades {
+func getNetworkUpgrades(agoUpgrade upgrade.Config, chainID *big.Int) NetworkUpgrades {
+	banffBlockTimestamp := utils.TimeToNewUint64(agoUpgrade.BanffTime)
+
+	if chainID == MetalMainnetChainID {
+		banffBlockTimestamp = utils.TimeToNewUint64(time.Date(2022, time.October, 19, 14, 0, 0, 0, time.UTC)) // TODO: Figure out how to fix this
+	}
+
 	return NetworkUpgrades{
 		ApricotPhase1BlockTimestamp:     utils.TimeToNewUint64(agoUpgrade.ApricotPhase1Time),
 		ApricotPhase2BlockTimestamp:     utils.TimeToNewUint64(agoUpgrade.ApricotPhase2Time),
@@ -204,7 +212,7 @@ func getNetworkUpgrades(agoUpgrade upgrade.Config) NetworkUpgrades {
 		ApricotPhasePre6BlockTimestamp:  utils.TimeToNewUint64(agoUpgrade.ApricotPhasePre6Time),
 		ApricotPhase6BlockTimestamp:     utils.TimeToNewUint64(agoUpgrade.ApricotPhase6Time),
 		ApricotPhasePost6BlockTimestamp: utils.TimeToNewUint64(agoUpgrade.ApricotPhasePost6Time),
-		BanffBlockTimestamp:             utils.TimeToNewUint64(agoUpgrade.BanffTime),
+		BanffBlockTimestamp:             banffBlockTimestamp,
 		CortinaBlockTimestamp:           utils.TimeToNewUint64(agoUpgrade.CortinaTime),
 		DurangoBlockTimestamp:           utils.TimeToNewUint64(agoUpgrade.DurangoTime),
 		EtnaTimestamp:                   utils.TimeToNewUint64(agoUpgrade.EtnaTime),
