@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/upgrade"
-	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -171,7 +171,7 @@ func GetChainConfig(agoUpgrade upgrade.Config, chainID *big.Int) *ChainConfig {
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		MuirGlacierBlock:    big.NewInt(0),
-		NetworkUpgrades:     getNetworkUpgrades(agoUpgrade),
+		NetworkUpgrades:     getNetworkUpgrades(agoUpgrade, chainID),
 	}
 }
 
