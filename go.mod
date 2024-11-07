@@ -3,7 +3,7 @@ module github.com/MetalBlockchain/coreth
 go 1.21.12
 
 require (
-	github.com/MetalBlockchain/metalgo v1.11.11-rc.1
+	github.com/MetalBlockchain/metalgo v1.11.11-rc.2
 	github.com/VictoriaMetrics/fastcache v1.12.1
 	github.com/cespare/cp v0.1.0
 	github.com/crate-crypto/go-ipa v0.0.0-20231025140028-3c0104f4b233

@@ -50,6 +50,8 @@ github.com/MetalBlockchain/metalgo v1.11.7-rc.3 h1:N8kqmxl7QHTarB9tHd5c5+Pu0SNx6
 github.com/MetalBlockchain/metalgo v1.11.7-rc.3/go.mod h1:Gjnl71iZUtJS5RBZ0fjZIxT/nydZ1EkQ6HTFNzLQw6U=
 github.com/MetalBlockchain/metalgo v1.11.11-rc.1 h1:KATB8doyduWeCO5/fQUhWWWxHApsp7miyp69cIZiZZU=
 github.com/MetalBlockchain/metalgo v1.11.11-rc.1/go.mod h1:FxAdGHJm9dexWC7Ltzai0E9B2Q+/XUjDwVK9yVMnA1o=
+github.com/MetalBlockchain/metalgo v1.11.11-rc.2 h1:1O+ZiJxGzHk89+s9dxzMwQbxxCsFNrH5tWJl8lCJa2w=
+github.com/MetalBlockchain/metalgo v1.11.11-rc.2/go.mod h1:Iifxf7AKEe0ZPZxQj8LvZT5VF+m6mdVYIGF3uUIg2jY=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqRtAwp2Xwc6WNPJEufxJ7fx3npB4UV/JOLmbu5I0=
 github.com/VictoriaMetrics/fastcache v1.12.1 h1:i0mICQuojGDL3KblA7wUNlY5lOK6a4bwt3uRKnkZU40=
 github.com/VictoriaMetrics/fastcache v1.12.1/go.mod h1:tX04vaqcNoQeGLD+ra5pU5sWkuxnzWhEzLwhP9w653o=

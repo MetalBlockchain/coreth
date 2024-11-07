@@ -449,11 +449,9 @@ func (vm *VM) Initialize(
 	// Set the chain config for mainnet/fuji chain IDs
 	switch chainCtx.NetworkID {
 	case avalanchegoConstants.MainnetID:
-		chainID = params.AvalancheMainnetChainID
-		extDataHashes = mainnetExtDataHashes
-	case avalanchegoConstants.FujiID:
-		chainID = params.AvalancheFujiChainID
-		extDataHashes = fujiExtDataHashes
+		chainID = params.MetalMainnetChainID
+	case avalanchegoConstants.TahoeID:
+		chainID = params.MetalTahoeChainID
 	case avalanchegoConstants.LocalID:
 		chainID = params.AvalancheLocalChainID
 	default:
