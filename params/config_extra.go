@@ -40,6 +40,19 @@ type AvalancheContext struct {
 // code in place of their Ethereum counterparts. The original Ethereum names
 // should be restored for maintainability.
 func (c *ChainConfig) SetEthUpgrades() {
+	// In testing or local networks, we only support enabling Berlin and London prior
+	// to the initially active time. This is likely to correspond to an intended block
+	// number of 0 as well.
+	initiallyActive := uint64(upgrade.InitiallyActiveTime.Unix())
+	if c.ApricotPhase2BlockTimestamp != nil && *c.ApricotPhase2BlockTimestamp <= initiallyActive && c.BerlinBlock == nil {
+		c.BerlinBlock = big.NewInt(0)
+	}
+	if c.ApricotPhase3BlockTimestamp != nil && *c.ApricotPhase3BlockTimestamp <= initiallyActive && c.LondonBlock == nil {
+		c.LondonBlock = big.NewInt(0)
+	}
+	if c.DurangoBlockTimestamp != nil {
+		c.ShanghaiTime = utils.NewUint64(*c.DurangoBlockTimestamp)
+	}
 	if c.EtnaTimestamp != nil {
 		c.CancunTime = utils.NewUint64(*c.EtnaTimestamp)
 	}
@@ -158,7 +171,7 @@ func (c *ChainConfig) ToWithUpgradesJSON() *ChainConfigWithUpgradesJSON {
 }
 
 func GetChainConfig(agoUpgrade upgrade.Config, chainID *big.Int) *ChainConfig {
-	return &ChainConfig{
+	c := &ChainConfig{
 		ChainID:             chainID,
 		HomesteadBlock:      big.NewInt(0),
 		DAOForkBlock:        big.NewInt(0),
@@ -173,6 +186,7 @@ func GetChainConfig(agoUpgrade upgrade.Config, chainID *big.Int) *ChainConfig {
 		MuirGlacierBlock:    big.NewInt(0),
 		NetworkUpgrades:     getNetworkUpgrades(agoUpgrade, chainID),
 	}
+	return c
 }
 
 func (r *Rules) PredicatersExist() bool {
