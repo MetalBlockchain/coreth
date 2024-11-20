@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       avalanchegoRepo:
-        description: "avalanchego github repository"
+        description: "metalgo github repository"
         required: true
-        default: "ava-labs/avalanchego"
+        default: "MetalBlockchain/metalgo"
       avalanchegoBranch:
-        description: "avalanchego branch"
+        description: "metalgo branch"
         required: true
         default: "master"
 
@@ -27,16 +27,16 @@ jobs:
         with:
           repository: ${{ github.event.inputs.avalanchegoRepo }}
           ref: ${{ github.event.inputs.avalanchegoBranch }}
-          path: avalanchego
+          path: metalgo
           token: ${{ secrets.AVALANCHE_PAT }}
       - uses: actions/setup-go@v5
         with:
           go-version: "~1.22.8"
           check-latest: true
-      - name: change avalanchego dep
+      - name: change metalgo dep
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          go mod edit -replace github.com/ava-labs/avalanchego=./avalanchego
+          go mod edit -replace github.com/MetalBlockchain/metalgo=./metalgo
           go mod tidy
           go clean -modcache # avoid conflicts with the golangci-lint-action cache
       - run: ./scripts/lint_allowed_geth_imports.sh
@@ -78,7 +78,7 @@ jobs:
       - name: change avalanchego dep
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          go mod edit -replace github.com/ava-labs/avalanchego=./avalanchego
+          go mod edit -replace github.com/MetalBlockchain/metalgo=./metalgo
           go mod tidy
       - name: Set timeout on Windows # Windows UT run slower and need a longer timeout
         shell: bash
