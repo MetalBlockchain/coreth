@@ -41,6 +41,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/state/snapshot"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
@@ -95,16 +96,20 @@ func NewPruner(db ethdb.Database, config Config) (*Pruner, error) {
 	if headBlock == nil {
 		return nil, errors.New("failed to load head block")
 	}
+	// Offline pruning is only supported in legacy hash based scheme.
+	triedb := triedb.NewDatabase(db, triedb.HashDefaults)
+
 	// Note: we refuse to start a pruning session unless the snapshot disk layer exists, which should prevent
 	// us from ever needing to enter RecoverPruning in an invalid pruning session (a session where we do not have
 	// the protected trie in the triedb and in the snapshot disk layer).
+
 	snapconfig := snapshot.Config{
 		CacheSize:  256,
 		AsyncBuild: false,
 		NoBuild:    true,
 		SkipVerify: true,
 	}
-	snaptree, err := snapshot.New(snapconfig, db, trie.NewDatabase(db), headBlock.Hash(), headBlock.Root())
+	snaptree, err := snapshot.New(snapconfig, db, triedb, headBlock.Hash(), headBlock.Root())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create snapshot for pruning, must restart without offline pruning disabled to recover: %w", err) // The relevant snapshot(s) might not exist
 	}
@@ -131,16 +136,16 @@ func prune(maindb ethdb.Database, stateBloom *stateBloom, bloomPath string, star
 	// the trie nodes(and codes) belong to the active state will be filtered
 	// out. A very small part of stale tries will also be filtered because of
 	// the false-positive rate of bloom filter. But the assumption is held here
-	// that the false-positive is low enough(~0.05%). The probablity of the
+	// that the false-positive is low enough(~0.05%). The probability of the
 	// dangling node is the state root is super low. So the dangling nodes in
 	// theory will never ever be visited again.
 	var (
-		count  int
-		size   common.StorageSize
-		pstart = time.Now()
-		logged = time.Now()
-		batch  = maindb.NewBatch()
-		iter   = maindb.NewIterator(nil, nil)
+		skipped, count int
+		size           common.StorageSize
+		pstart         = time.Now()
+		logged         = time.Now()
+		batch          = maindb.NewBatch()
+		iter           = maindb.NewIterator(nil, nil)
 	)
 	// We wrap iter.Release() in an anonymous function so that the [iter]
 	// value captured is the value of [iter] at the end of the function as opposed
@@ -163,6 +168,7 @@ func prune(maindb ethdb.Database, stateBloom *stateBloom, bloomPath string, star
 				checkKey = codeKey
 			}
 			if stateBloom.Contain(checkKey) {
+				skipped += 1
 				continue
 			}
 			count += 1
@@ -180,7 +186,7 @@ func prune(maindb ethdb.Database, stateBloom *stateBloom, bloomPath string, star
 				eta = time.Duration(left/speed) * time.Millisecond
 			}
 			if time.Since(logged) > 8*time.Second {
-				log.Info("Pruning state data", "nodes", count, "size", size,
+				log.Info("Pruning state data", "nodes", count, "skipped", skipped, "size", size,
 					"elapsed", common.PrettyDuration(time.Since(pstart)), "eta", common.PrettyDuration(eta))
 				logged = time.Now()
 			}
@@ -342,7 +348,7 @@ func extractGenesis(db ethdb.Database, stateBloom *stateBloom) error {
 	if genesis == nil {
 		return errors.New("missing genesis block")
 	}
-	t, err := trie.NewStateTrie(trie.StateTrieID(genesis.Root()), trie.NewDatabase(db))
+	t, err := trie.NewStateTrie(trie.StateTrieID(genesis.Root()), triedb.NewDatabase(db, triedb.HashDefaults))
 	if err != nil {
 		return err
 	}
@@ -366,7 +372,7 @@ func extractGenesis(db ethdb.Database, stateBloom *stateBloom) error {
 			}
 			if acc.Root != types.EmptyRootHash {
 				id := trie.StorageTrieID(genesis.Root(), common.BytesToHash(accIter.LeafKey()), acc.Root)
-				storageTrie, err := trie.NewStateTrie(id, trie.NewDatabase(db))
+				storageTrie, err := trie.NewStateTrie(id, triedb.NewDatabase(db, triedb.HashDefaults))
 				if err != nil {
 					return err
 				}

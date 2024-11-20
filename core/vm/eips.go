@@ -95,7 +95,7 @@ func enable1884(jt *JumpTable) {
 }
 
 func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	balance, _ := uint256.FromBig(interpreter.evm.StateDB.GetBalance(scope.Contract.Address()))
+	balance := interpreter.evm.StateDB.GetBalance(scope.Contract.Address())
 	scope.Stack.push(balance)
 	return nil, nil
 }
@@ -169,12 +169,6 @@ func enable2929(jt *JumpTable) {
 func enableAP1(jt *JumpTable) {
 	jt[SSTORE].dynamicGas = gasSStoreAP1
 	jt[SELFDESTRUCT].dynamicGas = gasSelfdestructAP1
-	jt[CALLEX].dynamicGas = gasCallExpertAP1
-}
-
-func enableAP2(jt *JumpTable) {
-	jt[BALANCEMC] = &operation{execute: opUndefined, maxStack: maxStack(0, 0)}
-	jt[CALLEX] = &operation{execute: opUndefined, maxStack: maxStack(0, 0)}
 }
 
 // enable3198 applies EIP-3198 (BASEFEE Opcode)
@@ -297,14 +291,30 @@ func opBlobHash(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([
 	return nil, nil
 }
 
-// enable4844 applies EIP-4844 (DATAHASH opcode)
+// opBlobBaseFee implements BLOBBASEFEE opcode
+func opBlobBaseFee(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	blobBaseFee, _ := uint256.FromBig(interpreter.evm.Context.BlobBaseFee)
+	scope.Stack.push(blobBaseFee)
+	return nil, nil
+}
+
+// enable4844 applies EIP-4844 (BLOBHASH opcode)
 func enable4844(jt *JumpTable) {
-	// New opcode
 	jt[BLOBHASH] = &operation{
 		execute:     opBlobHash,
 		constantGas: GasFastestStep,
 		minStack:    minStack(1, 1),
 		maxStack:    maxStack(1, 1),
+	}
+}
+
+// enable7516 applies EIP-7516 (BLOBBASEFEE opcode)
+func enable7516(jt *JumpTable) {
+	jt[BLOBBASEFEE] = &operation{
+		execute:     opBlobBaseFee,
+		constantGas: GasQuickStep,
+		minStack:    minStack(0, 1),
+		maxStack:    maxStack(0, 1),
 	}
 }
 

@@ -264,16 +264,34 @@ func (v blockValidator) SyntacticVerify(b *Block, rules params.Rules) error {
 	// Verify the existence / non-existence of excessBlobGas
 	cancun := rules.IsCancun
 	if !cancun && ethHeader.ExcessBlobGas != nil {
-		return fmt.Errorf("invalid excessBlobGas: have %d, expected nil", ethHeader.ExcessBlobGas)
+		return fmt.Errorf("invalid excessBlobGas: have %d, expected nil", *ethHeader.ExcessBlobGas)
 	}
 	if !cancun && ethHeader.BlobGasUsed != nil {
-		return fmt.Errorf("invalid blobGasUsed: have %d, expected nil", ethHeader.BlobGasUsed)
+		return fmt.Errorf("invalid blobGasUsed: have %d, expected nil", *ethHeader.BlobGasUsed)
 	}
 	if cancun && ethHeader.ExcessBlobGas == nil {
 		return errors.New("header is missing excessBlobGas")
 	}
 	if cancun && ethHeader.BlobGasUsed == nil {
 		return errors.New("header is missing blobGasUsed")
+	}
+	if !cancun && ethHeader.ParentBeaconRoot != nil {
+		return fmt.Errorf("invalid parentBeaconRoot: have %x, expected nil", *ethHeader.ParentBeaconRoot)
+	}
+	// TODO: decide what to do after Cancun
+	// currently we are enforcing it to be empty hash
+	if cancun {
+		switch {
+		case ethHeader.ParentBeaconRoot == nil:
+			return errors.New("header is missing parentBeaconRoot")
+		case *ethHeader.ParentBeaconRoot != (common.Hash{}):
+			return fmt.Errorf("invalid parentBeaconRoot: have %x, expected empty hash", ethHeader.ParentBeaconRoot)
+		}
+		if ethHeader.BlobGasUsed == nil {
+			return fmt.Errorf("blob gas used must not be nil in Cancun")
+		} else if *ethHeader.BlobGasUsed > 0 {
+			return fmt.Errorf("blobs not enabled on avalanche networks: used %d blob gas, expected 0", *ethHeader.BlobGasUsed)
+		}
 	}
 	return nil
 }

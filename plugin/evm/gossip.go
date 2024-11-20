@@ -7,16 +7,18 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/ids"
-	"github.com/MetalBlockchain/metalgo/utils/logging"
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/network/p2p"
 	"github.com/MetalBlockchain/metalgo/network/p2p/gossip"
+	"github.com/MetalBlockchain/metalgo/snow/engine/common"
+	"github.com/MetalBlockchain/metalgo/utils/logging"
 
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/txpool"
@@ -84,12 +86,8 @@ func (t txGossipHandler) AppGossip(ctx context.Context, nodeID ids.NodeID, gossi
 	t.appGossipHandler.AppGossip(ctx, nodeID, gossipBytes)
 }
 
-func (t txGossipHandler) AppRequest(ctx context.Context, nodeID ids.NodeID, deadline time.Time, requestBytes []byte) ([]byte, error) {
+func (t txGossipHandler) AppRequest(ctx context.Context, nodeID ids.NodeID, deadline time.Time, requestBytes []byte) ([]byte, *common.AppError) {
 	return t.appRequestHandler.AppRequest(ctx, nodeID, deadline, requestBytes)
-}
-
-func (t txGossipHandler) CrossChainAppRequest(context.Context, ids.ID, time.Time, []byte) ([]byte, error) {
-	return nil, nil
 }
 
 type GossipAtomicTxMarshaller struct{}
@@ -132,10 +130,28 @@ type GossipEthTxPool struct {
 
 	bloom *gossip.BloomFilter
 	lock  sync.RWMutex
+
+	// subscribed is set to true when the gossip subscription is active
+	// mostly used for testing
+	subscribed atomic.Bool
+}
+
+// IsSubscribed returns whether or not the gossip subscription is active.
+func (g *GossipEthTxPool) IsSubscribed() bool {
+	return g.subscribed.Load()
 }
 
 func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
-	g.mempool.SubscribeNewTxsEvent(g.pendingTxs)
+	sub := g.mempool.SubscribeTransactions(g.pendingTxs, false)
+	if sub == nil {
+		log.Warn("failed to subscribe to new txs event")
+		return
+	}
+	g.subscribed.CompareAndSwap(false, true)
+	defer func() {
+		sub.Unsubscribe()
+		g.subscribed.CompareAndSwap(true, false)
+	}()
 
 	for {
 		select {
@@ -144,7 +160,7 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 			return
 		case pendingTxs := <-g.pendingTxs:
 			g.lock.Lock()
-			optimalElements := (g.mempool.PendingSize(false) + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
+			optimalElements := (g.mempool.PendingSize(txpool.PendingFilter{}) + len(pendingTxs.Txs)) * txGossipBloomChurnMultiplier
 			for _, pendingTx := range pendingTxs.Txs {
 				tx := &GossipEthTx{Tx: pendingTx}
 				g.bloom.Add(tx)
@@ -157,8 +173,8 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 				if reset {
 					log.Debug("resetting bloom filter", "reason", "reached max filled ratio")
 
-					g.mempool.IteratePending(func(tx *txpool.Transaction) bool {
-						g.bloom.Add(&GossipEthTx{Tx: tx.Tx})
+					g.mempool.IteratePending(func(tx *types.Transaction) bool {
+						g.bloom.Add(&GossipEthTx{Tx: tx})
 						return true
 					})
 				}
@@ -171,18 +187,18 @@ func (g *GossipEthTxPool) Subscribe(ctx context.Context) {
 // Add enqueues the transaction to the mempool. Subscribe should be called
 // to receive an event if tx is actually added to the mempool or not.
 func (g *GossipEthTxPool) Add(tx *GossipEthTx) error {
-	return g.mempool.Add([]*txpool.Transaction{{Tx: tx.Tx}}, false, false)[0]
+	return g.mempool.Add([]*types.Transaction{tx.Tx}, false, false)[0]
 }
 
 // Has should just return whether or not the [txID] is still in the mempool,
 // not whether it is in the mempool AND pending.
 func (g *GossipEthTxPool) Has(txID ids.ID) bool {
-	return g.mempool.Has(common.Hash(txID))
+	return g.mempool.Has(ethcommon.Hash(txID))
 }
 
 func (g *GossipEthTxPool) Iterate(f func(tx *GossipEthTx) bool) {
-	g.mempool.IteratePending(func(tx *txpool.Transaction) bool {
-		return f(&GossipEthTx{Tx: tx.Tx})
+	g.mempool.IteratePending(func(tx *types.Transaction) bool {
+		return f(&GossipEthTx{Tx: tx})
 	})
 }
 

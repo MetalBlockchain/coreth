@@ -172,6 +172,9 @@ var PrecompiledContractsCancun = map[common.Address]contract.StatefulPrecompiled
 	common.BytesToAddress([]byte{8}):    newWrappedPrecompiledContract(&bn256PairingIstanbul{}),
 	common.BytesToAddress([]byte{9}):    newWrappedPrecompiledContract(&blake2F{}),
 	common.BytesToAddress([]byte{0x0a}): newWrappedPrecompiledContract(&kzgPointEvaluation{}),
+	genesisContractAddr:                 &deprecatedContract{},
+	NativeAssetBalanceAddr:              &deprecatedContract{},
+	NativeAssetCallAddr:                 &deprecatedContract{},
 }
 
 // PrecompiledContractsBLS contains the set of pre-compiled Ethereum
@@ -1115,7 +1118,7 @@ func (c *bls12381MapG1) RequiredGas(input []byte) uint64 {
 
 func (c *bls12381MapG1) Run(input []byte) ([]byte, error) {
 	// Implements EIP-2537 Map_To_G1 precompile.
-	// > Field-to-curve call expects `64` bytes an an input that is interpreted as a an element of the base field.
+	// > Field-to-curve call expects `64` bytes as an input that is interpreted as a an element of the base field.
 	// > Output of this call is `128` bytes and is G1 point following respective encoding rules.
 	if len(input) != 64 {
 		return nil, errBLS12381InvalidInputLength
@@ -1150,7 +1153,7 @@ func (c *bls12381MapG2) RequiredGas(input []byte) uint64 {
 
 func (c *bls12381MapG2) Run(input []byte) ([]byte, error) {
 	// Implements EIP-2537 Map_FP2_TO_G2 precompile logic.
-	// > Field-to-curve call expects `128` bytes an an input that is interpreted as a an element of the quadratic extension field.
+	// > Field-to-curve call expects `128` bytes as an input that is interpreted as a an element of the quadratic extension field.
 	// > Output of this call is `256` bytes and is G2 point following respective encoding rules.
 	if len(input) != 128 {
 		return nil, errBLS12381InvalidInputLength

@@ -11,6 +11,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
+	"github.com/holiman/uint256"
 
 	"github.com/MetalBlockchain/metalgo/snow"
 	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
@@ -100,7 +101,9 @@ func (b *blockBuilder) handleGenerateBlock() {
 // needToBuild returns true if there are outstanding transactions to be issued
 // into a block.
 func (b *blockBuilder) needToBuild() bool {
-	size := b.txPool.PendingSize(true)
+	size := b.txPool.PendingSize(txpool.PendingFilter{
+		MinTip: uint256.MustFromBig(b.txPool.GasTip()),
+	})
 	return size > 0 || b.mempool.Len() > 0
 }
 
@@ -144,7 +147,7 @@ func (b *blockBuilder) awaitSubmittedTxs() {
 	// txSubmitChan is invoked when new transactions are issued as well as on re-orgs which
 	// may orphan transactions that were previously in a preferred block.
 	txSubmitChan := make(chan core.NewTxsEvent)
-	b.txPool.SubscribeNewTxsEvent(txSubmitChan)
+	b.txPool.SubscribeTransactions(txSubmitChan, true)
 
 	b.shutdownWg.Add(1)
 	go b.ctx.Log.RecoverAndPanic(func() {

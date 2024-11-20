@@ -17,6 +17,7 @@ import (
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
 	"github.com/MetalBlockchain/coreth/sync/syncutils"
 	"github.com/MetalBlockchain/coreth/trie"
+	"github.com/MetalBlockchain/coreth/triedb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -27,7 +28,7 @@ func TestLeafsRequestHandler_OnLeafsRequest(t *testing.T) {
 	rand.Seed(1)
 	mockHandlerStats := &stats.MockHandlerStats{}
 	memdb := rawdb.NewMemoryDatabase()
-	trieDB := trie.NewDatabase(memdb)
+	trieDB := triedb.NewDatabase(memdb, nil)
 
 	corruptedTrieRoot, _, _ := syncutils.GenerateTrie(t, trieDB, 100, common.HashLength)
 	tr, err := trie.New(trie.TrieID(corruptedTrieRoot), trieDB)
@@ -699,14 +700,11 @@ func TestLeafsRequestHandler_OnLeafsRequest(t *testing.T) {
 func assertRangeProofIsValid(t *testing.T, request *message.LeafsRequest, response *message.LeafsResponse, expectMore bool) {
 	t.Helper()
 
-	var start, end []byte
+	var start []byte
 	if len(request.Start) == 0 {
 		start = bytes.Repeat([]byte{0x00}, common.HashLength)
 	} else {
 		start = request.Start
-	}
-	if len(response.Keys) > 0 {
-		end = response.Keys[len(response.Vals)-1]
 	}
 
 	var proof ethdb.Database
@@ -721,7 +719,7 @@ func assertRangeProofIsValid(t *testing.T, request *message.LeafsRequest, respon
 		}
 	}
 
-	more, err := trie.VerifyRangeProof(request.Root, start, end, response.Keys, response.Vals, proof)
+	more, err := trie.VerifyRangeProof(request.Root, start, response.Keys, response.Vals, proof)
 	assert.NoError(t, err)
 	assert.Equal(t, expectMore, more)
 }
