@@ -31,8 +31,8 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/coreth/metrics"
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )

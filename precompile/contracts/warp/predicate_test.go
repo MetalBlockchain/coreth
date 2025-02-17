@@ -9,6 +9,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
+	"github.com/MetalBlockchain/coreth/precompile/testutils"
+	"github.com/MetalBlockchain/coreth/predicate"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
@@ -20,10 +24,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/set"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
-	"github.com/MetalBlockchain/coreth/precompile/testutils"
-	"github.com/MetalBlockchain/coreth/predicate"
-	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/stretchr/testify/require"
 )
 

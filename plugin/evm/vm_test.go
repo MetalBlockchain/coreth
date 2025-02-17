@@ -63,8 +63,8 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 
-	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	accountKeystore "github.com/MetalBlockchain/coreth/accounts/keystore"
+	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 )
 
 var (
@@ -78,7 +78,7 @@ var (
 	testAvaxAssetID  = ids.ID{1, 2, 3}
 	username         = "Johns"
 	password         = "CjasdjhiPeirbSenfeI13" // #nosec G101
-	genesisJSON = func(cfg *params.ChainConfig) string {
+	genesisJSON      = func(cfg *params.ChainConfig) string {
 		g := new(core.Genesis)
 		g.Difficulty = big.NewInt(0)
 		g.GasLimit = 0x5f5e100

@@ -10,10 +10,10 @@ import (
 
 	"github.com/MetalBlockchain/coreth/params"
 
-	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/coreth/sync/handlers/stats"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb/memorydb"

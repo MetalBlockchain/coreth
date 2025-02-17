@@ -31,7 +31,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/consensus/misc/eip4844"
@@ -41,6 +40,7 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/utils"
+	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"

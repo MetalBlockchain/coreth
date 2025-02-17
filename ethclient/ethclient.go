@@ -34,11 +34,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/accounts/abi/bind"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/interfaces"
 	"github.com/MetalBlockchain/coreth/rpc"
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 

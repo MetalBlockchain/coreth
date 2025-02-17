@@ -8,12 +8,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/coreth/sync/handlers"
 	handlerstats "github.com/MetalBlockchain/coreth/sync/handlers/stats"
+	"github.com/MetalBlockchain/metalgo/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb/memorydb"
