@@ -19,7 +19,7 @@ CORETH_PATH=$(
 )
 
 # Allow configuring the clone path to point to an existing clone
-AVALANCHEGO_CLONE_PATH="${AVALANCHEGO_CLONE_PATH:-avalanchego}"
+AVALANCHEGO_CLONE_PATH="${AVALANCHEGO_CLONE_PATH:-metalgo}"
 
 # Load the version
 source "$CORETH_PATH"/scripts/versions.sh
@@ -30,25 +30,25 @@ function cleanup {
 }
 trap cleanup EXIT
 
-echo "checking out target AvalancheGo version ${AVALANCHE_VERSION}"
+echo "checking out target MetalGo version ${AVALANCHE_VERSION}"
 if [[ -d "${AVALANCHEGO_CLONE_PATH}" ]]; then
   echo "updating existing clone"
   cd "${AVALANCHEGO_CLONE_PATH}"
   git fetch
 else
   echo "creating new clone"
-  git clone https://github.com/ava-labs/avalanchego.git "${AVALANCHEGO_CLONE_PATH}"
+  git clone https://github.com/MetalBlockchain/metalgo.git "${AVALANCHEGO_CLONE_PATH}"
   cd "${AVALANCHEGO_CLONE_PATH}"
 fi
 # Branch will be reset to $AVALANCHE_VERSION if it already exists
 git checkout -B "test-${AVALANCHE_VERSION}" "${AVALANCHE_VERSION}"
 
 echo "updating coreth dependency to point to ${CORETH_PATH}"
-go mod edit -replace "github.com/ava-labs/coreth=${CORETH_PATH}"
+go mod edit -replace "github.com/MetalBlockchain/coreth=${CORETH_PATH}"
 go mod tidy
 
-echo "building avalanchego"
+echo "building metalgo"
 ./scripts/build.sh -r
 
-echo "running AvalancheGo e2e tests"
+echo "running MetalGo e2e tests"
 E2E_SERIAL=1 ./scripts/tests.e2e.sh --ginkgo.label-filter='c || uses-c'
