@@ -50,6 +50,8 @@ const (
 	defaultPopulateMissingTriesParallelism        = 1024
 	defaultStateSyncServerTrieCache               = 64 // MB
 	defaultAcceptedCacheSize                      = 32 // blocks
+	defaultHttpBatchRequestLimit                  = 100
+	defaultHttpBatchResponseSizeLimit             = 20 * 1024 * 1024
 
 	// defaultStateSyncMinBlocks is the minimum number of blocks the blockchain
 	// should be ahead of local last accepted to perform state sync.
@@ -220,7 +222,9 @@ type Config struct {
 	WarpOffChainMessages []hexutil.Bytes `json:"warp-off-chain-messages"`
 
 	// RPC settings
-	HttpBodyLimit uint64 `json:"http-body-limit"`
+	HttpBodyLimit              uint64 `json:"http-body-limit"`
+	HttpBatchRequestLimit      int    `json:"http-batch-request-limit"`
+	HttpBatchResponseSizeLimit int    `json:"http-batch-response-size-limit"`
 }
 
 // EthAPIs returns an array of strings representing the Eth APIs that should be enabled
@@ -280,6 +284,8 @@ func (c *Config) SetDefaults() {
 	c.StateSyncRequestSize = defaultStateSyncRequestSize
 	c.AllowUnprotectedTxHashes = defaultAllowUnprotectedTxHashes
 	c.AcceptedCacheSize = defaultAcceptedCacheSize
+	c.HttpBatchRequestLimit = defaultHttpBatchRequestLimit
+	c.HttpBatchResponseSizeLimit = defaultHttpBatchResponseSizeLimit
 }
 
 func (d *Duration) UnmarshalJSON(data []byte) (err error) {
@@ -320,6 +326,12 @@ func (c *Config) Validate() error {
 
 	if c.PushGossipPercentStake < 0 || c.PushGossipPercentStake > 1 {
 		return fmt.Errorf("push-gossip-percent-stake is %f but must be in the range [0, 1]", c.PushGossipPercentStake)
+	}
+	if c.HttpBatchRequestLimit <= 0 {
+		return fmt.Errorf("http-batch-request-limit needs to be greater than 0")
+	}
+	if c.HttpBatchResponseSizeLimit <= 0 {
+		return fmt.Errorf("http-batch-response-size-limit needs to be greater than 0")
 	}
 	return nil
 }
