@@ -7,10 +7,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MetalBlockchain/metalgo/utils/timer"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/MetalBlockchain/metalgo/utils/timer"
+	"github.com/MetalBlockchain/coreth/plugin/evm/atomic"
 	"github.com/holiman/uint256"
 
 	"github.com/MetalBlockchain/metalgo/snow"
@@ -29,7 +30,7 @@ type blockBuilder struct {
 	chainConfig *params.ChainConfig
 
 	txPool  *txpool.TxPool
-	mempool *Mempool
+	mempool *atomic.Mempool
 
 	shutdownChan <-chan struct{}
 	shutdownWg   *sync.WaitGroup

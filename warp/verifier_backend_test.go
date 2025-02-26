@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/utils"
-	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/MetalBlockchain/metalgo/cache"
 	"github.com/MetalBlockchain/metalgo/database/memdb"
 	"github.com/MetalBlockchain/metalgo/ids"
@@ -19,6 +17,8 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
+	"github.com/MetalBlockchain/coreth/utils"
+	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
@@ -26,7 +26,7 @@ import (
 func TestAddressedCallSignatures(t *testing.T) {
 	database := memdb.New()
 	snowCtx := utils.TestSnowContext()
-	blsSecretKey, err := bls.NewSecretKey()
+	blsSecretKey, err := bls.NewSigner()
 	require.NoError(t, err)
 	warpSigner := avalancheWarp.NewSigner(blsSecretKey, snowCtx.NetworkID, snowCtx.ChainID)
 
@@ -56,7 +56,7 @@ func TestAddressedCallSignatures(t *testing.T) {
 			},
 			verifyStats: func(t *testing.T, stats *verifierStats) {
 				require.EqualValues(t, 0, stats.messageParseFail.Snapshot().Count())
-				require.EqualValues(t, 0, stats.blockSignatureValidationFail.Snapshot().Count())
+				require.EqualValues(t, 0, stats.blockValidationFail.Snapshot().Count())
 			},
 		},
 		"offchain message": {
@@ -65,7 +65,7 @@ func TestAddressedCallSignatures(t *testing.T) {
 			},
 			verifyStats: func(t *testing.T, stats *verifierStats) {
 				require.EqualValues(t, 0, stats.messageParseFail.Snapshot().Count())
-				require.EqualValues(t, 0, stats.blockSignatureValidationFail.Snapshot().Count())
+				require.EqualValues(t, 0, stats.blockValidationFail.Snapshot().Count())
 			},
 		},
 		"unknown message": {
@@ -78,7 +78,7 @@ func TestAddressedCallSignatures(t *testing.T) {
 			},
 			verifyStats: func(t *testing.T, stats *verifierStats) {
 				require.EqualValues(t, 1, stats.messageParseFail.Snapshot().Count())
-				require.EqualValues(t, 0, stats.blockSignatureValidationFail.Snapshot().Count())
+				require.EqualValues(t, 0, stats.blockValidationFail.Snapshot().Count())
 			},
 			err: &common.AppError{Code: ParseErrCode},
 		},
@@ -140,7 +140,7 @@ func TestAddressedCallSignatures(t *testing.T) {
 func TestBlockSignatures(t *testing.T) {
 	database := memdb.New()
 	snowCtx := utils.TestSnowContext()
-	blsSecretKey, err := bls.NewSecretKey()
+	blsSecretKey, err := bls.NewSigner()
 	require.NoError(t, err)
 
 	warpSigner := avalancheWarp.NewSigner(blsSecretKey, snowCtx.NetworkID, snowCtx.ChainID)
@@ -177,7 +177,7 @@ func TestBlockSignatures(t *testing.T) {
 				return toMessageBytes(knownBlkID), signature[:]
 			},
 			verifyStats: func(t *testing.T, stats *verifierStats) {
-				require.EqualValues(t, 0, stats.blockSignatureValidationFail.Snapshot().Count())
+				require.EqualValues(t, 0, stats.blockValidationFail.Snapshot().Count())
 				require.EqualValues(t, 0, stats.messageParseFail.Snapshot().Count())
 			},
 		},
@@ -187,7 +187,7 @@ func TestBlockSignatures(t *testing.T) {
 				return toMessageBytes(unknownBlockID), nil
 			},
 			verifyStats: func(t *testing.T, stats *verifierStats) {
-				require.EqualValues(t, 1, stats.blockSignatureValidationFail.Snapshot().Count())
+				require.EqualValues(t, 1, stats.blockValidationFail.Snapshot().Count())
 				require.EqualValues(t, 0, stats.messageParseFail.Snapshot().Count())
 			},
 			err: &common.AppError{Code: VerifyErrCode},
