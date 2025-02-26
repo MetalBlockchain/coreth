@@ -34,6 +34,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MetalBlockchain/metalgo/upgrade"
+	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/types"
@@ -41,8 +43,6 @@ import (
 	"github.com/MetalBlockchain/coreth/eth/tracers"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/tests"
-	"github.com/MetalBlockchain/metalgo/upgrade"
-	"github.com/MetalBlockchain/metalgo/utils/constants"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
