@@ -1,20 +1,14 @@
-// (c) 2019-2020, Ava Labs, Inc. All rights reserved.
+// (c) 2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package evm
 
 import (
-	"encoding/json"
-	"fmt"
-	"time"
-
 	"github.com/MetalBlockchain/coreth/core/txpool/legacypool"
-	"github.com/MetalBlockchain/coreth/eth"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/spf13/cast"
+	"github.com/MetalBlockchain/coreth/plugin/evm/config"
 )
 
+<<<<<<< Updated upstream
 const (
 	defaultAcceptorQueueLimit                     = 64 // Provides 2 minutes of buffer (2s block target) for a commit delay
 	defaultPruningEnabled                         = true
@@ -345,4 +339,16 @@ func (c *Config) Deprecate() string {
 	}
 
 	return msg
+=======
+// defaultTxPoolConfig uses [legacypool.DefaultConfig] to make a [config.TxPoolConfig]
+// that can be passed to [config.Config.SetDefaults].
+var defaultTxPoolConfig = config.TxPoolConfig{
+	PriceLimit:   legacypool.DefaultConfig.PriceLimit,
+	PriceBump:    legacypool.DefaultConfig.PriceBump,
+	AccountSlots: legacypool.DefaultConfig.AccountSlots,
+	GlobalSlots:  legacypool.DefaultConfig.GlobalSlots,
+	AccountQueue: legacypool.DefaultConfig.AccountQueue,
+	GlobalQueue:  legacypool.DefaultConfig.GlobalQueue,
+	Lifetime:     legacypool.DefaultConfig.Lifetime,
+>>>>>>> Stashed changes
 }

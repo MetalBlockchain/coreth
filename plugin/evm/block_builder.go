@@ -11,6 +11,10 @@ import (
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/txpool"
 	"github.com/MetalBlockchain/coreth/params"
+<<<<<<< Updated upstream
+=======
+	"github.com/MetalBlockchain/coreth/plugin/evm/atomic"
+>>>>>>> Stashed changes
 	"github.com/holiman/uint256"
 
 	"github.com/MetalBlockchain/metalgo/snow"
@@ -29,7 +33,7 @@ type blockBuilder struct {
 	chainConfig *params.ChainConfig
 
 	txPool  *txpool.TxPool
-	mempool *Mempool
+	mempool *atomic.Mempool
 
 	shutdownChan <-chan struct{}
 	shutdownWg   *sync.WaitGroup
