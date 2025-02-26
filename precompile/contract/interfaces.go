@@ -7,8 +7,8 @@ package contract
 import (
 	"math/big"
 
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )
@@ -62,7 +62,7 @@ type ConfigurationBlockContext interface {
 
 type BlockContext interface {
 	ConfigurationBlockContext
-	// GetResults returns an arbitrary byte array result of verifying the predicates
+	// GetPredicateResults returns an arbitrary byte array result of verifying the predicates
 	// of the given transaction, precompile address pair.
 	GetPredicateResults(txHash common.Hash, precompileAddress common.Address) []byte
 }

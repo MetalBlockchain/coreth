@@ -9,10 +9,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
-	"github.com/MetalBlockchain/coreth/precompile/testutils"
-	"github.com/MetalBlockchain/coreth/predicate"
-	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
@@ -24,6 +20,10 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/set"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
+	"github.com/MetalBlockchain/coreth/precompile/testutils"
+	"github.com/MetalBlockchain/coreth/predicate"
+	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,7 +93,7 @@ func init() {
 	}
 
 	for _, testVdr := range testVdrs {
-		blsSignature := bls.Sign(testVdr.sk, unsignedMsg.Bytes())
+		blsSignature := testVdr.sk.Sign(unsignedMsg.Bytes())
 		blsSignatures = append(blsSignatures, blsSignature)
 	}
 
@@ -102,7 +102,7 @@ func init() {
 
 type testValidator struct {
 	nodeID ids.NodeID
-	sk     *bls.SecretKey
+	sk     bls.Signer
 	vdr    *avalancheWarp.Validator
 }
 
@@ -111,13 +111,13 @@ func (v *testValidator) Compare(o *testValidator) int {
 }
 
 func newTestValidator() *testValidator {
-	sk, err := bls.NewSecretKey()
+	sk, err := bls.NewSigner()
 	if err != nil {
 		panic(err)
 	}
 
 	nodeID := ids.GenerateTestNodeID()
-	pk := bls.PublicFromSecretKey(sk)
+	pk := sk.PublicKey()
 	return &testValidator{
 		nodeID: nodeID,
 		sk:     sk,
@@ -240,7 +240,7 @@ func testWarpMessageFromPrimaryNetwork(t *testing.T, requirePrimaryNetworkSigner
 			PublicKey: testVdrs[i].vdr.PublicKey,
 		}
 		getValidatorsOutput[testVdrs[i].nodeID] = validatorOutput
-		blsSignatures = append(blsSignatures, bls.Sign(testVdrs[i].sk, unsignedMsg.Bytes()))
+		blsSignatures = append(blsSignatures, testVdrs[i].sk.Sign(unsignedMsg.Bytes()))
 	}
 	aggregateSignature, err := bls.AggregateSignatures(blsSignatures)
 	require.NoError(err)
