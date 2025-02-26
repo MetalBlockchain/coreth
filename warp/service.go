@@ -8,13 +8,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/MetalBlockchain/coreth/peer"
+	"github.com/MetalBlockchain/coreth/warp/aggregator"
+	warpValidators "github.com/MetalBlockchain/coreth/warp/validators"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/snow/validators"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-	"github.com/MetalBlockchain/coreth/peer"
-	"github.com/MetalBlockchain/coreth/warp/aggregator"
-	warpValidators "github.com/MetalBlockchain/coreth/warp/validators"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/log"
 )

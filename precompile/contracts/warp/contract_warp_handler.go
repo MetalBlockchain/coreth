@@ -6,12 +6,12 @@ package warp
 import (
 	"fmt"
 
-	"github.com/MetalBlockchain/metalgo/utils/set"
-	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
-	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/MetalBlockchain/coreth/precompile/contract"
 	"github.com/MetalBlockchain/coreth/predicate"
 	"github.com/MetalBlockchain/coreth/vmerrs"
+	"github.com/MetalBlockchain/metalgo/utils/set"
+	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
+	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 )

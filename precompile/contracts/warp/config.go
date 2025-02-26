@@ -8,11 +8,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
-	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/coreth/predicate"
 	warpValidators "github.com/MetalBlockchain/coreth/warp/validators"
+	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
+	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/log"

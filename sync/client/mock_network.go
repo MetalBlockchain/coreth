@@ -7,8 +7,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/peer"
+	"github.com/MetalBlockchain/metalgo/ids"
 
 	"github.com/MetalBlockchain/metalgo/version"
 )

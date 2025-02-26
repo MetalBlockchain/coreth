@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-	"github.com/MetalBlockchain/coreth/plugin/evm/message"
 )
 
 const (

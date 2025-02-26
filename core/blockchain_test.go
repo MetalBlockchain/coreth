@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/core/state"
@@ -18,6 +17,7 @@ import (
 	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/eth/tracers/logger"
 	"github.com/MetalBlockchain/coreth/params"
+	"github.com/MetalBlockchain/metalgo/upgrade"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"

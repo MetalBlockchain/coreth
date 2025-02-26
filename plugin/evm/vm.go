@@ -698,6 +698,7 @@ func (vm *VM) initializeChain(lastAcceptedHash common.Hash) error {
 		KeyStoreDir:           vm.config.KeystoreDirectory,
 		ExternalSigner:        vm.config.KeystoreExternalSigner,
 		InsecureUnlockAllowed: vm.config.KeystoreInsecureUnlockAllowed,
+		BatchRequestLimit:     vm.config.HttpBatchRequestLimit,
 	}
 	node, err := node.New(nodecfg)
 	if err != nil {
@@ -1511,6 +1512,9 @@ func (vm *VM) CreateHandlers(context.Context) (map[string]http.Handler, error) {
 	handler := rpc.NewServer(vm.config.APIMaxDuration.Duration)
 	if vm.config.HttpBodyLimit > 0 {
 		handler.SetHTTPBodyLimit(int(vm.config.HttpBodyLimit))
+	}
+	if vm.config.HttpBatchRequestLimit > 0 && vm.config.HttpBatchResponseSizeLimit > 0 {
+		handler.SetBatchLimits(vm.config.HttpBatchRequestLimit, vm.config.HttpBatchResponseSizeLimit)
 	}
 
 	enabledAPIs := vm.config.EthAPIs()

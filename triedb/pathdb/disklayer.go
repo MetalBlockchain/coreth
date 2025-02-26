@@ -31,10 +31,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/VictoriaMetrics/fastcache"
 	"github.com/MetalBlockchain/coreth/core/rawdb"
 	"github.com/MetalBlockchain/coreth/trie/trienode"
 	"github.com/MetalBlockchain/coreth/trie/triestate"
+	"github.com/VictoriaMetrics/fastcache"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"

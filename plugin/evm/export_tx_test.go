@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/ids"
 	engCommon "github.com/MetalBlockchain/metalgo/snow/engine/common"
@@ -17,7 +18,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
-	"github.com/MetalBlockchain/coreth/params"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )

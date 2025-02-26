@@ -34,7 +34,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/accounts"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/core"
@@ -55,6 +54,7 @@ import (
 	"github.com/MetalBlockchain/coreth/node"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"

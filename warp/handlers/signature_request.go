@@ -7,11 +7,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/MetalBlockchain/coreth/plugin/evm/message"
+	"github.com/MetalBlockchain/coreth/warp"
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
-	"github.com/MetalBlockchain/coreth/plugin/evm/message"
-	"github.com/MetalBlockchain/coreth/warp"
 	"github.com/ethereum/go-ethereum/log"
 )
 

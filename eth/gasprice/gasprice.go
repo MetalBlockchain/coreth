@@ -31,12 +31,12 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/lru"
 	"github.com/ethereum/go-ethereum/common/math"

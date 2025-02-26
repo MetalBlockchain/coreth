@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/MetalBlockchain/metalgo/cache"
 	"github.com/MetalBlockchain/metalgo/database/memdb"
 	"github.com/MetalBlockchain/metalgo/ids"
@@ -14,7 +15,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/crypto/bls"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp/payload"
-	"github.com/MetalBlockchain/coreth/warp/warptest"
 	"github.com/stretchr/testify/require"
 )
 
