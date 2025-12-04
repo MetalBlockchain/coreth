@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/MetalBlockchain/metalgo/cache"
+	"github.com/MetalBlockchain/metalgo/database"
 	"github.com/MetalBlockchain/metalgo/database/memdb"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils"
@@ -155,6 +156,12 @@ func TestOffChainMessages(t *testing.T) {
 				expectedSignatureBytes, err := warpSigner.Sign(msg)
 				require.NoError(err)
 				require.Equal(expectedSignatureBytes, signature[:])
+			},
+		},
+		"unknown message": {
+			check: func(require *require.Assertions, b Backend) {
+				_, err := b.GetMessage(testUnsignedMessage.ID())
+				require.ErrorIs(err, database.ErrNotFound)
 			},
 		},
 		"invalid message": {
