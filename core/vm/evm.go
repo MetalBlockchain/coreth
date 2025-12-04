@@ -30,6 +30,7 @@ import (
 	"math/big"
 	"sync/atomic"
 
+	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
@@ -38,7 +39,6 @@ import (
 	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/coreth/predicate"
 	"github.com/MetalBlockchain/coreth/vmerrs"
-	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"

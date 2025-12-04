@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/metalgo/utils"
+	"github.com/MetalBlockchain/coreth/params"
 	"github.com/stretchr/testify/require"
 )
 

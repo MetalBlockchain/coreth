@@ -7,8 +7,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/metalgo/utils/formatting"
+	"github.com/MetalBlockchain/coreth/core"
 )
 
 // StaticService defines the static API services exposed by the evm

@@ -10,13 +10,13 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/consensus"
 	"github.com/MetalBlockchain/coreth/consensus/misc/eip4844"
 	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/trie"
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/ethereum/go-ethereum/common"
 )
 

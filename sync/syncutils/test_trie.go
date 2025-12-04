@@ -9,12 +9,12 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/trie"
 	"github.com/MetalBlockchain/coreth/trie/trienode"
 	"github.com/MetalBlockchain/coreth/triedb"
-	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/holiman/uint256"
 
 	"github.com/ethereum/go-ethereum/common"

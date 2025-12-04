@@ -21,6 +21,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/constants"
 	"github.com/MetalBlockchain/coreth/core"
@@ -33,7 +34,6 @@ import (
 	"github.com/MetalBlockchain/coreth/node"
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/MetalBlockchain/metalgo/utils/timer/mockable"
 	"github.com/ethereum/go-ethereum/common"
 )
 

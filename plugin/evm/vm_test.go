@@ -63,8 +63,8 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 
-	accountKeystore "github.com/MetalBlockchain/coreth/accounts/keystore"
 	avalancheWarp "github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
+	accountKeystore "github.com/MetalBlockchain/coreth/accounts/keystore"
 )
 
 var (
@@ -78,7 +78,8 @@ var (
 	testAvaxAssetID  = ids.ID{1, 2, 3}
 	username         = "Johns"
 	password         = "CjasdjhiPeirbSenfeI13" // #nosec G101
-	genesisJSON      = func(cfg *params.ChainConfig) string {
+
+	genesisJSON = func(cfg *params.ChainConfig) string {
 		g := new(core.Genesis)
 		g.Difficulty = big.NewInt(0)
 		g.GasLimit = 0x5f5e100
@@ -227,12 +228,12 @@ func NewContext() *snow.Context {
 			return subnetID, nil
 		},
 	}
-	blsSecretKey, err := bls.NewSecretKey()
+	blsSecretKey, err := bls.NewSigner()
 	if err != nil {
 		panic(err)
 	}
 	ctx.WarpSigner = avalancheWarp.NewSigner(blsSecretKey, ctx.NetworkID, ctx.ChainID)
-	ctx.PublicKey = bls.PublicFromSecretKey(blsSecretKey)
+	ctx.PublicKey = blsSecretKey.PublicKey()
 	return ctx
 }
 

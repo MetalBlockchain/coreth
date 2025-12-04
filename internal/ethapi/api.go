@@ -35,6 +35,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/coreth/accounts"
 	"github.com/MetalBlockchain/coreth/accounts/keystore"
 	"github.com/MetalBlockchain/coreth/accounts/scwallet"
@@ -48,7 +49,6 @@ import (
 	"github.com/MetalBlockchain/coreth/params"
 	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/MetalBlockchain/coreth/trie"
-	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

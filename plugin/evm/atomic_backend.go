@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	syncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/database"
@@ -16,6 +15,7 @@ import (
 	"github.com/MetalBlockchain/metalgo/database/versiondb"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
+	syncclient "github.com/MetalBlockchain/coreth/sync/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 )

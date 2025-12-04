@@ -7,8 +7,8 @@ package contract
 import (
 	"math/big"
 
-	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/MetalBlockchain/metalgo/snow"
+	"github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )

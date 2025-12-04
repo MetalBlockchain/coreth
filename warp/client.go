@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/coreth/rpc"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
