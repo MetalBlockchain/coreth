@@ -1,6 +1,6 @@
 In order to specify a config for the C-Chain, a JSON config file should be placed at `{chain-config-dir}/C/config.json`. This file does not exist by default.
 
-For example if `chain-config-dir` has the default value which is `$HOME/.avalanchego/configs/chains`, then `config.json` should be placed at `$HOME/.avalanchego/configs/chains/C/config.json`.
+For example if `chain-config-dir` has the default value which is `$HOME/.metalgo/configs/chains`, then `config.json` should be placed at `$HOME/.metalgo/configs/chains/C/config.json`.
 
 The C-Chain config is printed out in the log when a node starts. Default values for each config flag are specified below.
 

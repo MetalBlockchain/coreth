@@ -11,6 +11,10 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/log"
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/codec/linearcodec"
 	"github.com/MetalBlockchain/metalgo/ids"
@@ -26,10 +30,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/utils/units"
 	"github.com/MetalBlockchain/metalgo/vms/components/avax"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
-	"github.com/MetalBlockchain/libevm/common"
-	"github.com/MetalBlockchain/libevm/core/state"
-	"github.com/MetalBlockchain/libevm/core/types"
-	"github.com/MetalBlockchain/libevm/log"
 
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core/extstate"
@@ -47,13 +47,13 @@ import (
 	"github.com/MetalBlockchain/coreth/utils"
 	"github.com/MetalBlockchain/coreth/utils/rpc"
 
+	atomicstate "github.com/MetalBlockchain/coreth/plugin/evm/atomic/state"
+	atomicsync "github.com/MetalBlockchain/coreth/plugin/evm/atomic/sync"
+	customheader "github.com/MetalBlockchain/coreth/plugin/evm/header"
 	avalanchedatabase "github.com/MetalBlockchain/metalgo/database"
 	avalanchegossip "github.com/MetalBlockchain/metalgo/network/p2p/gossip"
 	avalanchecommon "github.com/MetalBlockchain/metalgo/snow/engine/common"
 	avalancheutils "github.com/MetalBlockchain/metalgo/utils"
-	atomicstate "github.com/MetalBlockchain/coreth/plugin/evm/atomic/state"
-	atomicsync "github.com/MetalBlockchain/coreth/plugin/evm/atomic/sync"
-	customheader "github.com/MetalBlockchain/coreth/plugin/evm/header"
 )
 
 var (
@@ -122,16 +122,6 @@ func (vm *VM) Initialize(
 	vm.Ctx = chainCtx
 
 	var extDataHashes map[common.Hash]common.Hash
-	// Set the chain config for mainnet/fuji chain IDs
-	switch chainCtx.NetworkID {
-	case constants.MainnetID:
-		extDataHashes = mainnetExtDataHashes
-	case constants.FujiID:
-		extDataHashes = fujiExtDataHashes
-	}
-	// Free the memory of the extDataHash map
-	fujiExtDataHashes = nil
-	mainnetExtDataHashes = nil
 
 	// Create the atomic extension structs
 	// some of them need to be initialized after the inner VM is initialized

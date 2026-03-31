@@ -7,11 +7,11 @@ set -euo pipefail
 
 # Set the PATHS
 GOPATH="$(go env GOPATH)"
-DEFAULT_PLUGIN_DIR="${HOME}/.avalanchego/plugins"
+DEFAULT_PLUGIN_DIR="${HOME}/.metalgo/plugins"
 DEFAULT_VM_ID="srEXiWaHuhNyGwPUi444Tu47ZEDwxTWrbQiuD7FmgSAQ6X7Dy"
 
 # Set binary location
-binary_path=${CORETH_BINARY_PATH:-"$GOPATH/src/github.com/!metal!blockchain/avalanchego/build/plugins/evm"}
+binary_path=${CORETH_BINARY_PATH:-"$GOPATH/src/github.com/!metal!blockchain/metalgo/build/plugins/evm"}
 
 # Avalabs docker hub
 DOCKERHUB_REPO="metalblockchain/metalgo"

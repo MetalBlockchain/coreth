@@ -48,33 +48,20 @@ func SetEthUpgrades(c *ChainConfig) error {
 	c.MuirGlacierBlock = big.NewInt(0)
 
 	extra := GetExtra(c)
-	// Because Fuji and Mainnet have already accepted the Berlin and London
-	// blocks, it is assumed that they are scheduled for activation.
-	if c.ChainID != nil && AvalancheFujiChainID.Cmp(c.ChainID) == 0 {
-		c.BerlinBlock = big.NewInt(184985) // https://testnet.snowtrace.io/block/184985?chainid=43113, AP2 activation block
-		c.LondonBlock = big.NewInt(805078) // https://testnet.snowtrace.io/block/805078?chainid=43113, AP3 activation block
-	} else if c.ChainID != nil && AvalancheMainnetChainID.Cmp(c.ChainID) == 0 {
-		c.BerlinBlock = big.NewInt(1640340) // https://snowtrace.io/block/1640340?chainid=43114, AP2 activation block
-		c.LondonBlock = big.NewInt(3308552) // https://snowtrace.io/block/3308552?chainid=43114, AP3 activation block
-	} else {
-		// In testing or local networks, we only support enabling Berlin and
-		// London at the initially active time. This corresponds to an intended
-		// block number of 0.
-		switch ap2 := extra.ApricotPhase2BlockTimestamp; {
-		case ap2 == nil:
-		case *ap2 <= initiallyActive:
-			c.BerlinBlock = big.NewInt(0)
-		case *ap2 < unscheduledActivation:
-			return fmt.Errorf("%w: AP2 must be either unscheduled or initially activated", errInvalidUpgradeTime)
-		}
+	switch ap2 := extra.ApricotPhase2BlockTimestamp; {
+	case ap2 == nil:
+	case *ap2 <= initiallyActive:
+		c.BerlinBlock = big.NewInt(0)
+	case *ap2 < unscheduledActivation:
+		return fmt.Errorf("%w: AP2 must be either unscheduled or initially activated", errInvalidUpgradeTime)
+	}
 
-		switch ap3 := extra.ApricotPhase3BlockTimestamp; {
-		case ap3 == nil:
-		case *ap3 <= initiallyActive:
-			c.LondonBlock = big.NewInt(0)
-		case *ap3 < unscheduledActivation:
-			return fmt.Errorf("%w: AP3 must be either unscheduled or initially activated", errInvalidUpgradeTime)
-		}
+	switch ap3 := extra.ApricotPhase3BlockTimestamp; {
+	case ap3 == nil:
+	case *ap3 <= initiallyActive:
+		c.LondonBlock = big.NewInt(0)
+	case *ap3 < unscheduledActivation:
+		return fmt.Errorf("%w: AP3 must be either unscheduled or initially activated", errInvalidUpgradeTime)
 	}
 
 	// We only mark Shanghai and Cancun as enabled if we have marked them as
