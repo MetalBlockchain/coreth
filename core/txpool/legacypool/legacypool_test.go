@@ -1,4 +1,5 @@
-// (c) 2019-2021, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -40,16 +41,15 @@ import (
 	"time"
 
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/txpool"
-	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/MetalBlockchain/coreth/trie"
-	"github.com/MetalBlockchain/coreth/utils"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/event"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/event"
+	"github.com/MetalBlockchain/libevm/trie"
 	"github.com/holiman/uint256"
 )
 
@@ -65,8 +65,8 @@ var (
 func init() {
 	cpy := *params.TestChainConfig
 	eip1559Config = &cpy
-	eip1559Config.ApricotPhase2BlockTimestamp = utils.NewUint64(0)
-	eip1559Config.ApricotPhase3BlockTimestamp = utils.NewUint64(0)
+	eip1559Config.BerlinBlock = common.Big0
+	eip1559Config.LondonBlock = common.Big0
 }
 
 type testBlockChain struct {

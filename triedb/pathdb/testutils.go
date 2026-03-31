@@ -1,4 +1,5 @@
-// (c) 2024, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -30,11 +31,11 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/trie/trienode"
-	"github.com/MetalBlockchain/coreth/trie/triestate"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/trie/trienode"
+	"github.com/MetalBlockchain/libevm/trie/triestate"
 	"golang.org/x/exp/slices"
 )
 

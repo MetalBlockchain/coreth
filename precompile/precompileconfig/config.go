@@ -1,4 +1,4 @@
-// (c) 2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 // Defines the stateless interface for unmarshalling an arbitrary config of a precompile
@@ -7,8 +7,9 @@ package precompileconfig
 import (
 	"github.com/MetalBlockchain/metalgo/snow"
 	"github.com/MetalBlockchain/metalgo/snow/engine/snowman/block"
+	"github.com/MetalBlockchain/metalgo/vms/evm/predicate"
 	"github.com/MetalBlockchain/metalgo/vms/platformvm/warp"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/MetalBlockchain/libevm/common"
 )
 
 // StatefulPrecompileConfig defines the interface for a stateful precompile to
@@ -47,8 +48,8 @@ type PredicateContext struct {
 // The bitset is stored in the block, so that historical blocks can be re-verified
 // without calling VerifyPredicate.
 type Predicater interface {
-	PredicateGas(predicateBytes []byte) (uint64, error)
-	VerifyPredicate(predicateContext *PredicateContext, predicateBytes []byte) error
+	PredicateGas(pred predicate.Predicate) (uint64, error)
+	VerifyPredicate(predicateContext *PredicateContext, pred predicate.Predicate) error
 }
 
 type WarpMessageWriter interface {

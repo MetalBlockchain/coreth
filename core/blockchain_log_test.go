@@ -1,4 +1,4 @@
-// (c) 2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package core
@@ -8,15 +8,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/core/vm"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/stretchr/testify/require"
+
 	"github.com/MetalBlockchain/coreth/accounts/abi"
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/stretchr/testify/require"
+	"github.com/MetalBlockchain/coreth/plugin/evm/upgrade/ap3"
 )
 
 func TestAcceptedLogsSubscription(t *testing.T) {
@@ -43,7 +45,7 @@ func TestAcceptedLogsSubscription(t *testing.T) {
 		gspec   = &Genesis{
 			Config:  params.TestChainConfig,
 			Alloc:   types.GenesisAlloc{addr1: {Balance: funds}},
-			BaseFee: big.NewInt(params.ApricotPhase3InitialBaseFee),
+			BaseFee: big.NewInt(ap3.InitialBaseFee),
 		}
 		contractAddress = crypto.CreateAddress(addr1, 0)
 		signer          = types.LatestSigner(gspec.Config)
@@ -59,13 +61,13 @@ func TestAcceptedLogsSubscription(t *testing.T) {
 		switch i {
 		case 0:
 			// First, we deploy the contract
-			contractTx := types.NewContractCreation(0, common.Big0, 200000, big.NewInt(params.ApricotPhase3InitialBaseFee), common.FromHex(callableBin))
+			contractTx := types.NewContractCreation(0, common.Big0, 200000, big.NewInt(ap3.InitialBaseFee), common.FromHex(callableBin))
 			contractSignedTx, err := types.SignTx(contractTx, signer, key1)
 			require.NoError(err)
 			b.AddTx(contractSignedTx)
 		case 1:
 			// In the next block, we call the contract function
-			tx := types.NewTransaction(1, contractAddress, common.Big0, 23000, big.NewInt(params.ApricotPhase3InitialBaseFee), packedFunction)
+			tx := types.NewTransaction(1, contractAddress, common.Big0, 23000, big.NewInt(ap3.InitialBaseFee), packedFunction)
 			tx, err := types.SignTx(tx, signer, key1)
 			require.NoError(err)
 			b.AddTx(tx)
@@ -88,8 +90,7 @@ func TestAcceptedLogsSubscription(t *testing.T) {
 	require.NoError(err)
 
 	for _, block := range blocks {
-		err := chain.Accept(block)
-		require.NoError(err)
+		require.NoError(chain.Accept(block))
 	}
 	chain.DrainAcceptorQueue()
 

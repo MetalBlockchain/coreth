@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -32,12 +33,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/triedb"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/MetalBlockchain/coreth/plugin/evm/customrawdb"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/ethdb"
+	"github.com/MetalBlockchain/libevm/log"
+	"github.com/MetalBlockchain/libevm/rlp"
+	"github.com/MetalBlockchain/libevm/triedb"
 )
 
 // journalGenerator is a disk layer entry containing the generator progress marker.
@@ -59,7 +61,7 @@ type journalGenerator struct {
 func loadSnapshot(diskdb ethdb.KeyValueStore, triedb *triedb.Database, cache int, blockHash, root common.Hash, noBuild bool) (snapshot, bool, error) {
 	// Retrieve the block number and hash of the snapshot, failing if no snapshot
 	// is present in the database (or crashed mid-update).
-	baseBlockHash := rawdb.ReadSnapshotBlockHash(diskdb)
+	baseBlockHash := customrawdb.ReadSnapshotBlockHash(diskdb)
 	if baseBlockHash == (common.Hash{}) {
 		return nil, false, errors.New("missing or corrupted snapshot, no snapshot block hash")
 	}

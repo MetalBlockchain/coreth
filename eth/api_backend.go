@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -32,22 +33,23 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/accounts"
 	"github.com/MetalBlockchain/coreth/consensus"
-	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
 	"github.com/MetalBlockchain/coreth/core/bloombits"
-	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/txpool"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/eth/gasprice"
 	"github.com/MetalBlockchain/coreth/eth/tracers"
+	"github.com/MetalBlockchain/coreth/internal/ethapi"
 	"github.com/MetalBlockchain/coreth/params"
+	customheader "github.com/MetalBlockchain/coreth/plugin/evm/header"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/event"
+	"github.com/MetalBlockchain/libevm/accounts"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/core/vm"
+	"github.com/MetalBlockchain/libevm/ethdb"
+	"github.com/MetalBlockchain/libevm/event"
 )
 
 var ErrUnfinalizedData = errors.New("cannot query unfinalized data")
@@ -486,6 +488,10 @@ func (b *EthAPIBackend) RPCTxFeeCap() float64 {
 	return b.eth.config.RPCTxFeeCap
 }
 
+func (b *EthAPIBackend) PriceOptionsConfig() ethapi.PriceOptionConfig {
+	return b.eth.config.PriceOptionConfig
+}
+
 func (b *EthAPIBackend) BloomStatus() (uint64, uint64) {
 	sections, _, _ := b.eth.bloomIndexer.Sections()
 	return params.BloomBitsBlocks, sections
@@ -522,7 +528,8 @@ func (b *EthAPIBackend) StateAtTransaction(ctx context.Context, block *types.Blo
 }
 
 func (b *EthAPIBackend) MinRequiredTip(ctx context.Context, header *types.Header) (*big.Int, error) {
-	return dummy.MinRequiredTip(b.ChainConfig(), header)
+	config := params.GetExtra(b.ChainConfig())
+	return customheader.EstimateRequiredTip(config, header)
 }
 
 func (b *EthAPIBackend) isLatestAndAllowed(number rpc.BlockNumber) bool {

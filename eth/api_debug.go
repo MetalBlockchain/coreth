@@ -1,4 +1,5 @@
-// (c) 2024, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -32,18 +33,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/state"
-	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/internal/ethapi"
+	"github.com/MetalBlockchain/coreth/plugin/evm/customrawdb"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/MetalBlockchain/coreth/trie"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/common/hexutil"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/log"
+	"github.com/MetalBlockchain/libevm/rlp"
+	"github.com/MetalBlockchain/libevm/trie"
 )
+
+var errFirewoodNotSupported = errors.New("firewood triedb scheme does not yet support this operation")
 
 // DebugAPI is the collection of Ethereum full node APIs for debugging the
 // protocol.
@@ -98,7 +102,7 @@ func (api *DebugAPI) Preimage(ctx context.Context, hash common.Hash) (hexutil.By
 // and returns them as a JSON list of block hashes.
 func (api *DebugAPI) GetBadBlocks(ctx context.Context) ([]*ethapi.BadBlockArgs, error) {
 	internalAPI := ethapi.NewBlockChainAPI(api.eth.APIBackend)
-	return internalAPI.GetBadBlocks(ctx)
+	return internalAPI.GetBadBlocks()
 }
 
 // AccountRangeMaxResults is the maximum number of results to be returned per call
@@ -172,7 +176,9 @@ type storageEntry struct {
 
 // StorageRangeAt returns the storage at the given block height and transaction index.
 func (api *DebugAPI) StorageRangeAt(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash, txIndex int, contractAddress common.Address, keyStart hexutil.Bytes, maxResult int) (StorageRangeResult, error) {
-	var block *types.Block
+	if api.isFirewood() {
+		return StorageRangeResult{}, errFirewoodNotSupported
+	}
 
 	block, err := api.eth.APIBackend.BlockByNumberOrHash(ctx, blockNrOrHash)
 	if err != nil {
@@ -232,8 +238,11 @@ func storageRangeAt(statedb *state.StateDB, root common.Hash, address common.Add
 //
 // With one parameter, returns the list of accounts modified in the specified block.
 func (api *DebugAPI) GetModifiedAccountsByNumber(startNum uint64, endNum *uint64) ([]common.Address, error) {
-	var startBlock, endBlock *types.Block
+	if api.isFirewood() {
+		return nil, errFirewoodNotSupported
+	}
 
+	var startBlock, endBlock *types.Block
 	startBlock = api.eth.blockchain.GetBlockByNumber(startNum)
 	if startBlock == nil {
 		return nil, fmt.Errorf("start block %x not found", startNum)
@@ -260,6 +269,10 @@ func (api *DebugAPI) GetModifiedAccountsByNumber(startNum uint64, endNum *uint64
 //
 // With one parameter, returns the list of accounts modified in the specified block.
 func (api *DebugAPI) GetModifiedAccountsByHash(startHash common.Hash, endHash *common.Hash) ([]common.Address, error) {
+	if api.isFirewood() {
+		return nil, errFirewoodNotSupported
+	}
+
 	var startBlock, endBlock *types.Block
 	startBlock = api.eth.blockchain.GetBlockByHash(startHash)
 	if startBlock == nil {
@@ -365,9 +378,13 @@ func (api *DebugAPI) GetAccessibleState(from, to rpc.BlockNumber) (uint64, error
 		if h == nil {
 			return 0, fmt.Errorf("missing header %d", i)
 		}
-		if ok, _ := api.eth.ChainDb().Has(h.Root[:]); ok {
+		if api.eth.BlockChain().HasState(h.Root) {
 			return uint64(i), nil
 		}
 	}
 	return 0, errors.New("no state found")
+}
+
+func (api *DebugAPI) isFirewood() bool {
+	return api.eth.blockchain.CacheConfig().StateScheme == customrawdb.FirewoodScheme
 }

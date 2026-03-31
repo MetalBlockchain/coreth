@@ -1,4 +1,5 @@
-// (c) 2024, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -31,8 +32,8 @@ import (
 	"math/big"
 
 	"github.com/MetalBlockchain/coreth/core/txpool"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/types"
 	"github.com/holiman/uint256"
 )
 

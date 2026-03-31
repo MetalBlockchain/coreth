@@ -1,4 +1,5 @@
-// (c) 2024, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -39,28 +40,30 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	"github.com/MetalBlockchain/coreth/consensus/misc/eip4844"
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/state"
 	"github.com/MetalBlockchain/coreth/core/txpool"
-	"github.com/MetalBlockchain/coreth/core/types"
 	"github.com/MetalBlockchain/coreth/params"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/crypto/kzg4844"
-	"github.com/ethereum/go-ethereum/ethdb/memorydb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/MetalBlockchain/coreth/plugin/evm/header"
+	"github.com/MetalBlockchain/coreth/plugin/evm/upgrade/ap3"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/consensus/misc/eip4844"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/crypto/kzg4844"
+	"github.com/MetalBlockchain/libevm/ethdb/memorydb"
+	"github.com/MetalBlockchain/libevm/log"
+	ethparams "github.com/MetalBlockchain/libevm/params"
+	"github.com/MetalBlockchain/libevm/rlp"
 	"github.com/holiman/billy"
 	"github.com/holiman/uint256"
 )
 
 var (
 	emptyBlob          = kzg4844.Blob{}
-	emptyBlobCommit, _ = kzg4844.BlobToCommitment(emptyBlob)
-	emptyBlobProof, _  = kzg4844.ComputeBlobProof(emptyBlob, emptyBlobCommit)
+	emptyBlobCommit, _ = kzg4844.BlobToCommitment(&emptyBlob)
+	emptyBlobProof, _  = kzg4844.ComputeBlobProof(&emptyBlob, emptyBlobCommit)
 	emptyBlobVHash     = kzg4844.CalcBlobHashV1(sha256.New(), &emptyBlobCommit)
 )
 
@@ -71,17 +74,10 @@ var testChainConfig *params.ChainConfig
 
 func init() {
 	testChainConfig = new(params.ChainConfig)
-	*testChainConfig = *params.TestChainConfig
+	*testChainConfig = params.Copy(params.TestChainConfig)
 
 	testChainConfig.CancunTime = new(uint64)
 	*testChainConfig.CancunTime = uint64(time.Now().Unix())
-}
-
-// overrideMinFee sets the minimum base fee to 1 wei for the duration of the test.
-func overrideMinFee(t *testing.T) {
-	orig := dummy.EtnaMinBaseFee
-	dummy.EtnaMinBaseFee = big.NewInt(1)
-	t.Cleanup(func() { dummy.EtnaMinBaseFee = orig })
 }
 
 // testBlockChain is a mock of the live chain for testing the pool.
@@ -119,10 +115,11 @@ func (bc *testBlockChain) CurrentBlock() *types.Header {
 			GasLimit: gasLimit,
 			GasUsed:  0,
 			BaseFee:  mid,
-			Extra:    make([]byte, params.DynamicFeeExtraDataSize),
+			Extra:    make([]byte, ap3.WindowSize),
 		}
-		_, baseFee, err := dummy.CalcBaseFee(
-			bc.config, parent, blockTime,
+		config := params.GetExtra(bc.config)
+		baseFee, err := header.BaseFee(
+			config, parent, blockTime,
 		)
 		if err != nil {
 			panic(err)
@@ -158,7 +155,7 @@ func (bc *testBlockChain) CurrentBlock() *types.Header {
 		GasLimit:      gasLimit,
 		BaseFee:       baseFee,
 		ExcessBlobGas: &excessBlobGas,
-		Extra:         make([]byte, params.DynamicFeeExtraDataSize),
+		Extra:         make([]byte, ap3.WindowSize),
 	}
 }
 
@@ -588,8 +585,8 @@ func TestOpenDrops(t *testing.T) {
 
 	chain := &testBlockChain{
 		config:  testChainConfig,
-		basefee: uint256.NewInt(uint64(params.ApricotPhase3MinBaseFee)),
-		blobfee: uint256.NewInt(params.BlobTxMinBlobGasprice),
+		basefee: uint256.NewInt(ap3.MinBaseFee),
+		blobfee: uint256.NewInt(ethparams.BlobTxMinBlobGasprice),
 		statedb: statedb,
 	}
 	pool := New(Config{Datadir: storage}, chain)
@@ -707,8 +704,8 @@ func TestOpenIndex(t *testing.T) {
 
 	chain := &testBlockChain{
 		config:  testChainConfig,
-		basefee: uint256.NewInt(uint64(params.ApricotPhase3MinBaseFee)),
-		blobfee: uint256.NewInt(params.BlobTxMinBlobGasprice),
+		basefee: uint256.NewInt(ap3.MinBaseFee),
+		blobfee: uint256.NewInt(ethparams.BlobTxMinBlobGasprice),
 		statedb: statedb,
 	}
 	pool := New(Config{Datadir: storage}, chain)
@@ -754,7 +751,6 @@ func TestOpenIndex(t *testing.T) {
 // Tests that after indexing all the loaded transactions from disk, a price heap
 // is correctly constructed based on the head basefee and blobfee.
 func TestOpenHeap(t *testing.T) {
-	overrideMinFee(t)
 	log.SetDefault(log.NewLogger(log.NewTerminalHandlerWithLevel(os.Stderr, log.LevelTrace, true)))
 
 	// Create a temporary folder for the persistent backend
@@ -842,7 +838,6 @@ func TestOpenHeap(t *testing.T) {
 // Tests that after the pool's previous state is loaded back, any transactions
 // over the new storage cap will get dropped.
 func TestOpenCap(t *testing.T) {
-	overrideMinFee(t)
 	log.SetDefault(log.NewLogger(log.NewTerminalHandlerWithLevel(os.Stderr, log.LevelTrace, true)))
 
 	// Create a temporary folder for the persistent backend
@@ -1269,7 +1264,7 @@ func TestAdd(t *testing.T) {
 				},
 				{ // Same as above but blob fee cap equals minimum, should be accepted
 					from: "alice",
-					tx:   makeUnsignedTx(0, 1, 1, params.BlobTxMinBlobGasprice),
+					tx:   makeUnsignedTx(0, 1, 1, ethparams.BlobTxMinBlobGasprice),
 					err:  nil,
 				},
 			},
@@ -1344,7 +1339,7 @@ func BenchmarkPoolPending10GB(b *testing.B)  { benchmarkPoolPending(b, 10_000_00
 func benchmarkPoolPending(b *testing.B, datacap uint64) {
 	// Calculate the maximum number of transaction that would fit into the pool
 	// and generate a set of random accounts to seed them with.
-	capacity := datacap / params.BlobTxBlobGasPerBlob
+	capacity := datacap / ethparams.BlobTxBlobGasPerBlob
 
 	var (
 		basefee    = uint64(1050)

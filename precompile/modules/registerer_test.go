@@ -1,4 +1,4 @@
-// (c) 2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package modules
@@ -7,9 +7,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/MetalBlockchain/coreth/constants"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/MetalBlockchain/libevm/common"
 	"github.com/stretchr/testify/require"
+
+	"github.com/MetalBlockchain/coreth/constants"
 )
 
 func TestInsertSortedByAddress(t *testing.T) {

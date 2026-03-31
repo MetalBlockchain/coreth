@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -34,15 +35,20 @@ import (
 
 	"github.com/MetalBlockchain/coreth/consensus/dummy"
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/state"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/params"
+	customheader "github.com/MetalBlockchain/coreth/plugin/evm/header"
+	"github.com/MetalBlockchain/coreth/plugin/evm/upgrade/acp176"
+	"github.com/MetalBlockchain/coreth/plugin/evm/upgrade/ap1"
+	"github.com/MetalBlockchain/coreth/plugin/evm/upgrade/ap4"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/event"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/state"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/core/vm"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/event"
+	ethparams "github.com/MetalBlockchain/libevm/params"
 	"github.com/stretchr/testify/require"
 )
 
@@ -101,7 +107,7 @@ func newTestBackendFakerEngine(t *testing.T, config *params.ChainConfig, numBloc
 	engine := dummy.NewETHFaker()
 
 	// Generate testing blocks
-	_, blocks, _, err := core.GenerateChainWithGenesis(gspec, engine, numBlocks, 0, genBlocks)
+	_, blocks, _, err := core.GenerateChainWithGenesis(gspec, engine, numBlocks, ap4.TargetBlockRate-1, genBlocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,16 +132,16 @@ func newTestBackend(t *testing.T, config *params.ChainConfig, numBlocks int, ext
 	}
 
 	engine := dummy.NewFakerWithCallbacks(dummy.ConsensusCallbacks{
-		OnFinalizeAndAssemble: func(header *types.Header, state *state.StateDB, txs []*types.Transaction) ([]byte, *big.Int, *big.Int, error) {
+		OnFinalizeAndAssemble: func(*types.Header, *types.Header, *state.StateDB, []*types.Transaction) ([]byte, *big.Int, *big.Int, error) {
 			return nil, common.Big0, extDataGasUsage, nil
 		},
-		OnExtraStateChange: func(block *types.Block, state *state.StateDB) (*big.Int, *big.Int, error) {
+		OnExtraStateChange: func(*types.Block, *types.Header, *state.StateDB) (*big.Int, *big.Int, error) {
 			return common.Big0, extDataGasUsage, nil
 		},
 	})
 
 	// Generate testing blocks
-	_, blocks, _, err := core.GenerateChainWithGenesis(gspec, engine, numBlocks, 1, genBlocks)
+	_, blocks, _, err := core.GenerateChainWithGenesis(gspec, engine, numBlocks, ap4.TargetBlockRate-1, genBlocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +157,8 @@ func newTestBackend(t *testing.T, config *params.ChainConfig, numBlocks int, ext
 }
 
 func (b *testBackend) MinRequiredTip(ctx context.Context, header *types.Header) (*big.Int, error) {
-	return dummy.MinRequiredTip(b.chain.Config(), header)
+	config := params.GetExtra(b.chain.Config())
+	return customheader.EstimateRequiredTip(config, header)
 }
 
 func (b *testBackend) CurrentHeader() *types.Header {
@@ -230,7 +237,7 @@ func testGenBlock(t *testing.T, tip int64, numTx int) func(int, *core.BlockGen) 
 				ChainID:   params.TestChainConfig.ChainID,
 				Nonce:     b.TxNonce(addr),
 				To:        &common.Address{},
-				Gas:       params.TxGas,
+				Gas:       ethparams.TxGas,
 				GasFeeCap: feeCap,
 				GasTipCap: txTip,
 				Data:      []byte{},
@@ -247,8 +254,8 @@ func TestSuggestTipCapEmptyExtDataGasUsage(t *testing.T) {
 		chainConfig:     params.TestChainConfig,
 		numBlocks:       3,
 		extDataGasUsage: nil,
-		genBlock:        testGenBlock(t, 55, 370),
-		expectedTip:     big.NewInt(5_713_963_963),
+		genBlock:        testGenBlock(t, 55, 80),
+		expectedTip:     big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -257,8 +264,8 @@ func TestSuggestTipCapSimple(t *testing.T) {
 		chainConfig:     params.TestChainConfig,
 		numBlocks:       3,
 		extDataGasUsage: common.Big0,
-		genBlock:        testGenBlock(t, 55, 370),
-		expectedTip:     big.NewInt(5_713_963_963),
+		genBlock:        testGenBlock(t, 55, 80),
+		expectedTip:     big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -267,8 +274,8 @@ func TestSuggestTipCapSimpleFloor(t *testing.T) {
 		chainConfig:     params.TestChainConfig,
 		numBlocks:       1,
 		extDataGasUsage: common.Big0,
-		genBlock:        testGenBlock(t, 55, 370),
-		expectedTip:     common.Big0,
+		genBlock:        testGenBlock(t, 55, 80),
+		expectedTip:     big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -284,12 +291,12 @@ func TestSuggestTipCapSmallTips(t *testing.T) {
 			signer := types.LatestSigner(params.TestChainConfig)
 			baseFee := b.BaseFee()
 			feeCap := new(big.Int).Add(baseFee, tip)
-			for j := 0; j < 185; j++ {
+			for j := 0; j < 40; j++ {
 				tx := types.NewTx(&types.DynamicFeeTx{
 					ChainID:   params.TestChainConfig.ChainID,
 					Nonce:     b.TxNonce(addr),
 					To:        &common.Address{},
-					Gas:       params.TxGas,
+					Gas:       ethparams.TxGas,
 					GasFeeCap: feeCap,
 					GasTipCap: tip,
 					Data:      []byte{},
@@ -303,7 +310,7 @@ func TestSuggestTipCapSmallTips(t *testing.T) {
 					ChainID:   params.TestChainConfig.ChainID,
 					Nonce:     b.TxNonce(addr),
 					To:        &common.Address{},
-					Gas:       params.TxGas,
+					Gas:       ethparams.TxGas,
 					GasFeeCap: feeCap,
 					GasTipCap: common.Big1,
 					Data:      []byte{},
@@ -314,7 +321,7 @@ func TestSuggestTipCapSmallTips(t *testing.T) {
 			}
 		},
 		// NOTE: small tips do not bias estimate
-		expectedTip: big.NewInt(5_713_963_963),
+		expectedTip: big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -323,8 +330,8 @@ func TestSuggestTipCapExtDataUsage(t *testing.T) {
 		chainConfig:     params.TestChainConfig,
 		numBlocks:       3,
 		extDataGasUsage: big.NewInt(10_000),
-		genBlock:        testGenBlock(t, 55, 370),
-		expectedTip:     big.NewInt(5_706_726_649),
+		genBlock:        testGenBlock(t, 55, 80),
+		expectedTip:     big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -334,7 +341,7 @@ func TestSuggestTipCapMinGas(t *testing.T) {
 		numBlocks:       3,
 		extDataGasUsage: common.Big0,
 		genBlock:        testGenBlock(t, 500, 50),
-		expectedTip:     big.NewInt(0),
+		expectedTip:     big.NewInt(1),
 	}, defaultOracleConfig())
 }
 
@@ -351,12 +358,12 @@ func TestSuggestGasPricePreAP3(t *testing.T) {
 		b.SetCoinbase(common.Address{1})
 
 		signer := types.LatestSigner(params.TestApricotPhase2Config)
-		gasPrice := big.NewInt(params.ApricotPhase1MinGasPrice)
+		gasPrice := big.NewInt(ap1.MinGasPrice)
 		for j := 0; j < 50; j++ {
 			tx := types.NewTx(&types.LegacyTx{
 				Nonce:    b.TxNonce(addr),
 				To:       &common.Address{},
-				Gas:      params.TxGas,
+				Gas:      ethparams.TxGas,
 				GasPrice: gasPrice,
 				Data:     []byte{},
 			})
@@ -377,10 +384,10 @@ func TestSuggestGasPricePreAP3(t *testing.T) {
 func TestSuggestTipCapMaxBlocksLookback(t *testing.T) {
 	applyGasPriceTest(t, suggestTipCapTest{
 		chainConfig:     params.TestChainConfig,
-		numBlocks:       20,
+		numBlocks:       200,
 		extDataGasUsage: common.Big0,
-		genBlock:        testGenBlock(t, 550, 370),
-		expectedTip:     big.NewInt(51_565_264_256),
+		genBlock:        testGenBlock(t, 550, 80),
+		expectedTip:     big.NewInt(3),
 	}, defaultOracleConfig())
 }
 
@@ -389,7 +396,20 @@ func TestSuggestTipCapMaxBlocksSecondsLookback(t *testing.T) {
 		chainConfig:     params.TestChainConfig,
 		numBlocks:       20,
 		extDataGasUsage: big.NewInt(1),
-		genBlock:        testGenBlock(t, 550, 370),
-		expectedTip:     big.NewInt(92_212_529_423),
+		genBlock:        testGenBlock(t, 550, 80),
+		expectedTip:     big.NewInt(1),
 	}, timeCrunchOracleConfig())
+}
+
+func TestSuggestTipCapIncludesExtraDataGas(t *testing.T) {
+	applyGasPriceTest(t, suggestTipCapTest{
+		chainConfig:     params.TestChainConfig,
+		numBlocks:       1000,
+		extDataGasUsage: big.NewInt(acp176.MinMaxPerSecond - int64(ethparams.TxGas)),
+		// The tip on the transaction is very large to pay the block gas cost.
+		genBlock: testGenBlock(t, 100_000, 1),
+		// The actual tip doesn't matter, we just want to ensure that the tip is
+		// non-zero when almost all the gas is coming from the extDataGasUsage.
+		expectedTip: big.NewInt(44_252),
+	}, defaultOracleConfig())
 }

@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -29,8 +30,8 @@ package node
 import (
 	"github.com/MetalBlockchain/coreth/internal/debug"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/MetalBlockchain/libevm/common/hexutil"
+	"github.com/MetalBlockchain/libevm/crypto"
 )
 
 // apis returns the collection of built-in RPC APIs.

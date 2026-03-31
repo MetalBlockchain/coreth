@@ -1,34 +1,33 @@
-// (c) 2019-2020, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package atomic
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"math/big"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/holiman/uint256"
-
-	"github.com/MetalBlockchain/coreth/params"
-
 	"github.com/MetalBlockchain/metalgo/chains/atomic"
 	"github.com/MetalBlockchain/metalgo/codec"
 	"github.com/MetalBlockchain/metalgo/ids"
+	"github.com/MetalBlockchain/metalgo/network/p2p/gossip"
 	"github.com/MetalBlockchain/metalgo/snow"
-	"github.com/MetalBlockchain/metalgo/snow/consensus/snowman"
 	"github.com/MetalBlockchain/metalgo/utils/crypto/secp256k1"
 	"github.com/MetalBlockchain/metalgo/utils/hashing"
 	"github.com/MetalBlockchain/metalgo/utils/set"
 	"github.com/MetalBlockchain/metalgo/utils/wrappers"
 	"github.com/MetalBlockchain/metalgo/vms/components/verify"
-	"github.com/MetalBlockchain/metalgo/vms/platformvm/fx"
 	"github.com/MetalBlockchain/metalgo/vms/secp256k1fx"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/holiman/uint256"
+
+	"github.com/MetalBlockchain/coreth/params/extras"
 )
+
+var _ gossip.Gossipable = (*Tx)(nil)
 
 const (
 	X2CRateUint64       uint64 = 1_000_000_000
@@ -40,6 +39,7 @@ var (
 	ErrNilTx          = errors.New("tx is nil")
 	errNoValueOutput  = errors.New("output has no value")
 	ErrNoValueInput   = errors.New("input has no value")
+	ErrNoGasUsed      = errors.New("no gas used")
 	errNilOutput      = errors.New("nil output")
 	errNilInput       = errors.New("nil input")
 	errEmptyAssetID   = errors.New("empty asset ID is not valid")
@@ -117,6 +117,16 @@ func (in *EVMInput) Verify() error {
 	return nil
 }
 
+type AtomicBlockContext interface {
+	AtomicTxs() []*Tx
+}
+
+// Visitor allows executing custom logic against the underlying transaction types.
+type Visitor interface {
+	ImportTx(*UnsignedImportTx) error
+	ExportTx(*UnsignedExportTx) error
+}
+
 // UnsignedTx is an unsigned transaction
 type UnsignedTx interface {
 	Initialize(unsignedBytes, signedBytes []byte)
@@ -125,25 +135,6 @@ type UnsignedTx interface {
 	Burned(assetID ids.ID) (uint64, error)
 	Bytes() []byte
 	SignedBytes() []byte
-}
-
-type Backend struct {
-	Ctx          *snow.Context
-	Fx           fx.Fx
-	Rules        params.Rules
-	Bootstrapped bool
-	BlockFetcher BlockFetcher
-	SecpCache    *secp256k1.RecoverCache
-}
-
-type BlockFetcher interface {
-	LastAcceptedBlockInternal() snowman.Block
-	GetBlockInternal(context.Context, ids.ID) (snowman.Block, error)
-}
-
-type AtomicBlockContext interface {
-	AtomicTxs() []*Tx
-	snowman.Block
 }
 
 type StateDB interface {
@@ -167,10 +158,11 @@ type UnsignedAtomicTx interface {
 	// InputUTXOs returns the UTXOs this tx consumes
 	InputUTXOs() set.Set[ids.ID]
 	// Verify attempts to verify that the transaction is well formed
-	Verify(ctx *snow.Context, rules params.Rules) error
-	// Attempts to verify this transaction with the provided state.
-	// SemanticVerify this transaction is valid.
-	SemanticVerify(backend *Backend, stx *Tx, parent AtomicBlockContext, baseFee *big.Int) error
+	Verify(ctx *snow.Context, rules extras.Rules) error
+	// Visit calls the corresponding method for the underlying transaction type
+	// implementing [Visitor].
+	// This is used in semantic verification of the tx.
+	Visit(v Visitor) error
 	// AtomicOps returns the blockchainID and set of atomic requests that
 	// must be applied to shared memory for this transaction to be accepted.
 	// The set of atomic requests must be returned in a consistent order.
@@ -266,6 +258,10 @@ func (tx *Tx) BlockFeeContribution(fixedFee bool, avaxAssetID ids.ID, baseFee *b
 	return blockFeeContribution, new(big.Int).SetUint64(gasUsed), nil
 }
 
+func (tx *Tx) GossipID() ids.ID {
+	return tx.ID()
+}
+
 // innerSortInputsAndSigners implements sort.Interface for EVMInput
 type innerSortInputsAndSigners struct {
 	inputs  []EVMInput
@@ -292,21 +288,53 @@ func SortEVMInputsAndSigners(inputs []EVMInput, signers [][]*secp256k1.PrivateKe
 	sort.Sort(&innerSortInputsAndSigners{inputs: inputs, signers: signers})
 }
 
+// EffectiveGasPrice returns the price per gas that the transaction is paying
+// denominated in aAVAX/gas.
+//
+// The result is rounded down to the nearest aAVAX/gas.
+func EffectiveGasPrice(
+	tx UnsignedTx,
+	avaxAssetID ids.ID,
+	isApricotPhase5 bool,
+) (uint256.Int, error) {
+	gasUsed, err := tx.GasUsed(isApricotPhase5)
+	if err != nil {
+		return uint256.Int{}, err
+	}
+	if gasUsed == 0 {
+		return uint256.Int{}, ErrNoGasUsed
+	}
+	burned, err := tx.Burned(avaxAssetID)
+	if err != nil {
+		return uint256.Int{}, err
+	}
+
+	var bigGasUsed uint256.Int
+	bigGasUsed.SetUint64(gasUsed)
+
+	var gasPrice uint256.Int // gasPrice = burned * x2cRate / gasUsed
+	gasPrice.SetUint64(burned)
+	gasPrice.Mul(&gasPrice, X2CRate)
+	gasPrice.Div(&gasPrice, &bigGasUsed)
+	return gasPrice, nil
+}
+
 // calculates the amount of AVAX that must be burned by an atomic transaction
 // that consumes [cost] at [baseFee].
 func CalculateDynamicFee(cost uint64, baseFee *big.Int) (uint64, error) {
 	if baseFee == nil {
 		return 0, errNilBaseFee
 	}
-	bigCost := new(big.Int).SetUint64(cost)
-	fee := new(big.Int).Mul(bigCost, baseFee)
-	feeToRoundUp := new(big.Int).Add(fee, x2cRateMinus1.ToBig())
-	feeInNAVAX := new(big.Int).Div(feeToRoundUp, X2CRate.ToBig())
-	if !feeInNAVAX.IsUint64() {
+	// fee = (cost * baseFee + [X2CRate] - 1) / [X2CRate]
+	fee := new(big.Int).SetUint64(cost)
+	fee.Mul(fee, baseFee)
+	fee.Add(fee, x2cRateMinus1.ToBig())
+	fee.Div(fee, X2CRate.ToBig())
+	if !fee.IsUint64() {
 		// the fee is more than can fit in a uint64
 		return 0, errFeeOverflow
 	}
-	return feeInNAVAX.Uint64(), nil
+	return fee.Uint64(), nil
 }
 
 func calcBytesCost(len int) uint64 {

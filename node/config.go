@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -31,10 +32,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MetalBlockchain/coreth/accounts"
-	"github.com/MetalBlockchain/coreth/accounts/external"
-	"github.com/MetalBlockchain/coreth/accounts/keystore"
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/MetalBlockchain/libevm/accounts"
+	"github.com/MetalBlockchain/libevm/accounts/external"
+	"github.com/MetalBlockchain/libevm/accounts/keystore"
+	"github.com/MetalBlockchain/libevm/log"
 )
 
 // Config represents a small collection of configuration values to fine tune the

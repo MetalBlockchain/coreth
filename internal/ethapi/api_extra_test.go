@@ -1,24 +1,28 @@
-// (c) 2019-2024, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package ethapi
 
 import (
-	"fmt"
+	"errors"
 	"math/big"
 	"testing"
 
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+
+	"github.com/MetalBlockchain/coreth/rpc"
 )
 
 func TestBlockChainAPI_stateQueryBlockNumberAllowed(t *testing.T) {
 	t.Parallel()
 
-	const queryWindow uint64 = 1024
+	const (
+		queryWindow      uint64 = 1024
+		nonArchiveWindow uint64 = 32
+	)
 
 	makeBlockWithNumber := func(number uint64) *types.Block {
 		header := &types.Header{
@@ -69,7 +73,7 @@ func TestBlockChainAPI_stateQueryBlockNumberAllowed(t *testing.T) {
 				backend.EXPECT().HistoricalProofQueryWindow().Return(queryWindow)
 				backend.EXPECT().LastAcceptedBlock().Return(makeBlockWithNumber(2200))
 				backend.EXPECT().
-					BlockByNumberOrHash(gomock.Any(), gomock.Any()).
+					BlockByHash(gomock.Any(), gomock.Any()).
 					Return(makeBlockWithNumber(2000), nil)
 				return backend
 			},
@@ -82,8 +86,8 @@ func TestBlockChainAPI_stateQueryBlockNumberAllowed(t *testing.T) {
 				backend.EXPECT().HistoricalProofQueryWindow().Return(queryWindow)
 				backend.EXPECT().LastAcceptedBlock().Return(makeBlockWithNumber(2200))
 				backend.EXPECT().
-					BlockByNumberOrHash(gomock.Any(), gomock.Any()).
-					Return(nil, fmt.Errorf("test error"))
+					BlockByHash(gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("test error"))
 				return backend
 			},
 			wantErrMessage: "failed to get block from hash: test error",
@@ -104,7 +108,7 @@ func TestBlockChainAPI_stateQueryBlockNumberAllowed(t *testing.T) {
 			makeBackend: func(ctrl *gomock.Controller) *MockBackend {
 				backend := NewMockBackend(ctrl)
 				backend.EXPECT().IsArchive().Return(false)
-				// query window is 32 as set to core.TipBufferSize
+				backend.EXPECT().HistoricalProofQueryWindow().Return(nonArchiveWindow)
 				backend.EXPECT().LastAcceptedBlock().Return(makeBlockWithNumber(1033))
 				return backend
 			},

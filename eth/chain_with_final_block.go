@@ -1,9 +1,13 @@
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
+
 //nolint:unused
 package eth
 
 import (
+	"github.com/MetalBlockchain/libevm/core/types"
+
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/types"
 )
 
 const blocksToKeep = 604_800 // Approx. 2 weeks worth of blocks assuming 2s block time

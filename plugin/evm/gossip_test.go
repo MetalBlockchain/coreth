@@ -1,4 +1,4 @@
-// (c) 2019-2021, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package evm
@@ -10,19 +10,21 @@ import (
 	"time"
 
 	"github.com/MetalBlockchain/metalgo/network/p2p/gossip"
-	"github.com/MetalBlockchain/coreth/consensus/dummy"
-	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/txpool"
-	"github.com/MetalBlockchain/coreth/core/txpool/legacypool"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
-	"github.com/MetalBlockchain/coreth/params"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/core/vm"
+	"github.com/MetalBlockchain/libevm/crypto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/MetalBlockchain/coreth/consensus/dummy"
+	"github.com/MetalBlockchain/coreth/core"
+	"github.com/MetalBlockchain/coreth/core/txpool"
+	"github.com/MetalBlockchain/coreth/core/txpool/legacypool"
+	"github.com/MetalBlockchain/coreth/params"
+	"github.com/MetalBlockchain/coreth/utils"
 )
 
 func TestGossipEthTxMarshaller(t *testing.T) {
@@ -67,7 +69,7 @@ func TestGossipSubscribe(t *testing.T) {
 	}, 10*time.Second, 500*time.Millisecond, "expected gossipTxPool to be subscribed")
 
 	// create eth txs
-	ethTxs := getValidEthTxs(key, 10, big.NewInt(226*params.GWei))
+	ethTxs := getValidEthTxs(key, 10, big.NewInt(226*utils.GWei))
 
 	// Notify mempool about txs
 	errs := txPool.AddRemotesSync(ethTxs)

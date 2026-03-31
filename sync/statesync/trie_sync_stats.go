@@ -1,4 +1,4 @@
-// (c) 2021-2022, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package statesync
@@ -8,11 +8,12 @@ import (
 	"sync"
 	"time"
 
-	utils_math "github.com/MetalBlockchain/metalgo/utils/math"
 	"github.com/MetalBlockchain/metalgo/utils/timer"
-	"github.com/MetalBlockchain/coreth/metrics"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/log"
+	"github.com/MetalBlockchain/libevm/metrics"
+
+	safemath "github.com/MetalBlockchain/metalgo/utils/math"
 )
 
 const (
@@ -27,7 +28,7 @@ type trieSyncStats struct {
 	lock sync.Mutex
 
 	lastUpdated time.Time
-	leafsRate   utils_math.Averager
+	leafsRate   safemath.Averager
 
 	triesRemaining   int
 	triesSynced      int
@@ -118,7 +119,7 @@ func (t *trieSyncStats) trieDone(root common.Hash) {
 func (t *trieSyncStats) updateETA(sinceUpdate time.Duration, now time.Time) time.Duration {
 	leafsRate := float64(t.leafsSinceUpdate) / sinceUpdate.Seconds()
 	if t.leafsRate == nil {
-		t.leafsRate = utils_math.NewAverager(leafsRate, leafRateHalfLife, now)
+		t.leafsRate = safemath.NewAverager(leafsRate, leafRateHalfLife, now)
 	} else {
 		t.leafsRate.Observe(leafsRate, now)
 	}

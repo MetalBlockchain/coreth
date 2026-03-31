@@ -1,4 +1,4 @@
-// (c) 2019-2020, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package client
@@ -8,14 +8,14 @@ import (
 	"errors"
 	"fmt"
 
-	"golang.org/x/exp/slog"
-
 	"github.com/MetalBlockchain/metalgo/api"
 	"github.com/MetalBlockchain/metalgo/ids"
 	"github.com/MetalBlockchain/metalgo/utils/formatting"
 	"github.com/MetalBlockchain/metalgo/utils/formatting/address"
 	"github.com/MetalBlockchain/metalgo/utils/json"
 	"github.com/MetalBlockchain/metalgo/utils/rpc"
+	"golang.org/x/exp/slog"
+
 	"github.com/MetalBlockchain/coreth/plugin/evm/atomic"
 	"github.com/MetalBlockchain/coreth/plugin/evm/config"
 )

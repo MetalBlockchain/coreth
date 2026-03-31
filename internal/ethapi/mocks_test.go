@@ -15,18 +15,18 @@ import (
 	reflect "reflect"
 	time "time"
 
-	accounts "github.com/MetalBlockchain/coreth/accounts"
 	consensus "github.com/MetalBlockchain/coreth/consensus"
 	core "github.com/MetalBlockchain/coreth/core"
 	bloombits "github.com/MetalBlockchain/coreth/core/bloombits"
-	state "github.com/MetalBlockchain/coreth/core/state"
-	types "github.com/MetalBlockchain/coreth/core/types"
-	vm "github.com/MetalBlockchain/coreth/core/vm"
 	params "github.com/MetalBlockchain/coreth/params"
 	rpc "github.com/MetalBlockchain/coreth/rpc"
-	common "github.com/ethereum/go-ethereum/common"
-	ethdb "github.com/ethereum/go-ethereum/ethdb"
-	event "github.com/ethereum/go-ethereum/event"
+	accounts "github.com/MetalBlockchain/libevm/accounts"
+	common "github.com/MetalBlockchain/libevm/common"
+	state "github.com/MetalBlockchain/libevm/core/state"
+	types "github.com/MetalBlockchain/libevm/core/types"
+	vm "github.com/MetalBlockchain/libevm/core/vm"
+	ethdb "github.com/MetalBlockchain/libevm/ethdb"
+	event "github.com/MetalBlockchain/libevm/event"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -467,6 +467,20 @@ func (m *MockBackend) LastAcceptedBlock() *types.Block {
 func (mr *MockBackendMockRecorder) LastAcceptedBlock() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LastAcceptedBlock", reflect.TypeOf((*MockBackend)(nil).LastAcceptedBlock))
+}
+
+// PriceOptionsConfig mocks base method.
+func (m *MockBackend) PriceOptionsConfig() PriceOptionConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PriceOptionsConfig")
+	ret0, _ := ret[0].(PriceOptionConfig)
+	return ret0
+}
+
+// PriceOptionsConfig indicates an expected call of PriceOptionsConfig.
+func (mr *MockBackendMockRecorder) PriceOptionsConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PriceOptionsConfig", reflect.TypeOf((*MockBackend)(nil).PriceOptionsConfig))
 }
 
 // RPCEVMTimeout mocks base method.

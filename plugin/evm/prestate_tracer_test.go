@@ -1,4 +1,4 @@
-// (c) 2024, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package evm
@@ -12,14 +12,15 @@ import (
 	"testing"
 	"unicode"
 
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/common/math"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/core/vm"
+
 	"github.com/MetalBlockchain/coreth/core"
-	"github.com/MetalBlockchain/coreth/core/rawdb"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
 	"github.com/MetalBlockchain/coreth/eth/tracers"
 	"github.com/MetalBlockchain/coreth/tests"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
 )
 
 func TestPrestateWithDiffModeANTTracer(t *testing.T) {
@@ -37,7 +38,6 @@ func testPrestateDiffTracer(tracerName string, dirPath string, t *testing.T) {
 		if !strings.HasSuffix(file.Name(), ".json") {
 			continue
 		}
-		file := file // capture range variable
 		t.Run(camel(strings.TrimSuffix(file.Name(), ".json")), func(t *testing.T) {
 			t.Parallel()
 
@@ -58,16 +58,18 @@ func testPrestateDiffTracer(tracerName string, dirPath string, t *testing.T) {
 			var (
 				signer  = types.MakeSigner(test.Genesis.Config, new(big.Int).SetUint64(uint64(test.Context.Number)), uint64(test.Context.Time))
 				context = vm.BlockContext{
-					CanTransfer:       core.CanTransfer,
-					CanTransferMC:     core.CanTransferMC,
-					Transfer:          core.Transfer,
-					TransferMultiCoin: core.TransferMultiCoin,
-					Coinbase:          test.Context.Miner,
-					BlockNumber:       new(big.Int).SetUint64(uint64(test.Context.Number)),
-					Time:              uint64(test.Context.Time),
-					Difficulty:        (*big.Int)(test.Context.Difficulty),
-					GasLimit:          uint64(test.Context.GasLimit),
-					BaseFee:           test.Genesis.BaseFee,
+					CanTransfer: core.CanTransfer,
+					Transfer:    core.Transfer,
+					Coinbase:    test.Context.Miner,
+					BlockNumber: new(big.Int).SetUint64(uint64(test.Context.Number)),
+					Time:        uint64(test.Context.Time),
+					Difficulty:  (*big.Int)(test.Context.Difficulty),
+					GasLimit:    uint64(test.Context.GasLimit),
+					BaseFee:     test.Genesis.BaseFee,
+					Header: &types.Header{
+						Number: new(big.Int).SetUint64(uint64(test.Context.Number)),
+						Time:   uint64(test.Context.Time),
+					},
 				}
 				state = tests.MakePreState(rawdb.NewMemoryDatabase(), test.Genesis.Alloc, false, rawdb.HashScheme)
 			)

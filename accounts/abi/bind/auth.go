@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -33,13 +34,13 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/MetalBlockchain/coreth/accounts"
-	"github.com/MetalBlockchain/coreth/accounts/external"
-	"github.com/MetalBlockchain/coreth/accounts/keystore"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/MetalBlockchain/libevm/accounts"
+	"github.com/MetalBlockchain/libevm/accounts/external"
+	"github.com/MetalBlockchain/libevm/accounts/keystore"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/log"
 )
 
 // ErrNoChainID is returned whenever the user failed to specify a chain id.

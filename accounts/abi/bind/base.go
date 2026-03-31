@@ -1,4 +1,5 @@
-// (c) 2019-2020, Ava Labs, Inc.
+// Copyright (C) 2019-2025, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
 //
 // This file is a derived work, based on the go-ethereum library whose original
 // notices appear below.
@@ -35,13 +36,13 @@ import (
 	"sync"
 
 	"github.com/MetalBlockchain/coreth/accounts/abi"
-	"github.com/MetalBlockchain/coreth/core/types"
-	"github.com/MetalBlockchain/coreth/core/vm"
-	"github.com/MetalBlockchain/coreth/interfaces"
+	"github.com/MetalBlockchain/coreth/nativeasset"
 	"github.com/MetalBlockchain/coreth/rpc"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/event"
+	ethereum "github.com/MetalBlockchain/libevm"
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/crypto"
+	"github.com/MetalBlockchain/libevm/event"
 )
 
 const basefeeWiggleMultiplier = 2
@@ -197,7 +198,7 @@ func (c *BoundContract) Call(opts *CallOpts, results *[]interface{}, method stri
 		return err
 	}
 	var (
-		msg    = interfaces.CallMsg{From: opts.From, To: &c.address, Data: input}
+		msg    = ethereum.CallMsg{From: opts.From, To: &c.address, Data: input}
 		ctx    = ensureContext(opts.Context)
 		code   []byte
 		output []byte
@@ -308,14 +309,14 @@ func wrapNativeAssetCall(opts *TransactOpts, contract *common.Address, input []b
 			return nil, nil, errNativeAssetDeployContract
 		}
 		// wrap input with native asset call params
-		input = vm.PackNativeAssetCallInput(
+		input = nativeasset.PackNativeAssetCallInput(
 			*contract,
 			opts.NativeAssetCall.AssetID,
 			opts.NativeAssetCall.AssetAmount,
 			input,
 		)
 		// target addr is now precompile
-		contract = &vm.NativeAssetCallAddr
+		contract = &nativeasset.NativeAssetCallAddr
 	}
 	return contract, input, nil
 }
@@ -424,7 +425,7 @@ func (c *BoundContract) estimateGasLimit(opts *TransactOpts, contract *common.Ad
 			return 0, ErrNoCode
 		}
 	}
-	msg := interfaces.CallMsg{
+	msg := ethereum.CallMsg{
 		From:      opts.From,
 		To:        contract,
 		GasPrice:  gasPrice,
@@ -513,7 +514,7 @@ func (c *BoundContract) FilterLogs(opts *FilterOpts, name string, query ...[]int
 	// Start the background filtering
 	logs := make(chan types.Log, 128)
 
-	config := interfaces.FilterQuery{
+	config := ethereum.FilterQuery{
 		Addresses: []common.Address{c.address},
 		Topics:    topics,
 		FromBlock: new(big.Int).SetUint64(opts.Start),
@@ -562,7 +563,7 @@ func (c *BoundContract) WatchLogs(opts *WatchOpts, name string, query ...[]inter
 	// Start the background filtering
 	logs := make(chan types.Log, 128)
 
-	config := interfaces.FilterQuery{
+	config := ethereum.FilterQuery{
 		Addresses: []common.Address{c.address},
 		Topics:    topics,
 	}
