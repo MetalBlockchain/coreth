@@ -10,9 +10,9 @@ CORETH_PATH=$(
 source "$CORETH_PATH"/scripts/constants.sh
 
 EXTRA_ARGS=()
-AVALANCHEGO_BUILD_PATH="${AVALANCHEGO_BUILD_PATH:-}"
-if [[ -n "${AVALANCHEGO_BUILD_PATH}" ]]; then
-  EXTRA_ARGS=("--avalanchego-path=${AVALANCHEGO_BUILD_PATH}/avalanchego")
+METALGO_BUILD_PATH="${METALGO_BUILD_PATH:-}"
+if [[ -n "${METALGO_BUILD_PATH}" ]]; then
+  EXTRA_ARGS=("--metalgo-path=${METALGO_BUILD_PATH}/metalgo")
   echo "Running with extra args:" "${EXTRA_ARGS[@]}"
 fi
 

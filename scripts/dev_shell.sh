@@ -8,12 +8,12 @@ set -euo pipefail
 #   https://github.com/DeterminateSystems/nix-installer?tab=readme-ov-file#install-nix
 #
 
-# Load AVALANCHE_VERSION
+# Load METAL_VERSION
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=/scripts/constants.sh
 source "$SCRIPT_DIR"/versions.sh
 
 # Start a dev shell with the avalanchego flake
-FLAKE="github:ava-labs/avalanchego?ref=${AVALANCHE_VERSION}"
+FLAKE="github:MetalBlockchain/metalgo?ref=${METAL_VERSION}"
 echo "Starting nix shell for ${FLAKE}"
 nix develop "${FLAKE}" "${@}"

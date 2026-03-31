@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script builds a new AvalancheGo binary with the Coreth dependency pointing to the local Coreth path
-# Usage: ./build_avalanchego_with_coreth.sh with optional AVALANCHEGO_VERSION and AVALANCHEGO_CLONE_PATH environment variables
+# Usage: ./build_avalanchego_with_coreth.sh with optional AVALANCHEGO_VERSION and METALGO_CLONE_PATH environment variables
 
 set -euo pipefail
 
@@ -12,7 +12,7 @@ CORETH_PATH=$(
 )
 
 # Allow configuring the clone path to point to an existing clone
-AVALANCHEGO_CLONE_PATH="${AVALANCHEGO_CLONE_PATH:-avalanchego}"
+METALGO_CLONE_PATH="${METALGO_CLONE_PATH:-metalgo}"
 
 # Load the version
 source "$CORETH_PATH"/scripts/versions.sh
@@ -23,22 +23,22 @@ function cleanup {
 }
 trap cleanup EXIT
 
-echo "checking out target AvalancheGo version ${AVALANCHE_VERSION}"
-if [[ -d "${AVALANCHEGO_CLONE_PATH}" ]]; then
+echo "checking out target MetalGo version ${METAL_VERSION}"
+if [[ -d "${METALGO_CLONE_PATH}" ]]; then
   echo "updating existing clone"
-  cd "${AVALANCHEGO_CLONE_PATH}"
+  cd "${METALGO_CLONE_PATH}"
   git fetch
 else
   echo "creating new clone"
-  git clone https://github.com/ava-labs/avalanchego.git "${AVALANCHEGO_CLONE_PATH}"
-  cd "${AVALANCHEGO_CLONE_PATH}"
+  git clone https://github.com/MetalBlockchain/metalgo.git "${METALGO_CLONE_PATH}"
+  cd "${METALGO_CLONE_PATH}"
 fi
-# Branch will be reset to $AVALANCHE_VERSION if it already exists
-git checkout -B "test-${AVALANCHE_VERSION}" "${AVALANCHE_VERSION}"
+# Branch will be reset to $METAL_VERSION if it already exists
+git checkout -B "test-${METAL_VERSION}" "${METAL_VERSION}"
 
 echo "updating coreth dependency to point to ${CORETH_PATH}"
-go mod edit -replace "github.com/ava-labs/coreth=${CORETH_PATH}"
+go mod edit -replace "github.com/MetalBlockchain/coreth=${CORETH_PATH}"
 go mod tidy
 
-echo "building avalanchego"
+echo "building metalgo"
 ./scripts/build.sh

@@ -11,12 +11,12 @@ fi
 VERSION="${1:-}"
 
 if [[ -n "${VERSION}" ]]; then
-  echo "Ensuring AvalancheGo version $VERSION in go.mod"
-  go get "github.com/ava-labs/avalanchego@${VERSION}"
+  echo "Ensuring MetalGo version $VERSION in go.mod"
+  go get "github.com/MetalBlockchain/metalgo@${VERSION}"
   go mod tidy
 fi
 
-# Discover AVALANCHE_VERSION
+# Discover METAL_VERSION
 . scripts/versions.sh
 
 # The full SHA is required for versioning custom actions.
@@ -28,11 +28,11 @@ else
   echo "No GITHUB_TOKEN found, using unauthenticated requests"
 fi
 
-GIT_COMMIT=$("${CURL_ARGS[@]}" "https://api.github.com/repos/ava-labs/avalanchego/commits/${AVALANCHE_VERSION}")
-FULL_AVALANCHE_VERSION="$(grep -m1 '"sha":' <<< "${GIT_COMMIT}" | cut -d'"' -f4)"
+GIT_COMMIT=$("${CURL_ARGS[@]}" "https://api.github.com/repos/MetalBlockchain/metalgo/commits/${METAL_VERSION}")
+FULL_METAL_VERSION="$(grep -m1 '"sha":' <<< "${GIT_COMMIT}" | cut -d'"' -f4)"
 
 # Ensure the custom action version matches the avalanche version
 WORKFLOW_PATH=".github/workflows/ci.yml"
-CUSTOM_ACTION="ava-labs/avalanchego/.github/actions/run-monitored-tmpnet-cmd"
-echo "Ensuring AvalancheGo version ${FULL_AVALANCHE_VERSION} for ${CUSTOM_ACTION} custom action in ${WORKFLOW_PATH} "
-sed -i.bak "s|\(uses: ${CUSTOM_ACTION}\)@.*|\1@${FULL_AVALANCHE_VERSION}|g" "${WORKFLOW_PATH}" && rm -f "${WORKFLOW_PATH}.bak"
+CUSTOM_ACTION="MetalBlockchain/metalgo/.github/actions/run-monitored-tmpnet-cmd"
+echo "Ensuring MetalGo version ${FULL_METAL_VERSION} for ${CUSTOM_ACTION} custom action in ${WORKFLOW_PATH} "
+sed -i.bak "s|\(uses: ${CUSTOM_ACTION}\)@.*|\1@${FULL_METAL_VERSION}|g" "${WORKFLOW_PATH}" && rm -f "${WORKFLOW_PATH}.bak"

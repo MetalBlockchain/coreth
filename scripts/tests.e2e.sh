@@ -6,7 +6,7 @@ set -euo pipefail
 
 # e.g.,
 # ./scripts/tests.e2e.sh
-# AVALANCHE_VERSION=v1.10.x ./scripts/tests.e2e.sh
+# METAL_VERSION=v1.10.x ./scripts/tests.e2e.sh
 # ./scripts/tests.e2e.sh --start-monitors          # All arguments are supplied to ginkgo
 if ! [[ "$0" =~ scripts/tests.e2e.sh ]]; then
   echo "must be run from repository root"
