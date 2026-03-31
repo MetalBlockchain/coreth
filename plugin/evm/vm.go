@@ -17,6 +17,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MetalBlockchain/libevm/common"
+	"github.com/MetalBlockchain/libevm/core/rawdb"
+	"github.com/MetalBlockchain/libevm/core/types"
+	"github.com/MetalBlockchain/libevm/ethdb"
+	"github.com/MetalBlockchain/libevm/log"
+	"github.com/MetalBlockchain/libevm/metrics"
+	"github.com/MetalBlockchain/libevm/rlp"
+	"github.com/MetalBlockchain/libevm/triedb"
 	"github.com/MetalBlockchain/metalgo/cache/lru"
 	"github.com/MetalBlockchain/metalgo/cache/metercacher"
 	"github.com/MetalBlockchain/metalgo/codec"
@@ -35,14 +43,6 @@ import (
 	"github.com/MetalBlockchain/metalgo/vms/components/chain"
 	"github.com/MetalBlockchain/metalgo/vms/components/gas"
 	"github.com/ava-labs/firewood-go-ethhash/ffi"
-	"github.com/MetalBlockchain/libevm/common"
-	"github.com/MetalBlockchain/libevm/core/rawdb"
-	"github.com/MetalBlockchain/libevm/core/types"
-	"github.com/MetalBlockchain/libevm/ethdb"
-	"github.com/MetalBlockchain/libevm/log"
-	"github.com/MetalBlockchain/libevm/metrics"
-	"github.com/MetalBlockchain/libevm/rlp"
-	"github.com/MetalBlockchain/libevm/triedb"
 	"github.com/prometheus/client_golang/prometheus"
 
 	// Force-load precompiles to trigger registration
@@ -80,10 +80,6 @@ import (
 	"github.com/MetalBlockchain/coreth/triedb/hashdb"
 	"github.com/MetalBlockchain/coreth/warp"
 
-	avalanchegossip "github.com/MetalBlockchain/metalgo/network/p2p/gossip"
-	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
-	avalancheUtils "github.com/MetalBlockchain/metalgo/utils"
-	avalanchegoprometheus "github.com/MetalBlockchain/metalgo/vms/evm/metrics/prometheus"
 	corethlog "github.com/MetalBlockchain/coreth/plugin/evm/log"
 	warpcontract "github.com/MetalBlockchain/coreth/precompile/contracts/warp"
 	statesyncclient "github.com/MetalBlockchain/coreth/sync/client"
@@ -91,6 +87,10 @@ import (
 	vmsync "github.com/MetalBlockchain/coreth/sync/vm"
 	utilsrpc "github.com/MetalBlockchain/coreth/utils/rpc"
 	ethparams "github.com/MetalBlockchain/libevm/params"
+	avalanchegossip "github.com/MetalBlockchain/metalgo/network/p2p/gossip"
+	commonEng "github.com/MetalBlockchain/metalgo/snow/engine/common"
+	avalancheUtils "github.com/MetalBlockchain/metalgo/utils"
+	avalanchegoprometheus "github.com/MetalBlockchain/metalgo/vms/evm/metrics/prometheus"
 )
 
 var (
