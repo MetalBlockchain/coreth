@@ -13,14 +13,14 @@ import (
 	big "math/big"
 	reflect "reflect"
 
-	snow "github.com/MetalBlockchain/metalgo/snow"
-	set "github.com/MetalBlockchain/metalgo/utils/set"
-	predicate "github.com/MetalBlockchain/metalgo/vms/evm/predicate"
 	precompileconfig "github.com/MetalBlockchain/coreth/precompile/precompileconfig"
 	common "github.com/MetalBlockchain/libevm/common"
 	types "github.com/MetalBlockchain/libevm/core/types"
 	vm "github.com/MetalBlockchain/libevm/core/vm"
 	stateconf "github.com/MetalBlockchain/libevm/libevm/stateconf"
+	snow "github.com/MetalBlockchain/metalgo/snow"
+	set "github.com/MetalBlockchain/metalgo/utils/set"
+	predicate "github.com/MetalBlockchain/metalgo/vms/evm/predicate"
 	uint256 "github.com/holiman/uint256"
 	gomock "go.uber.org/mock/gomock"
 )

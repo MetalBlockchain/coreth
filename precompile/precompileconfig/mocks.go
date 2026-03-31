@@ -12,8 +12,8 @@ package precompileconfig
 import (
 	reflect "reflect"
 
-	predicate "github.com/MetalBlockchain/metalgo/vms/evm/predicate"
 	common "github.com/MetalBlockchain/libevm/common"
+	predicate "github.com/MetalBlockchain/metalgo/vms/evm/predicate"
 	gomock "go.uber.org/mock/gomock"
 )
 
