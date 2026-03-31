@@ -4,7 +4,7 @@ go 1.23.9
 
 require (
 	github.com/MetalBlockchain/libevm v1.13.14-0.3.0.rc.6-1774959320
-	github.com/MetalBlockchain/metalgo v1.13.5-rc.7
+	github.com/MetalBlockchain/metalgo v1.13.5-rc.8
 	github.com/VictoriaMetrics/fastcache v1.12.1
 	github.com/ava-labs/firewood-go-ethhash/ffi v0.0.12
 	github.com/davecgh/go-spew v1.1.1
