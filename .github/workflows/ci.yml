@@ -102,7 +102,7 @@ jobs:
       - name: Build AvalancheGo and update Coreth dependency
         run: ./scripts/run_task.sh build-avalanchego-with-coreth
       - name: Run e2e tests
-        uses: ava-labs/avalanchego/.github/actions/run-monitored-tmpnet-cmd@cc3242f48a6262c52057e98a85d6cf8184dfaca3
+        uses: ava-labs/avalanchego/.github/actions/run-monitored-tmpnet-cmd@6e5acf909c7a16b991142d6b3979bac5699bdb68
         with:
           run: ./scripts/run_task.sh test-e2e
           run_env: AVALANCHEGO_CLONE_PATH=avalanchego
